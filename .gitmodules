@@ -1,7 +1,10 @@
 [submodule "site-lisp/dash"]
         path = site-lisp/dash
 	url = https://github.com/magnars/dash.el.git
-[submodule "site-lisp/bash-completion"]
-        path = site-lisp/bash-completion
-        url = https://github.com/szermatt/emacs-bash-completion.git
+[submodule "site-lisp/jslime"]
+        path = site-lisp/jslime
+        url = https://github.com/vkz/jslime.git
 	
+[submodule "site-lisp/helm"]
+	path = site-lisp/helm
+	url = https://github.com/emacs-helm/helm

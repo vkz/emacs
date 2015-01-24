@@ -23,6 +23,8 @@
 
 (define-key dired-mode-map (kbd "C-a") 'dired-back-to-start-of-files)
 
+;; TODO: where are these 'smart-up and 'smart-down coming from?
+
 ;; M-up is nicer in dired if it moves to the fourth line - the first file
 (defun dired-back-to-top ()
   (interactive)

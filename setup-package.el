@@ -6,7 +6,7 @@
 
 (package-initialize)
 
-(unless (file-exists-p (concat user-emacs-directory "elpa/archives/melpa"))
+(unless (file-exists-p (concat user-emacs-directory "/elpa/archives/melpa"))
   (package-refresh-contents))
 
 (defun packages-install (packages)

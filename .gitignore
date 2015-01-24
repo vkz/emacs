@@ -1,1 +1,13 @@
 /elpa/
+/.mc-lists.el
+/.places
+/auto-save-list/
+/backups/
+/eshell/
+/history
+/npm-debug.log
+/projectile-bookmarks.eld
+/projectile.cache
+/recentf
+/semanticdb/
+/#setup-helm.el#
