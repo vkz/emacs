@@ -159,13 +159,17 @@
 
 ;; Jump from file to containing directory
 (autoload 'dired-jump "dired")
-(global-set-key (kbd "C-x C-j") (λ (dired-jump 1)))
-(global-set-key (kbd "C-x j") (λ (dired-jump 1)))
+(global-set-key (kbd "C-x C-j") (λ (dired-jump-other-window)))
+(global-set-key (kbd "C-x j") (λ (dired-jump-other-window)))
 (global-set-key (kbd "C-x J") 'dired-jump)
 
 ;; Shell
 (global-set-key (kbd "C-c C-j") 'start-or-switch-to-shell)
-(global-set-key (kbd "C-c j") 'start-or-switch-to-shell)
+(define-key shell-mode-map (kbd "C-c C-j") (λ (bury-buffer) (other-window 1)))
+(global-set-key (kbd "C-c j") 'shell-jump)
+(define-key dired-mode-map (kbd "C-c C-j") 'dired-shell-jump)
+(define-key dired-mode-map (kbd "C-c j") 'dired-shell-jump)
+(define-key helm-find-files-map (kbd "C-c C-j") 'helm-ff-run-switch-to-shell)
 
 ;; TODO is it worth wasting bindings on clean nodejs-repl?
 (global-set-key (kbd "C-c C-n") 'start-or-switch-to-nodejs)
