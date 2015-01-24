@@ -7,6 +7,14 @@
 (require 'shell-command)
 (shell-command-completion-mode)
 
+;; TODO seems like this would make redundant add-hook every time i enter
+;; shell-mode. Works only because 'add-hook checks for redundant functions.
+(add-hook 'shell-mode-hook
+          '(lambda ()
+             (add-hook 'comint-preoutput-filter-functions
+                       '(lambda (output)
+                          (replace-regexp-in-string "\033\\[[0-9]+[GK]" "" output)) nil t)))
+
 ;; C-d to kill buffer if process is dead.
 (defun comint-delchar-or-eof-or-kill-buffer (arg)
   (interactive "p")
