@@ -1,6 +1,6 @@
-;; Use `C-t' which is a more natural prefix in Dvorak. Don't forget to
-;; do the same for any minor modes that insist on having `C-x' as part
-;; of their prefix
+;; TODO: consider binding <Enter> to Meta in Karabiner or something useful
+
+;; Prefix should be central
 (define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
 
 ;; I don't need to kill emacs that easily
@@ -28,6 +28,7 @@
 (global-set-key (kbd "M-y") 'helm-show-kill-ring)
 (global-set-key (kbd "C-x b") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
+(global-set-key (kbd "C-c i") 'helm-semantic-or-imenu)
 
 ;; helm for history
 (add-hook 'eshell-mode-hook
@@ -39,7 +40,7 @@
 (define-key shell-mode-map (kbd "C-c C-l") 'helm-comint-input-ring)
 (define-key minibuffer-local-map (kbd "C-c C-l") 'helm-minibuffer-history)
 
-;; Searching for stuff
+;; Searching
 
 ;; Like isearch, but adds region (if any) to history and deactivates mark
 (global-set-key (kbd "C-o") 'isearch-forward-use-region)
@@ -57,71 +58,46 @@
 (define-key helm-swoop-map (kbd "C-s") 'helm-multi-swoop-all-from-helm-swoop)
 (define-key helm-command-map (kbd "s") 'helm-multi-swoop-all)
 
-;; TODO: make good use of unused (kbd "H-SPC") - "LCtrl-SPC" on my MS keyboard
-;; (global-set-key (kbd "H-SPC") 'rectangle-mark-mode)
-
-;; experimental
-;; TODO: consider binding <Enter> to Meta in Karabiner or something useful
-
-;; experimental
-;; Use shell-like backspace C-h, rebind help to F1
+;; Help
 (global-set-key (kbd "<f1>") 'help-command)
 (global-set-key (kbd "<f1> h") 'helm-apropos)
-;; TODO: make sure 'helm-apropos and other helm helpers are bound
 
-;; experimental
 ;; Killing stuff
-;; TODO: with C-h and M-h bound to kill-backward try binding <backspace> to something useful
-;; TODO: some smart use of C-k
-;;
-;; Idea-1: Killing lines with backspace:
-;; -- <backspace> to 'kill-and-retry-line
-;; -- C-<backspace> to kill entire line ??
-;; -- M-<backspace> to kill to beginning of line ??
-;;
-;; Idea-2 easy-kill with backspace instead of difficult to type M-w
-;; especially if I use its extended functionality. Unfortunately
-;; typing any additional keys after <backspace> is not natural - palm
-;; travels to much.
-;;
+
+;; TODO: some clever use of C-k
 (define-key key-translation-map [?\C-h] [?\C-?])
 (global-set-key (kbd "C-w") 'kill-region-or-backward-word)
+(global-set-key (kbd "C-S-w") (λ (mark-paragraph) (kill-region-or-backward-word)))
 (global-set-key (kbd "M-h") 'kill-region-or-backward-word)
 ;; Kill lines but respect the indentation
 (global-set-key (kbd "C-H") 'kill-and-retry-line)
 (global-set-key (kbd "C-M-h") 'prelude-kill-whole-line)
 ;; Complement to C-k that also ignores the indentation
+;; TODO do I actually need this?
 (global-set-key (kbd "C-c C-k") 'kill-to-beginning-of-line)
 ;; TODO: try actually using easy-kill features. Is easy-mark worth the effort?
-;; TODO make work properly in major-modes like js2-mode, so it recognises defuns and stuff 
+;; TODO should properly work in major-modes like js2-mode, so it recognises defuns and stuff 
 (global-set-key [remap kill-ring-save] 'easy-kill) ;M-w
-;; (global-set-key [remap mark-sexp] 'easy-mark)
-
-;; TODO: maybe I should just force off all window splitting functions
-;; and simply always have horizontal split with two windows
-(global-set-key (kbd "C-x 3") 'split-window-right-and-move-there-dammit)
-
-;; swap two windows
-(global-set-key (kbd "C-c s") 'prelude-swap-windows)
-
-;; experimental
-;; Zap to char
+;; Zap
 (global-set-key (kbd "C-z") 'zap-up-to-char)
 (global-set-key (kbd "M-z") (lambda (char) (interactive "cZap up to char backwards: ") (zap-up-to-char -1 char)))
 
-;; experimental
+;; Repeat last command
 (global-set-key (kbd "<C-return>") 'repeat)
 
-;; experimental
-(global-set-key (kbd "C-c i") 'helm-semantic-or-imenu)
+;; Windows, buffers, frames
 
-;; experimental
-;; toggle two most recent buffers
 (fset 'quick-switch-buffer [?\C-x ?b return])
 (global-set-key (kbd "<backspace>") 'other-window)
 (global-set-key (kbd "C-<tab>") 'other-window)
 (global-set-key (kbd "C-<backspace>") 'other-frame)
+;; Toggle two most recent buffers
 (global-set-key (kbd "M-<backspace>") 'quick-switch-buffer)
+(global-set-key (kbd "C-c s") 'prelude-swap-windows)
+
+;; TODO: maybe I should just force off all window splitting functions
+;; and simply always have horizontal split with two windows
+(global-set-key (kbd "C-x 3") 'split-window-right-and-move-there-dammit)
 
 ;; Mighty unicode λ
 ;; TODO do I actually need this. Doesn't work in 'isearch-forward minibuffer.
@@ -131,14 +107,11 @@
 ;; TODO this one leaves a whitespace between chunks, is this what I want?
 (global-set-key (kbd "C-+") 'prelude-top-join-line)
 
-;; TODO: rebind C-- and C-+ to something more useful
-;; TODO: map 'text-scale-decrease and 'text-scale-increase to some longer keystrokes
-
 ;; Should be able to eval-and-replace anywhere.
 (global-set-key (kbd "C-c C-e") 'eval-and-replace)
 
 ;; Navigation bindings
-;; 'smart-bindings are questionable
+;; TODO 'smart-bindings are questionable do I really need these?
 (global-set-key (kbd "M-p") 'backward-paragraph)
 (global-set-key (kbd "M-n") 'forward-paragraph)
 (global-set-key (kbd "M-<up>") 'smart-up)
@@ -150,28 +123,17 @@
 ;; replace not working TAB in terminals. Is there a way to take it
 ;; back? It is also bound to `forward button' in *Help*.
 
-;; TODO: projectile
-;; (define-key projectile-mode-map (kbd "C-c p p") nil)
-;; (define-key projectile-mode-map (kbd "C-c p p") 'projectile-persp-switch-project)
-
-;; TODO: better bindings for undo (undo-tree-undo,
-;; undo-tree-visualize).  Somehow `undo-tree-map' steals "C-t u" so
-;; that I can't take it back.
-
 ;; Magit
 (global-set-key (kbd "C-x g") 'magit-status)
 (autoload 'magit-status "magit")
 
 ;; Expand region (increases selected region by semantic units)
 (global-set-key (kbd "C-=") 'er/expand-region)
-;; TODO I may want to have point at the region end instead of beginning in mark-paragraph
-(global-set-key (kbd "M-=") 'mark-paragraph)
-(global-set-key (kbd "C-M-=") 'mark-paragraph)
+(global-set-key (kbd "M-=") (λ (mark-paragraph) (exchange-point-and-mark) (backward-char)))
 
 ;; TODO: bind query-replace and friends
 
 ;; Comment/uncomment block
-;; TODO: if no region comment/uncomment current line and move to the next line
 (global-set-key (kbd "C-c c") 'comment-or-uncomment-region-or-line)
 (global-set-key (kbd "C-c u") 'uncomment-region)
 
@@ -182,7 +144,7 @@
 ;; alternate between beginning of text and line
 (global-set-key [remap move-beginning-of-line] 'prelude-move-beginning-of-line)
 
-;; 'undo deserves a better key, 'universal-argument not so much
+;; Swap undo and universal argument
 (define-key undo-tree-map (kbd "C-/") nil)
 (define-key undo-tree-map (kbd "C-?") nil)
 (global-set-key (kbd "C-u") 'undo-tree-undo)
@@ -191,15 +153,9 @@
 (global-set-key (kbd "C-/") 'universal-argument)
 (global-set-key (kbd "C-?") 'negative-argument)
 
-
-;; Create scratch buffer and switch to it in other-window
-(global-set-key (kbd "C-c b") 'create-scratch-buffer)
-
 ;; Duplicate region
 (global-set-key (kbd "C-c d") 'prelude-duplicate-current-line-or-region)
 (global-set-key (kbd "C-c D") 'prelude-duplicate-and-comment-current-line-or-region)
-
-;; TODO: Implement and bind toggle pairs () {} [] "" ''
 
 ;; Jump from file to containing directory
 (autoload 'dired-jump "dired")
@@ -215,7 +171,9 @@
 (global-set-key (kbd "C-c C-n") 'start-or-switch-to-nodejs)
 (global-set-key (kbd "C-c n") 'start-or-switch-to-nodejs)
 
-;; experimental
+;; Create scratch buffer and switch to it in other-window
+(global-set-key (kbd "C-c b") 'create-scratch-buffer)
+
 ;; TODO this maybe too close to <f1>
 (global-set-key (kbd "<escape>") (λ (bury-buffer) (other-window 1)))
 

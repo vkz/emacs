@@ -31,8 +31,7 @@ the current buffer."
 (defun prelude-top-join-line ()
   "Join the current line with the line beneath it."
   (interactive)
-  (delete-indentation 1)
-  (end-of-line))
+  (delete-indentation 1))
 
 (defun prelude-get-positions-of-line-or-region ()
   "Return positions (beg . end) of the current line
