@@ -12,15 +12,15 @@
   (setq mac-command-modifier 'meta)
   (setq mac-option-modifier 'super))
 
-;; Completion that uses many different methods to find options.
-;; Failing 'yas-expand will fallback onto 'completion-at-point
+;; Completion
+
 ;; TODO find a good use for "C-," and "C-'" and "C-<tab>"
-(global-set-key (kbd "<tab>") 'completion-at-point)
 (global-set-key (kbd "C-.") 'hippie-expand-no-case-fold)
 (global-set-key (kbd "C-,") 'completion-at-point)
 ;; (global-set-key (kbd "C-'") 'hippie-expand-lines)
 
 ;; helm
+
 (my/setup-helm-prefix-key "C-c h")
 (my/setup-helm-command-map)
 (my/setup-helm-map)
