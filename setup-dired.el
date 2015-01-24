@@ -8,6 +8,12 @@
 ;; Move files between split panes
 (setq dired-dwim-target t)
 
+;; I like my dired with directories at the top.
+;; Assumes `coreutils' are installed on a Mac (say via Homebrew)
+(when (and is-mac (file-exists-p "/usr/local/opt/coreutils/libexec/gnubin/ls"))
+  (setq insert-directory-program "/usr/local/opt/coreutils/libexec/gnubin/ls")
+  (setq dired-listing-switches "-laGh1v --group-directories-first"))
+
 ;; Reload dired after making changes
 (--each '(dired-do-rename
           dired-do-copy
