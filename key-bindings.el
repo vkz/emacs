@@ -185,5 +185,6 @@
 
 ;; TODO this maybe too close to <f1>
 (global-set-key (kbd "<escape>") (λ (bury-buffer) (other-window 1)))
+(global-set-key (kbd "S-<escape>") (λ (bury-buffer)))
 
 (provide 'key-bindings)
