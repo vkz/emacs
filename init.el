@@ -161,7 +161,7 @@
 ;; projectile
 (require 'setup-projectile)
 
-;; TODO: 'setup-eshell
+;; TODO: 'setup-eshell I do want it, but with shell-mode do I honestly need it?
 ;; TODO: 'setup-desktop to preserve emacs state between restarts
 ;; TODO: figure out TAGS (etags, ctags etc)
 ;; TODO: 'setup-bookmarks (install Bookmarks+)

@@ -66,7 +66,6 @@
 
 ;; Killing stuff
 
-;; TODO: some clever use of C-k
 (define-key key-translation-map [?\C-h] [?\C-?])
 (global-set-key (kbd "C-w") 'kill-region-or-backward-word)
 (global-set-key (kbd "C-S-w") (λ (mark-paragraph) (kill-region-or-backward-word)))
@@ -76,7 +75,7 @@
 (global-set-key (kbd "C-M-h") 'prelude-kill-whole-line)
 ;; Complement to C-k that also ignores the indentation
 ;; TODO do I actually need this?
-(global-set-key (kbd "C-c C-k") 'kill-to-beginning-of-line)
+(global-set-key (kbd "C-S-k") 'kill-to-beginning-of-line)
 ;; TODO: try actually using easy-kill features. Is easy-mark worth the effort?
 ;; TODO should properly work in major-modes like js2-mode, so it recognises defuns and stuff 
 (global-set-key [remap kill-ring-save] 'easy-kill) ;M-w

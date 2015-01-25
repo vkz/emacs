@@ -58,7 +58,6 @@ the other window."
     (other-window 1)
     (shell-format-send-cd-string dir)))
 
-;; TODO force it to pop shell in other-window
 (defun helm-ff-switch-to-shell (_candidate)
   "Switch to shell and cd to `helm-ff-default-directory'."
   (let ((cd-shell #'(lambda ()
