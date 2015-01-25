@@ -68,7 +68,8 @@
                        (comint-send-input)
                        (goto-char (point-max)))))
     (if (get-buffer "*shell*")
-        (helm-switch-to-buffer "*shell*")
+        (switch-to-buffer-other-window "*shell*")
+      (other-window 1)
       (call-interactively 'shell))
     (funcall cd-shell)))
 
