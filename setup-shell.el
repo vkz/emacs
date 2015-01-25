@@ -63,11 +63,12 @@ the other window."
   "Switch to shell and cd to `helm-ff-default-directory'."
   (let ((cd-shell #'(lambda ()
                       (shell-format-send-cd-string helm-ff-default-directory))))
-    (if (get-buffer "*shell*")
-        (switch-to-buffer-other-window "*shell*")
+    (unless (eq major-mode 'shell-mode)
+      (if (get-buffer "*shell*")
+          (switch-to-buffer-other-window "*shell*")
       (other-window 1)
       (call-interactively 'shell)
-      (sleep-for 0.2))
+      (sleep-for 0.2)))
     (funcall cd-shell)))
 
 (defun helm-ff-shell-jump ()
