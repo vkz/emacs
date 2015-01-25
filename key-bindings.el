@@ -5,6 +5,8 @@
 
 ;; I don't need to kill emacs that easily
 ;; the mnemonic is C-x REALLY QUIT
+;; TODO 'delete-frame doesn't actually switch to the right (focused) frame when
+;; there're more than one left.
 (global-set-key (kbd "C-x r q") 'save-buffers-kill-terminal)
 (global-set-key (kbd "C-x C-c") 'delete-frame)
 
@@ -167,11 +169,12 @@
 
 ;; Shell
 (global-set-key (kbd "C-c C-j") 'start-or-switch-to-shell)
-(define-key shell-mode-map (kbd "C-c C-j") (λ (bury-buffer) (other-window 1)))
 (global-set-key (kbd "C-c j") 'shell-jump)
 (define-key dired-mode-map (kbd "C-c C-j") 'dired-shell-jump)
 (define-key dired-mode-map (kbd "C-c j") 'dired-shell-jump)
-(define-key helm-find-files-map (kbd "C-c C-j") 'helm-ff-run-switch-to-shell)
+(define-key helm-find-files-map (kbd "C-c C-j") 'helm-ff-shell-jump)
+(define-key helm-find-files-map (kbd "C-c j") 'helm-ff-shell-jump)
+(define-key shell-mode-map (kbd "C-c C-j") (λ (bury-buffer) (other-window 1)))
 
 ;; TODO is it worth wasting bindings on clean nodejs-repl?
 (global-set-key (kbd "C-c C-n") 'start-or-switch-to-nodejs)

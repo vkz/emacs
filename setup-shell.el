@@ -26,54 +26,51 @@
           (lambda ()
             (define-key shell-mode-map (kbd "C-d") 'comint-delchar-or-eof-or-kill-buffer)))
 
+(defun shell-format-send-cd-string (dirstr)
+  "Switch to *shell* and send 'cd dirstr' command."
+    (shell)
+    (comint-kill-input)
+    (goto-char (point-max))
+    (insert
+     (if (file-remote-p dirstr)
+         (let ((v (tramp-dissefct-file-name dirstr t)))
+           (format "ssh %s@%s"
+                   (aref v 1) (aref v 2)))
+       (format "cd '%s'" dirstr)))
+    (comint-send-input))
+
 ;; TODO should this kill/bury dired buffer so when I bury shell dired isn't on top?
 (defun dired-shell-jump ()
   "Open an `shell' that corresponds to current directory."
   (interactive)
-  (let ((current-dir (dired-current-directory)))
-    (process-send-string 
-     (shell)
-     (if (file-remote-p current-dir)
-         (let ((v (tramp-dissect-file-name current-dir t)))
-           (format "ssh %s@%s\n"
-                   (aref v 1) (aref v 2)))
-       (format "cd '%s'\n" current-dir)))))
+  (let ((dir (dired-current-directory)))
+    (shell-format-send-cd-string dir)))
 
 (defun shell-jump ()
-  "Open an `shell' and cd into directory of current buffer."
+  "Open an `shell' and cd into directory of current buffer. When
+invoked from *shell* buffer, cd to the directory of the buffer in
+the other window."
   (interactive)
-  (if (eq major-mode 'shell-mode)
-      ;; TODO better idea would be to cd directory of the buffer I jumped from.
-      ;; It should be somewhere on some stack.
-      (process-send-string (shell) "cd ..\n")
-    (let* ((file buffer-file-name)
-           (dir (if file (file-name-directory file) default-directory)))
-      (other-window 1)
-      (process-send-string 
-       (shell)
-       (if (file-remote-p dir)
-           (let ((v (tramp-dissect-file-name dir t)))
-             (format "ssh %s@%s\n"
-                     (aref v 1) (aref v 2)))
-         (format "cd '%s'\n" dir))))))
+  (let* ((file (if (eq major-mode 'shell-mode)
+                   (progn (other-window 1) buffer-file-name)
+                 buffer-file-name))
+         (dir (if file (file-name-directory file) default-directory)))
+    (other-window 1)
+    (shell-format-send-cd-string dir)))
 
 ;; TODO force it to pop shell in other-window
 (defun helm-ff-switch-to-shell (_candidate)
   "Switch to shell and cd to `helm-ff-default-directory'."
   (let ((cd-shell #'(lambda ()
-                       (comint-kill-input)
-                       (goto-char (point-max))
-                       (insert
-                        (format "cd '%s'" helm-ff-default-directory))
-                       (comint-send-input)
-                       (goto-char (point-max)))))
+                      (shell-format-send-cd-string helm-ff-default-directory))))
     (if (get-buffer "*shell*")
         (switch-to-buffer-other-window "*shell*")
       (other-window 1)
-      (call-interactively 'shell))
+      (call-interactively 'shell)
+      (sleep-for 0.2))
     (funcall cd-shell)))
 
-(defun helm-ff-run-switch-to-shell ()
+(defun helm-ff-shell-jump ()
   "Run switch to shell action from `helm-source-find-files'."
   (interactive)
   (with-helm-alive-p
