@@ -92,7 +92,14 @@
      js2-mode
      easy-kill
      rainbow-mode
+     diminish
      )))
+
+(condition-case nil
+    (init--install-packages)
+  (error
+   (package-refresh-contents)
+   (init--install-packages)))
 
 ;; Set up appearance early
 (require 'appearance)
@@ -113,12 +120,6 @@
 
 ;; Are we on a mac?
 (setq is-mac (equal system-type 'darwin))
-
-(condition-case nil
-    (init--install-packages)
-  (error
-   (package-refresh-contents)
-   (init--install-packages)))
 
 ;; Lets start with a smattering of sanity
 (require 'sane-defaults)
