@@ -94,6 +94,7 @@
 ;; Toggle two most recent buffers
 (global-set-key (kbd "C-<backspace>") 'quick-switch-buffer)
 (global-set-key (kbd "S-<backspace>") 'other-frame)
+(global-set-key (kbd "M-<backspace>") 'other-frame)
 (global-set-key (kbd "<backtab>") 'other-frame)
 (global-set-key (kbd "C-c <backspace>") 'prelude-swap-windows)
 (global-set-key (kbd "C-c <tab>") 'prelude-swap-windows)
@@ -185,5 +186,12 @@
 ;; TODO this maybe too close to <f1>
 (global-set-key (kbd "<escape>") (λ (bury-buffer) (other-window 1)))
 (global-set-key (kbd "S-<escape>") (λ (bury-buffer)))
+
+;; Perspective
+(define-key persp-mode-map (kbd "C-t p p") 'projectile-persp-switch-project)
+
+;; Projectile
+(global-set-key (kbd "s-h") 'helm-projectile)
+(global-set-key (kbd "s-b") 'helm-projectile-switch-to-buffer)
 
 (provide 'key-bindings)

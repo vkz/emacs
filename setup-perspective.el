@@ -45,4 +45,20 @@
 ;;      (define-key persp-mode-map (kbd "C-t p a") 'persp-add-buffer)
 ;;      (define-key persp-mode-map (kbd "C-t p i") 'persp-import)))
 
+;; Always have two windows damn it!
+(add-hook 'persp-switch-hook
+          (lambda ()
+            (when (= (length (window-list)) 1)
+              (with-selected-window (split-window-right)))))
+;; (setq persp-switch-hook (cdr persp-switch-hook))
+
+;; TODO make `persp-next' cycle through all perspectives instead of stupidly
+;; stopping at the end
+
+;; TODO process-per-perspective so that each persp has its own *shell*, *term*,
+;; *eshell*, etc. Easy enough to do. Just keep track of all processes in the
+;; persp and rename them on persp-switch: [p1] has *shell* and is active, [p2]
+;; has *shell-p2*, now (persp-switch "p2") renames *shell* to *shell-p1* and
+;; *shell-p2* to *shell*. Belongs in `perspective.el' not here of course.
+
 (provide 'setup-perspective)

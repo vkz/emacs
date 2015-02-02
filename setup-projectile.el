@@ -25,17 +25,24 @@
 ;; so helm-mini doesn't show them. BBatsov isn't using perspective so
 ;; chances of a fix are low. Should I consider using Bookmarks+
 ;; instead?
-;; (require 'persp-projectile)
+(require 'persp-projectile)
 ;; (define-key projectile-mode-map (kbd "...")  'projectile-persp-switch-project)
 
 
 ;; TODO: make sense of Virtual Directories
 ;; see `http://tuhdo.github.io/helm-projectile.html'
 
-;; TODO: set these
-;; grep-find-ignored-files
-;; grep-find-ignored-directories
-;; projectile-globally-ignored-files
-;; projectile-globally-ignored-directories
+;; TODO: set these `grep-find-ignored-files' `grep-find-ignored-directories'
+;; `projectile-globally-ignored-files' `projectile-globally-ignored-directories'
+;; NOTE the need to do this to force `helm-projectile-grep' behave properly is
+;; disconcerting see `https://github.com/bbatsov/projectile/issues/628'
+
+;; TODO "C-c p l" `projectile-find-file-in-directory' is broken (could be that
+;; helm-interface is messed up)
+
+;; TODO use that to propertize the `projectile-mode-line', see `appearance.el'
+(defface projectile-selected-face
+  '((t (:inherit default)))
+  "The face used to highlight the current projectile on the modeline.")
 
 (provide 'setup-projectile)

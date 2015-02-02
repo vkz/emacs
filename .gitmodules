@@ -7,4 +7,8 @@
 	
 [submodule "site-lisp/helm"]
 	path = site-lisp/helm
-	url = https://github.com/emacs-helm/helm
+	url = https://github.com/emacs-helm/helm.git
+
+[submodule "site-lisp/projectile"]
+	path = site-lisp/projectile
+	url = https://github.com/bbatsov/projectile.git

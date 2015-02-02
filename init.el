@@ -83,9 +83,6 @@
      helm-descbinds
      helm-c-yasnippet
      helm-swoop
-     projectile
-     helm-projectile
-     persp-projectile
      expand-region
      smart-forward
      js2-refactor
@@ -144,10 +141,8 @@
 (require 'setup-hippie)                          ;TODO: practice all expansion methods
 (require 'setup-yasnippet)              ; TODO: learn the power of snippets
 
-;; TODO: perspectives don't persist between emacs restarts
-;; TODO: doesn't play nicely with projectile. Avoid using it for now.
-;; see `https://github.com/bbatsov/projectile/issues/586'
-;; (require 'setup-perspective)
+;; NOTE `https://github.com/bbatsov/projectile/issues/586'
+(require 'setup-perspective)
 
 ;; Font lock dash.el
 (eval-after-load "dash" '(dash-enable-font-lock))
@@ -215,3 +210,4 @@
 (global-auto-revert-mode t)
 
 ;; Does package really have anything to do with `require` though? I would've though that all it does having installed the package is add it's directory to the **load-path**. Having to `(require 'helm-config)` before installing the anything else seems really dissatisfying if only for the fact that Emacs doesn't make a good use of information that it already has. Also, having
+(put 'narrow-to-page 'disabled nil)
