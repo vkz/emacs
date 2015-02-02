@@ -46,7 +46,7 @@
   (let ((dir (dired-current-directory)))
     (shell-format-send-cd-string dir)))
 
-(defun shell-jump ()
+(defun shell-jump (&optional here)
   "Open an `shell' and cd into directory of current buffer. When
 invoked from *shell* buffer, cd to the directory of the buffer in
 the other window."
@@ -55,7 +55,7 @@ the other window."
                    (progn (other-window 1) buffer-file-name)
                  buffer-file-name))
          (dir (if file (file-name-directory file) default-directory)))
-    (other-window 1)
+    (unless here (other-window 1))
     (shell-format-send-cd-string dir)))
 
 (defun helm-ff-switch-to-shell (_candidate)
