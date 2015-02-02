@@ -94,7 +94,8 @@ there's a region, all lines that region covers will be duplicated."
       (set-window-buffer w2 b1)
       (set-window-start w1 s2)
       (set-window-start w2 s1)))
-  (other-window 1))
+  (let ((leftmost (or (windmove-find-other-window 'left) (selected-window))))
+    (select-window leftmost)))
 
 (defun prelude-move-beginning-of-line (arg)
   "Move point back to indentation of beginning of line.
