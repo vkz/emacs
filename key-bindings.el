@@ -170,6 +170,7 @@
 ;; Shell
 (global-set-key (kbd "C-c C-j") 'start-or-switch-to-shell)
 (global-set-key (kbd "C-c j") 'shell-jump)
+(global-set-key (kbd "C-c J") (λ (shell-jump t)))
 (define-key dired-mode-map (kbd "C-c C-j") 'dired-shell-jump)
 (define-key dired-mode-map (kbd "C-c j") 'dired-shell-jump)
 (define-key helm-find-files-map (kbd "C-c C-j") 'helm-ff-shell-jump)
