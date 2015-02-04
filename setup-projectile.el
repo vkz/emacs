@@ -36,6 +36,8 @@
 ;; `projectile-globally-ignored-files' `projectile-globally-ignored-directories'
 ;; NOTE the need to do this to force `helm-projectile-grep' behave properly is
 ;; disconcerting see `https://github.com/bbatsov/projectile/issues/628'
+(add-to-list 'grep-find-ignored-directories "elpa")
+(add-to-list 'grep-find-ignored-directories "node_modules")
 
 ;; TODO "C-c p l" `projectile-find-file-in-directory' is broken (could be that
 ;; helm-interface is messed up)
