@@ -198,6 +198,14 @@
             (eldoc-mode 1)
             (rainbow-mode +1)))
 
+;; TODO add whitespace auto cleanup on save (see bbatsov's prelude)
+;; whitespace-mode config
+;; TODO this should only be on in programming modes
+(require 'whitespace)
+(setq whitespace-line-column 80) ;; limit line length
+(setq whitespace-style '(face tabs empty trailing lines-tail))
+(global-whitespace-mode +1)
+
 ;; Emacs server
 (require 'server)
 (unless (server-running-p)

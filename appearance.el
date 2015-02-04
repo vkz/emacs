@@ -89,6 +89,9 @@
 (eval-after-load "magit" '(diminish 'magit-auto-revert-mode))
 (eval-after-load "subword" '(diminish 'subword-mode))
 (eval-after-load "jslime" '(diminish 'jslime-mode))
+(eval-after-load "whitespace" '(progn
+                                 (diminish 'whitespace-mode)
+                                 (diminish 'global-whitespace-mode)))
 
 (defmacro rename-modeline (package-name mode new-name)
   `(eval-after-load ,package-name
