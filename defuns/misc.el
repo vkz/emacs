@@ -79,6 +79,7 @@ there's a region, all lines that region covers will be duplicated."
         (setq end (point))))
     (goto-char (+ origin (* (length region) arg) arg))))
 
+(require 'windmove)
 (defun prelude-swap-windows ()
   "If you have 2 windows, it swaps them."
   (interactive)
