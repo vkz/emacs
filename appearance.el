@@ -105,7 +105,7 @@
   '(setq projectile-mode-line
          '(:eval (list " [Pj:"
                        (propertize (projectile-project-name)
-                                   'face '(:foreground "#81a2be"))
+                                   'face 'projectile-selected-face)
                        "]"))))
 
 ;; TODO: should porbably move into a defun

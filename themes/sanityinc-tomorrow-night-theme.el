@@ -428,7 +428,7 @@
  '(term-color-white ((((class color) (min-colors 89)) (:foreground "#1d1f21" :background "#1d1f21"))))
 
  '(persp-selected-face ((((class color) (min-colors 89)) (:weight normal :foreground "#81a2be"))))
- ;; '(projectile-selected-face ((((class color) (min-colors 89)) (:inherit persp-selected-face))))
+ '(projectile-selected-face ((((class color) (min-colors 89)) (:inherit persp-selected-face))))
 
  '(default ((((class color) (min-colors 89)) (:inherit default :foreground "#D7b78f" :background "#161616"))))
  '(hl-line ((t (:inherit highlight :background "#373b41" :underline nil))))
