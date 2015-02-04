@@ -219,3 +219,13 @@ Passes ARG to command `kill-whole-line' when provided."
 
 (autoload 'zap-up-to-char "misc"
   "Kill up to, but not including ARGth occurrence of CHAR.")
+
+
+(defun helm-mini/projectile-switch ()
+  (interactive)
+  (let* ((vkz-session helm-buffer)
+         (switch-to
+          (or
+           (and (string-equal vkz-session "*helm mini*") 'helm-projectile)
+           (and (string-equal vkz-session "*helm projectile*") 'helm-mini))))
+    (helm-run-after-quit switch-to)))
