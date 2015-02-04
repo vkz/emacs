@@ -182,7 +182,7 @@
 (global-set-key (kbd "C-c n") 'start-or-switch-to-nodejs)
 
 ;; Create scratch buffer and switch to it in other-window
-(global-set-key (kbd "C-c b") 'create-scratch-buffer)
+(global-set-key (kbd "s-s") 'create-scratch-buffer)
 
 ;; TODO this maybe too close to <f1>
 (global-set-key (kbd "<escape>") (λ (bury-buffer) (other-window 1)))
@@ -192,7 +192,16 @@
 (define-key persp-mode-map (kbd "C-t p p") 'projectile-persp-switch-project)
 
 ;; Projectile
-(global-set-key (kbd "s-h") 'helm-projectile)
-(global-set-key (kbd "s-b") 'helm-projectile-switch-to-buffer)
+(global-set-key (kbd "C-c b") 'helm-projectile)
+
+;; --------------------------------------------------------------
+;; TODO can't isearch with "C-o" in dired buffers
+
+;; TODO simpler binding for finding stuff in other-window from
+;; helm. Make it consistend across all helm-maps. "<S-return>" or
+;; "<C-return>" although it's already bound to repeat.
+;; "<C-return>" to open in other-window, and "<M-return>" in
+;; other-frame would make it consistend with my "<backspace>"
+;; bindings.
 
 (provide 'key-bindings)

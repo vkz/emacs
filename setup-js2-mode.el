@@ -1,7 +1,7 @@
 ;;; setup-js2-mode.el --- tweak js2 settings -*- lexical-binding: t; -*-
 
 (setq-default js2-allow-rhino-new-expr-initializer nil)
-(setq-default js2-global-externs '("module" "require" "assert" "setTimeout" "clearTimeout" "setInterval" "clearInterval" "location" "__dirname" "console" "JSON"))
+(setq-default js2-global-externs '("module" "require" "assert" "setTimeout" "clearTimeout" "setInterval" "clearInterval" "location" "__dirname" "console" "JSON" "describe" "it"))
 ;; TODO: would increasing this decrease the bloody self-insert delay in js2-mode?
 (setq-default js2-idle-timer-delay 0.1)
 (setq-default js2-mirror-mode nil)
