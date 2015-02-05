@@ -1,12 +1,9 @@
-;; TODO: consider binding <Enter> to Meta in Karabiner or something useful
-
 ;; Prefix should be central
 (define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
 
 ;; I don't need to kill emacs that easily
 ;; the mnemonic is C-x REALLY QUIT
-;; TODO 'delete-frame doesn't actually switch to the right (focused) frame when
-;; there're more than one left.
+;; TODO 'delete-frame appears to misbehave when more than 1 frame left
 (global-set-key (kbd "C-x r q") 'save-buffers-kill-terminal)
 (global-set-key (kbd "C-x C-c") 'delete-frame)
 
@@ -16,10 +13,10 @@
 
 ;; Completion
 
-;; TODO find a good use for "C-," and "C-'" and "C-<tab>"
 (global-set-key (kbd "C-.") 'hippie-expand-no-case-fold)
+;; TODO not entirely happy with these two
 (global-set-key (kbd "C-,") 'completion-at-point)
-;; (global-set-key (kbd "C-'") 'hippie-expand-lines)
+(global-set-key (kbd "C-'") 'hippie-expand-lines)
 
 ;; helm
 
@@ -33,8 +30,16 @@
   (when key
     (global-set-key (kbd key) 'helm-command-prefix)))
 
-(defun my/setup-helm-map ()
-  "Customize helm-map bindings."
+;; TODO: many of these are worth rebinding
+;; TODO: rebind `helm-register' and learn registers.
+(defun setup-helm-command-map-bindings ()
+  "Bindings available after helm prefix."
+  (define-key helm-command-map (kbd "<SPC>") 'helm-all-mark-rings)
+  (define-key helm-command-map (kbd "g") 'helm-do-grep))
+
+(defun setup-helm-map-bindings ()
+  "Customize `helm-map', which all helm sessions inherit. Includes
+`helm-mini', `helm-projectile' and more."
   (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
   (define-key helm-map (kbd "C-<tab>") 'helm-select-action)
   (define-key helm-map (kbd "C-t") (lookup-key helm-map (kbd "C-x")))
@@ -42,22 +47,9 @@
   (define-key helm-map (kbd "C-c b") 'helm-mini/projectile-switch)
   (define-key helm-map (kbd "C-x b") 'helm-mini/projectile-switch))
 
-(defun my/setup-helm-command-map ()
-  "Customize helm-command-map."
-  ;; TODO: many of these are worth rebinding. Not even sure it's worth
-  ;; wasting "<SPS>" on mark-ring here, but that's a start. Do I even
-  ;; use it? Simple pop-mark could be the way to go.
-  (define-key helm-command-map (kbd "<SPC>") 'helm-all-mark-rings)
-  (define-key helm-command-map (kbd "g") 'helm-do-grep)
-  ;; TODO: bind `helm-locate-library'
-  ;; TODO: rebind `helm-register' and learn registers.
-  ;; TODO: rebind `helm-top' which is very cool, but deserves a less
-  ;; useful key like `C-c t' or alike.
-  )
-
 (my/setup-helm-prefix-key "C-c h")
-(my/setup-helm-command-map)
-(my/setup-helm-map)
+(setup-helm-command-map-bindings)
+(setup-helm-map-bindings)
 (global-set-key (kbd "C-t C-m") 'helm-M-x)
 (global-set-key (kbd "M-y") 'helm-show-kill-ring)
 (global-set-key (kbd "C-x b") 'helm-mini)
@@ -95,12 +87,16 @@
 ;; Help
 (global-set-key (kbd "<f1>") 'help-command)
 (global-set-key (kbd "<f1> h") 'helm-apropos)
+(global-set-key (kbd "S-<f1>") 'helm-apropos)
+(global-set-key (kbd "M-<f1>") 'helm-apropos)
 
 ;; Killing stuff
-
+;; TODO worth moving some of these into `easy-kill' if extending
+;; it isn't too hard
 (define-key key-translation-map [?\C-h] [?\C-?])
 (global-set-key (kbd "C-w") 'kill-region-or-backward-word)
 (global-set-key (kbd "C-S-w") (λ (mark-paragraph) (kill-region-or-backward-word)))
+(global-set-key (kbd "s-w") (λ (mark-paragraph) (kill-region-or-backward-word)))
 (global-set-key (kbd "M-h") 'kill-region-or-backward-word)
 ;; Kill lines but respect the indentation
 (global-set-key (kbd "C-H") 'kill-and-retry-line)
