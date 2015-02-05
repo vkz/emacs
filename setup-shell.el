@@ -39,11 +39,15 @@
        (format "cd '%s'" dirstr)))
     (comint-send-input))
 
-;; TODO should this kill/bury dired buffer so when I bury shell dired isn't on top?
 (defun dired-shell-jump ()
   "Open an `shell' that corresponds to current directory."
   (interactive)
-  (let ((dir (dired-current-directory)))
+  (let ((dir (dired-current-directory))
+        (win (selected-window)))
+    (while (and (string= major-mode 'dired-mode)
+                (equal (selected-window) win))
+      (quit-window))
+    (select-window win)
     (shell-format-send-cd-string dir)))
 
 (defun shell-jump (&optional here)

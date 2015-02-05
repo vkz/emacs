@@ -20,20 +20,10 @@
 
 ;; helm
 
-;; TODO: abomination! Either make it compeletely general or explicitly
-;; swap key for helm only.
-(defun my/setup-helm-prefix-key (key)
-  "Replace the default helm prefix with `C-c h'."
-  (when (and (boundp 'helm-command-prefix-key)
-             (symbol-value 'helm-command-prefix-key))
-    (global-unset-key (kbd helm-command-prefix-key)))
-  (when key
-    (global-set-key (kbd key) 'helm-command-prefix)))
-
-;; TODO: many of these are worth rebinding
-;; TODO: rebind `helm-register' and learn registers.
 (defun setup-helm-command-map-bindings ()
   "Bindings available after helm prefix."
+  ;; TODO: many of these are worth rebinding
+  ;; TODO: rebind `helm-register' and learn registers.
   (define-key helm-command-map (kbd "<SPC>") 'helm-all-mark-rings)
   (define-key helm-command-map (kbd "g") 'helm-do-grep))
 
@@ -43,11 +33,12 @@
   (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
   (define-key helm-map (kbd "C-<tab>") 'helm-select-action)
   (define-key helm-map (kbd "C-t") (lookup-key helm-map (kbd "C-x")))
-  (define-key helm-map (kbd "C-b") 'helm-mini/projectile-switch)
+  (define-key helm-map (kbd "M-b") 'helm-mini/projectile-switch)
   (define-key helm-map (kbd "C-c b") 'helm-mini/projectile-switch)
   (define-key helm-map (kbd "C-x b") 'helm-mini/projectile-switch))
 
-(my/setup-helm-prefix-key "C-c h")
+(global-unset-key (kbd helm-command-prefix-key))
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
 (setup-helm-command-map-bindings)
 (setup-helm-map-bindings)
 (global-set-key (kbd "C-t C-m") 'helm-M-x)
@@ -70,6 +61,7 @@
 
 ;; Like isearch, but adds region (if any) to history and deactivates mark
 (global-set-key (kbd "C-o") 'isearch-forward-use-region)
+(define-key dired-mode-map (kbd "C-o") nil)
 (global-set-key (kbd "C-S-o") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-use-region)
 (global-set-key (kbd "C-S-r") 'isearch-backward-regexp)
@@ -96,6 +88,7 @@
 (define-key key-translation-map [?\C-h] [?\C-?])
 (global-set-key (kbd "C-w") 'kill-region-or-backward-word)
 (global-set-key (kbd "C-S-w") (λ (mark-paragraph) (kill-region-or-backward-word)))
+(global-set-key (kbd "C-M-w") (λ (mark-paragraph) (kill-region-or-backward-word)))
 (global-set-key (kbd "s-w") (λ (mark-paragraph) (kill-region-or-backward-word)))
 (global-set-key (kbd "M-h") 'kill-region-or-backward-word)
 ;; Kill lines but respect the indentation
@@ -179,34 +172,40 @@
 ;; Swap undo and universal argument
 (define-key undo-tree-map (kbd "C-/") nil)
 (define-key undo-tree-map (kbd "C-?") nil)
+(define-key undo-tree-map (kbd "C-_") nil)
 (global-set-key (kbd "C-u") 'undo-tree-undo)
 (global-set-key (kbd "C-S-u") 'undo-tree-redo)
 (global-set-key (kbd "C-M-u") 'undo-tree-visualize)
 (global-set-key (kbd "C-/") 'universal-argument)
 (global-set-key (kbd "C-?") 'negative-argument)
+(global-set-key (kbd "C--") 'universal-argument)
+(global-set-key (kbd "C-_") 'negative-argument)
 
 ;; Duplicate region
 (global-set-key (kbd "C-c d") 'prelude-duplicate-current-line-or-region)
-(global-set-key (kbd "C-c D") 'prelude-duplicate-and-comment-current-line-or-region)
+(global-set-key (kbd "C-c M-d") 'prelude-duplicate-and-comment-current-line-or-region)
 
-;; Jump from file to containing directory
+;; TODO jump commands may deserve nice bigram combos like
+;; js - jump-shell (or maybe jt - jump terminal mnemonic)
+;; jc - jump-cd to buffer's directory in shell
+;; jd - jump-dired
+;; jb - jump-buffer (helm-mini or helm-projectile)
+;; jn - jump-nodejs
+;; jk - jump-kill - bury buffer (or jc)
+
+;; Jump to dired
 (autoload 'dired-jump "dired")
-(global-set-key (kbd "C-x C-j") (λ (dired-jump-other-window)))
 (global-set-key (kbd "C-x j") (λ (dired-jump-other-window)))
-(global-set-key (kbd "C-x J") 'dired-jump)
+(global-set-key (kbd "C-x J") 'dired-jump) ;here
 
-;; Shell
-(global-set-key (kbd "C-c C-j") 'start-or-switch-to-shell)
-(global-set-key (kbd "C-c j") 'shell-jump)
-(global-set-key (kbd "C-c J") (λ (shell-jump t)))
-(define-key dired-mode-map (kbd "C-c C-j") 'dired-shell-jump)
+;; Jump to shell
+(global-set-key (kbd "C-c j") 'start-or-switch-to-shell)
+(global-set-key (kbd "C-c J") (λ (start-or-switch-to-shell t)))
 (define-key dired-mode-map (kbd "C-c j") 'dired-shell-jump)
-(define-key helm-find-files-map (kbd "C-c C-j") 'helm-ff-shell-jump)
 (define-key helm-find-files-map (kbd "C-c j") 'helm-ff-shell-jump)
-(define-key shell-mode-map (kbd "C-c C-j") (λ (bury-buffer) (other-window 1)))
+(define-key shell-mode-map (kbd "C-c j") 'shell-jump)
 
-;; TODO is it worth wasting bindings on clean nodejs-repl?
-(global-set-key (kbd "C-c C-n") 'start-or-switch-to-nodejs)
+;; Jump to other processes
 (global-set-key (kbd "C-c n") 'start-or-switch-to-nodejs)
 
 ;; Create scratch buffer and switch to it in other-window
@@ -223,7 +222,6 @@
 (global-set-key (kbd "C-c b") 'helm-projectile)
 
 ;; --------------------------------------------------------------
-;; TODO can't isearch with "C-o" in dired buffers
 
 ;; TODO simpler binding for finding stuff in other-window from
 ;; helm. Make it consistend across all helm-maps. "<S-return>" or

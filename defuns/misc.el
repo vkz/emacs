@@ -9,24 +9,25 @@
      (interactive)
      ,@body))
 
-(defun prelude-start-or-switch-to (function buffer-name)
+(defun my-start-or-switch-to (function buffer-name &optional here)
   "Invoke FUNCTION if there is no buffer with BUFFER-NAME.
 Otherwise switch to the buffer named BUFFER-NAME.  Don't clobber
 the current buffer."
-  (if (not (get-buffer buffer-name))
-      (progn
-      (unless (string= buffer-name "*nodejs*")
-                 (other-window 1))
-        (funcall function))
-    (switch-to-buffer-other-window buffer-name)))
+  (let ((switch-to (or (and here #'pop-to-buffer-same-window)
+                       #'switch-to-buffer-other-window)))
+    (if (get-buffer buffer-name)
+        ;; NOTE not sure what last arg NORECORD t achieves
+        (funcall switch-to buffer-name t)
+      (unless here (other-window 1))
+      (funcall function))))
 
-(defun start-or-switch-to-shell ()
+(defun start-or-switch-to-shell (&optional here)
   (interactive)
-  (prelude-start-or-switch-to 'shell "*shell*"))
+  (my-start-or-switch-to 'shell "*shell*" here))
 
 (defun start-or-switch-to-nodejs ()
   (interactive)
-  (prelude-start-or-switch-to 'nodejs-repl "*nodejs*"))
+  (my-start-or-switch-to 'nodejs-repl "*nodejs*"))
 
 (defun prelude-top-join-line ()
   "Join the current line with the line beneath it."

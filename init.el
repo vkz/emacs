@@ -72,7 +72,6 @@
      dired+
      yasnippet
      guide-key
-     nodejs-repl
      highlight-escape-sequences
      whitespace-cleanup-mode
      elisp-slime-nav
