@@ -108,8 +108,6 @@
 (global-set-key (kbd "<C-return>") 'repeat)
 
 ;; Windows, buffers, frames
-
-(fset 'quick-switch-buffer [?\C-x ?b return])
 (global-set-key (kbd "<backspace>") 'other-window)
 (global-set-key (kbd "C-<tab>") 'other-window)
 ;; Toggle two most recent buffers
@@ -117,8 +115,9 @@
 (global-set-key (kbd "S-<backspace>") 'other-frame)
 (global-set-key (kbd "M-<backspace>") 'other-frame)
 (global-set-key (kbd "<backtab>") 'other-frame)
-(global-set-key (kbd "C-c <backspace>") 'prelude-swap-windows)
 (global-set-key (kbd "C-c <tab>") 'prelude-swap-windows)
+(global-set-key (kbd "C-c <backspace>") 'i-meant-other-window)
+
 
 ;; TODO: maybe I should just force off all window splitting functions
 ;; and simply always have horizontal split with two windows

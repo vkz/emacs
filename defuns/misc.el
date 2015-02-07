@@ -221,6 +221,18 @@ Passes ARG to command `kill-whole-line' when provided."
 (autoload 'zap-up-to-char "misc"
   "Kill up to, but not including ARGth occurrence of CHAR.")
 
+(defun quick-switch-buffer ()
+  "Quickly swap current buffer with the one its hiding."
+  (interactive)
+  (let (buf (car (helm-buffer-list)))
+    (pop-to-buffer-same-window buf)))
+
+(defun i-meant-other-window ()
+  "Oh, I meant find file or buffer in the other window."
+  (interactive)
+  (let ((buf (current-buffer)))
+    (bury-buffer)
+    (switch-to-buffer-other-window buf)))
 
 (defun helm-mini/projectile-switch ()
   (interactive)
