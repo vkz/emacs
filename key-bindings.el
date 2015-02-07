@@ -37,6 +37,18 @@
   (define-key helm-map (kbd "C-c b") 'helm-mini/projectile-switch)
   (define-key helm-map (kbd "C-x b") 'helm-mini/projectile-switch))
 
+;; Find stuff in other-window replacing helm candidates by default. 
+;; "Choice follows helm-window"
+(define-key helm-buffer-map (kbd "<RET>") 'helm-buffer-switch-other-window)
+(define-key helm-buffer-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
+(define-key helm-find-files-map (kbd "<RET>") 'helm-ff-run-switch-other-window)
+(define-key helm-find-files-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
+(define-key helm-projectile-find-file-map (kbd "<RET>") 'helm-ff-run-switch-other-window)
+(define-key helm-projectile-find-file-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
+(define-key helm-generic-files-map (kbd "<RET>") 'helm-ff-run-switch-other-window)
+(define-key helm-generic-files-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
+
+;; helm global
 (global-unset-key (kbd helm-command-prefix-key))
 (global-set-key (kbd "C-c h") 'helm-command-prefix)
 (setup-helm-command-map-bindings)
