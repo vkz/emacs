@@ -39,13 +39,28 @@
 
 ;; Find stuff in other-window replacing helm candidates by default. 
 ;; "Choice follows helm-window"
-(define-key helm-buffer-map (kbd "<RET>") 'helm-buffer-switch-other-window)
+;; HACK <RET> in `helm-action' should have the default behavior
+(defmacro maybe-helm-command-on-ret  (command default-action)
+  `(defun ,(intern (concat "maybe-" (symbol-name command))) (&optional arg) 
+     (interactive)
+     (let* ((action (if (get-buffer helm-action-buffer)
+                        #',default-action
+                      #',command)))
+       (funcall action))))
+
+(maybe-helm-command-on-ret helm-buffer-switch-other-window helm-maybe-exit-minibuffer)
+(maybe-helm-command-on-ret helm-ff-run-switch-other-window helm-maybe-exit-minibuffer)
+
+(define-key helm-buffer-map (kbd "<RET>") 'maybe-helm-buffer-switch-other-window)
 (define-key helm-buffer-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
-(define-key helm-find-files-map (kbd "<RET>") 'helm-ff-run-switch-other-window)
+
+(define-key helm-find-files-map (kbd "<RET>") 'maybe-helm-ff-run-switch-other-window)
 (define-key helm-find-files-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
-(define-key helm-projectile-find-file-map (kbd "<RET>") 'helm-ff-run-switch-other-window)
+
+(define-key helm-projectile-find-file-map (kbd "<RET>") 'maybe-helm-ff-run-switch-other-window)
 (define-key helm-projectile-find-file-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
-(define-key helm-generic-files-map (kbd "<RET>") 'helm-ff-run-switch-other-window)
+
+(define-key helm-generic-files-map (kbd "<RET>") 'maybe-helm-ff-run-switch-other-window)
 (define-key helm-generic-files-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
 
 ;; helm global
