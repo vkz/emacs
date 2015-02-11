@@ -75,9 +75,13 @@
 (if (fboundp 'fringe-mode)
     (fringe-mode 4))
 
+;; Show current function in modeline.
+(require 'which-func)
+(which-function-mode)
+
 ;; Unclutter the modeline
 (require 'diminish)
-                         
+
 (eval-after-load "rainbow-mode" '(diminish 'rainbow-mode))
 (eval-after-load "helm-mode" '(diminish 'helm-mode))
 (eval-after-load "yasnippet" '(diminish 'yas-minor-mode))
@@ -110,6 +114,57 @@
                        (propertize (projectile-project-name)
                                    'face 'projectile-selected-face)
                        "]"))))
+(eval-after-load "projectile" '(diminish 'projectile-mode))
+
+;; TODO can improve on that, maybe incorporate `projectile' current project
+;; Helper function
+(defun shorten-directory (dir max-length)
+  "Show up to `max-length' characters of a directory name `dir'."
+  (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
+        (output ""))
+    (when (and path (equal "" (car path)))
+      (setq path (cdr path)))
+    (while (and path (< (length output) (- max-length 4)))
+      (setq output (concat (car path) "/" output))
+      (setq path (cdr path)))
+    (when path
+      (setq output
+            (propertize (concat ".." output)
+                        'face 'mode-line-folder-face)))
+    output))
+
+;; Extra mode line faces
+(make-face 'mode-line-read-only-face)
+(make-face 'mode-line-modified-face)
+(make-face 'mode-line-folder-face)
+(make-face 'mode-line-position-face)
+(make-face 'mode-line-80col-face)
+
+;; Mode line setup
+(setq-default
+ mode-line-format
+ '("  "
+   "%l:"
+   (:eval (propertize "%3c" 'face
+                      (if (>= (current-column) 80)
+                          'mode-line-80col-face
+                        'mode-line-position-face)))
+   mode-line-client
+   " "
+   (:eval
+    (cond (buffer-read-only
+           (propertize " RO " 'face 'mode-line-read-only-face))
+          ((buffer-modified-p)
+           (propertize " ** " 'face 'mode-line-modified-face))
+          (t " -- ")))
+   ;; projectile-mode-line
+   (:eval (shorten-directory default-directory 15))
+   mode-line-buffer-identification
+   " %n "
+   mode-line-modes
+   mode-line-misc-info
+   mode-line-end-spaces))
+
 
 ;; TODO: should porbably move into a defun
 (load-theme 'sanityinc-tomorrow-night t)

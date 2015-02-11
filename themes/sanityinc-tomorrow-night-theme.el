@@ -6,7 +6,7 @@
 
 (custom-theme-set-variables
  'sanityinc-tomorrow-night
- '(ansi-color-names-vector ["#c5c8c6" "#cc6666" "#b5bd68" "#f0c674" "#81a2be" "#b294bb" "#8abeb7" "#1d1f21"])
+ '(ansi-color-names-vector ["#c5c8c6" "#cc6666" "SeaGreen" "#f0c674" "#81a2be" "#b294bb" "#8abeb7" "#1d1f21"])
  '(ansi-color-faces-vector [default bold shadow italic underline bold bold-italic bold]))
 
 (custom-theme-set-faces
@@ -66,7 +66,7 @@
  '(ido-indicator ((((class color) (min-colors 89)) (:foreground "#cc6666" :background "#1d1f21"))))
  '(ido-virtual ((((class color) (min-colors 89)) (:foreground "#969896"))))
  '(flx-highlight-face ((((class color) (min-colors 89)) (:inherit nil :foreground "#f0c674" :weight bold :underline nil))))
- '(which-func ((((class color) (min-colors 89)) (:foreground "#81a2be" :background nil :weight bold))))
+ '(which-func ((((class color) (min-colors 89)) (:foreground "#7f9f7f" :background nil :height 100))))
  '(cursor ((((class color) (min-colors 89)) (:background "#cc6666"))))
  '(fringe ((((class color) (min-colors 89)) (:background "#161616"))))
  '(linum ((((class color) (min-colors 89)) (:background "#373b41" :foreground "#b5bd68" :italic nil))))
@@ -75,11 +75,6 @@
  '(border-glyph ((((class color) (min-colors 89)) (nil))))
  '(highlight ((((class color) (min-colors 89)) (:inverse-video nil :background "#282a2e"))))
  '(gui-element ((((class color) (min-colors 89)) (:background "#373b41" :foreground "#c5c8c6"))))
- '(mode-line ((((class color) (min-colors 89)) (:foreground nil :background "#373b41" :weight normal :box (:line-width 1 :color "#969896") :height 115))))
- '(mode-line-buffer-id ((((class color) (min-colors 89)) (:foreground "#b294bb" :background nil))))
- '(mode-line-inactive ((((class color) (min-colors 89)) (:inherit mode-line :foreground "#969896" :background "#373b41" :weight normal :box (:line-width 1 :color "#373b41")))))
- '(mode-line-emphasis ((((class color) (min-colors 89)) (:foreground "#c5c8c6" :slant italic))))
- '(mode-line-highlight ((((class color) (min-colors 89)) (:foreground "#b294bb" :box nil :weight bold))))
  '(minibuffer-prompt ((((class color) (min-colors 89)) (:foreground "#81a2be"))))
  '(region ((((class color) (min-colors 89)) (:background "#8F621D" :inverse-video nil))))
  '(secondary-selection ((((class color) (min-colors 89)) (:background "#282a2e"))))
@@ -426,12 +421,33 @@
  '(term-color-magenta ((((class color) (min-colors 89)) (:foreground "#b294bb" :background "#b294bb"))))
  '(term-color-cyan ((((class color) (min-colors 89)) (:foreground "#8abeb7" :background "#8abeb7"))))
  '(term-color-white ((((class color) (min-colors 89)) (:foreground "#1d1f21" :background "#1d1f21"))))
-
- '(persp-selected-face ((((class color) (min-colors 89)) (:weight normal :height 105 :foreground "#81a2be"))))
- '(projectile-selected-face ((((class color) (min-colors 89)) (:inherit persp-selected-face))))
-
  '(default ((((class color) (min-colors 89)) (:inherit default :foreground "#D7b78f" :background "#161616"))))
  '(hl-line ((t (:inherit highlight :background "#373b41" :underline nil))))
+
+ ;; --- My custom ---
+ '(persp-selected-face ((((class color) (min-colors 89)) (:weight normal :height 100 :foreground "#81a2be"))))
+ '(projectile-selected-face ((((class color) (min-colors 89)) (:inherit persp-selected-face))))
+ '(mode-line
+   ((((class color) (min-colors 89))
+     (:foreground nil
+      :background "#373b41"
+      :weight normal
+      :box (:line-width 1 :color "#969896") :height 115))))
+ '(mode-line-inactive
+   ((((class color) (min-colors 89))
+     (:inherit mode-line
+      :foreground "#969896"
+      :background "#373b41"
+      :weight normal
+      :box (:line-width 1 :color "#373b41")))))
+ '(mode-line-buffer-id ((((class color) (min-colors 89)) (:foreground "#eab700" :background nil :weight bold))))
+ '(mode-line-emphasis ((((class color) (min-colors 89)) (:foreground "#c5c8c6" :slant italic))))
+ '(mode-line-highlight ((((class color) (min-colors 89)) (:foreground "#b294bb" :box nil :weight bold))))
+ '(mode-line-read-only-face ((t (:foreground "#4271ae"))))
+ '(mode-line-folder-face ((t (:height 100))))
+ '(mode-line-modified-face ((t (:foreground "#c82829" :background "#ffffff"))))
+ '(mode-line-position-face ((t (:foreground "#969896"))))
+ '(mode-line-80col-face ((t (:foreground "black" :background "#eab700"))))
  )
 
 (provide-theme 'sanityinc-tomorrow-night)
