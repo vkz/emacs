@@ -205,6 +205,11 @@
 (setq whitespace-style '(face tabs empty trailing lines-tail))
 (global-whitespace-mode +1)
 
+;; TODO only enable outside of `js2-mode', where Magnar's subst are more powerful.
+;; Automatically insert matching braces and do other clever
+;; things pertaining to braces and such.
+;; (electric-pair-mode 1)
+
 ;; Emacs server
 (require 'server)
 (unless (server-running-p)
