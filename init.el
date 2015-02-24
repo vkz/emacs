@@ -188,6 +188,8 @@
 (comment-annotations-in-modes programming-modes)
 
 (require 'expand-region)
+(er/line-wise-select-advice)
+
 (require 'smart-forward)
 
 ;; Elisp go-to-definition with M-. and back again with M-,

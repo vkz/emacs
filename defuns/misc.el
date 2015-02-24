@@ -243,3 +243,27 @@ Passes ARG to command `kill-whole-line' when provided."
            (and (string-equal vkz-session "*helm mini*") 'helm-projectile)
            (and (string-equal vkz-session "*helm projectile*") 'helm-mini))))
     (helm-run-after-quit switch-to)))
+
+
+(defun er/line-wise-select-advice ()
+  "Expand region to whole lines whenever as long as the initial
+mark wasn't set by `expand-region'."
+  (defadvice er/expand-region (around line-wise-select activate)
+    (if (or (not (region-active-p))
+            (eq last-command 'er/expand-region))
+        ad-do-it
+      (if (< (point) (mark))
+          (let ((beg (point)))
+            (goto-char (mark))
+            (end-of-line)
+            (forward-char 1)
+            (push-mark)
+            (goto-char beg)
+            (beginning-of-line))
+        (let ((end (point)))
+          (goto-char (mark))
+          (beginning-of-line)
+          (push-mark)
+          (goto-char end)
+          (end-of-line)
+          (forward-char 1))))))
