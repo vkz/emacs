@@ -113,14 +113,12 @@
 ;; TODO worth moving some of these into `easy-kill' if extending
 ;; it isn't too hard
 (define-key key-translation-map [?\C-h] [?\C-?])
-(global-set-key (kbd "C-w") 'kill-region-or-backward-word)
+;; with `whole-line-or-region-mode' on will kill line when no region
+(global-set-key (kbd "C-w") 'kill-region)
 (global-set-key (kbd "C-S-w") (λ (mark-paragraph) (kill-region-or-backward-word)))
-(global-set-key (kbd "C-M-w") (λ (mark-paragraph) (kill-region-or-backward-word)))
-(global-set-key (kbd "s-w") (λ (mark-paragraph) (kill-region-or-backward-word)))
 (global-set-key (kbd "M-h") 'kill-region-or-backward-word)
 ;; Kill lines but respect the indentation
 (global-set-key (kbd "C-H") 'kill-and-retry-line)
-(global-set-key (kbd "C-M-h") 'prelude-kill-whole-line)
 ;; Complement to C-k that also ignores the indentation
 ;; TODO do I actually need this?
 (global-set-key (kbd "C-S-k") 'kill-to-beginning-of-line)

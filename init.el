@@ -89,6 +89,7 @@
      easy-kill
      rainbow-mode
      diminish
+     whole-line-or-region
      )))
 
 (condition-case nil
@@ -220,6 +221,9 @@
 
 ;; revert buffers automatically when underlying files are changed externally
 (global-auto-revert-mode t)
+
+;; basic commands act on a whole line with no region marked
+(whole-line-or-region-mode +1)
 
 ;; Does package really have anything to do with `require` though? I would've though that all it does having installed the package is add it's directory to the **load-path**. Having to `(require 'helm-config)` before installing the anything else seems really dissatisfying if only for the fact that Emacs doesn't make a good use of information that it already has. Also, having
 (put 'narrow-to-page 'disabled nil)
