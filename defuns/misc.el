@@ -209,6 +209,7 @@ Passes ARG to command `kill-whole-line' when provided."
   (font-lock-add-keywords
    mode
    '(("\\<\\(TODO\\)" 1 'font-lock-todo-annotation t)
+     ("\\<\\(HACK\\)" 1 'font-lock-todo-annotation t)
      ("\\<\\(STUDY\\)" 1 'font-lock-study-annotation t)
      ("\\<\\(IMPORTANT\\)" 1 'font-lock-important-annotation t)
      ("\\<\\(NOTE\\)" 1 'font-lock-note-annotation t))))

@@ -444,10 +444,14 @@
  '(mode-line-emphasis ((((class color) (min-colors 89)) (:foreground "#c5c8c6" :slant italic))))
  '(mode-line-highlight ((((class color) (min-colors 89)) (:foreground "#b294bb" :box nil :weight bold))))
  '(mode-line-read-only-face ((t (:foreground "#4271ae"))))
- '(mode-line-folder-face ((t (:height 100))))
  '(mode-line-modified-face ((t (:foreground "#c82829" :background "#ffffff"))))
- '(mode-line-position-face ((t (:foreground "#969896"))))
+ '(mode-line-unmodified-face ((t (:foreground "#969896"))))
+ '(mode-line-folder-face ((t (:height 100))))
+ '(mode-line-position-face ((t (:foreground "#969896" :height 95))))
  '(mode-line-80col-face ((t (:foreground "black" :background "#eab700"))))
+
+ ;; better diff color?
+ '(diff-refine-change ((t (:background "#aaaa22" :foreground "black"))))
  )
 
 (provide-theme 'sanityinc-tomorrow-night)

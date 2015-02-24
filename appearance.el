@@ -136,6 +136,7 @@
 ;; Extra mode line faces
 (make-face 'mode-line-read-only-face)
 (make-face 'mode-line-modified-face)
+(make-face 'mode-line-unmodified-face)
 (make-face 'mode-line-folder-face)
 (make-face 'mode-line-position-face)
 (make-face 'mode-line-80col-face)
@@ -143,20 +144,23 @@
 ;; Mode line setup
 (setq-default
  mode-line-format
- '("  "
+ '(" "
+   (-3 (:eval (propertize "%p" 'face 
+                        '(:inherit mode-line-position-face))))
+   (:propertize " (" face mode-line-unmodified-face)
    "%l:"
    (:eval (propertize "%3c" 'face
                       (if (>= (current-column) 80)
                           'mode-line-80col-face
                         'mode-line-position-face)))
+   (:propertize ")" face mode-line-unmodified-face)
    mode-line-client
-   " "
    (:eval
     (cond (buffer-read-only
            (propertize " RO " 'face 'mode-line-read-only-face))
           ((buffer-modified-p)
            (propertize " ** " 'face 'mode-line-modified-face))
-          (t " -- ")))
+          (t (propertize " -- " 'face 'mode-line-unmodified-face))))
    ;; projectile-mode-line
    (:eval (shorten-directory default-directory 15))
    mode-line-buffer-identification
