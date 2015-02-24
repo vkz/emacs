@@ -9,7 +9,8 @@
 
 (when is-mac
   (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier 'super))
+  ;; (setq mac-option-modifier 'super)
+  (setq mac-option-modifier nil))
 
 ;; Completion
 
@@ -202,8 +203,9 @@
 (global-set-key (kbd "C-M-u") 'undo-tree-visualize)
 (global-set-key (kbd "C-/") 'universal-argument)
 (global-set-key (kbd "C-?") 'negative-argument)
-(global-set-key (kbd "C--") 'universal-argument)
-(global-set-key (kbd "C-_") 'negative-argument)
+(global-set-key (kbd "C--") 'set-mark-command)
+(global-set-key (kbd "M-m") 'set-mark-command)
+;; (global-set-key (kbd "C-_") 'negative-argument)
 
 ;; Duplicate region
 (global-set-key (kbd "C-c d") 'prelude-duplicate-current-line-or-region)
@@ -233,7 +235,7 @@
 (global-set-key (kbd "C-c n") 'start-or-switch-to-nodejs)
 
 ;; Create scratch buffer and switch to it in other-window
-(global-set-key (kbd "s-s") 'create-scratch-buffer)
+(global-set-key (kbd "C-c s") 'create-scratch-buffer)
 
 ;; TODO this maybe too close to <f1>
 (global-set-key (kbd "<escape>") (λ (bury-buffer) (other-window 1)))
