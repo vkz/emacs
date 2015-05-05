@@ -1,36 +1,13 @@
-;; What do I want from my initial Emacs setup?
-;; -------------------------------------------
-;; * simple, helpful, unobtrusive appearance that doesn't strain my eyes
-;; -- fontlocking for specific languages
-;; -- fontlocking for filesystem units (file types, directories, etc)
-;; -- uncluttered informative minibuffer mode-line
-;; * comfortable default bindings to navigate text in a buffer
-;; * comfortable default bindings to navigate files, buffers, projects, windows, frames
-;; * simple way to grep files, buffers, projects and navigate results
-;; * shell where I can move around with Emacs keybindings
-;; * multiple shell-instances and easy way to switch between them
-;; * powerful yet visual filesystem management
-;; * get Emacs help and discover functionality with minimum keystrokes and cognitive load
-;; * any aux/help buffers should disappear on losing focus without my switching to them
-;; * automatically recover Emacs state between editor restarts
-;; * straightforward version control
-;; * JavaScript, Racket, C support:
-;; -- quick way to navigate potentially large projects
-;; -- semantics-aware syntax highlighting
-;; -- jump-to-definition (cross module boundaries, with sys libraries) at point and on demand
-;; -- documentation lookup for symbol at point (at least function arguments)
-;; -- comfortable bindings to navigate semantic units (defuns, blocks, etc) in a buffer
-;; -- compile-build-run current buffer (file, module, project)
-;; -- jump-to-error when compilation fails
-;; -- semantics-aware refactoring (rename var, etc)
-;; * All this should be OS agnostic and just work on Mac, Win, Nix
+(defun ze/this-file ()
+  "Return path to this file."
+  (cond
+   (load-in-progress load-file-name)
+   ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+    byte-compile-current-file)
+   (:else (buffer-file-name))))
 
-;; Temp fix! Remove!
-;; (setq user-emacs-directory
-;;       "/Users/kozin/.personal_configs/emacs.candidate")
-(setq user-emacs-directory "/Users/kozin/.emacs.d")
-
-;; -------------------------------------------------
+(setq user-emacs-directory (file-name-directory (file-truename (ze/this-file))))
+(add-to-list 'load-path user-emacs-directory)
 
 ;; Turn off mouse interface early in startup to avoid momentary display
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
@@ -39,9 +16,6 @@
 
 ;; No splash screen please ... jeez
 (setq inhibit-startup-message t)
-
-;; Set up load path
-(add-to-list 'load-path user-emacs-directory)
 
 ;; Add external projects to load path. Note that anything installed
 ;; via package system will take precedence since dirs in elpa/ will
@@ -61,13 +35,18 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file)
 
+(defvar ze/required-packages
+  '(dash)
+  "Some packages are too good not to have.")
+
 ;; Setup packages
 (require 'setup-package)
 
 ;; Install extensions if they're missing
 (defun init--install-packages ()
   (packages-install
-   '(bash-completion
+   '(dash
+     bash-completion
      magit
      dired+
      yasnippet
@@ -83,13 +62,17 @@
      helm-c-yasnippet
      helm-swoop
      expand-region
-     smart-forward
+     ;; smart-forward
      js2-refactor
      js2-mode
      easy-kill
      rainbow-mode
      diminish
      whole-line-or-region
+     smartparens
+     perspective
+     persp-projectile
+     helm-projectile
      )))
 
 (condition-case nil
@@ -168,7 +151,9 @@
 ;; TODO: 'setup-racket
 ;; TODO: 'setup-c
 (eval-after-load 'js2-mode '(require 'setup-js2-mode))
-(setq programming-modes '(js2-mode c-mode c++-mode emacs-lisp-mode racket-mode))
+(add-hook 'js-mode-hook (lambda () (custom-set-default 'js-indent-level 2)))
+(setq programming-modes
+      '(js2-mode js-mode c-mode c++-mode emacs-lisp-mode racket-mode))
 
 ;; map files to modes
 (require 'mode-mappings)
@@ -190,7 +175,7 @@
 (require 'expand-region)
 (er/line-wise-select-advice)
 
-(require 'smart-forward)
+;; (require 'smart-forward)
 
 ;; Elisp go-to-definition with M-. and back again with M-,
 (autoload 'elisp-slime-nav-mode "elisp-slime-nav")
@@ -213,6 +198,11 @@
 ;; things pertaining to braces and such.
 ;; (electric-pair-mode 1)
 
+;; (require 'setup-smartparens)
+(require 'smartparens-config)
+(add-hook 'js-mode-hook 'turn-on-smartparens-mode)
+(add-hook 'js-mode-hook 'show-smartparens-mode)
+
 ;; Emacs server
 (require 'server)
 (unless (server-running-p)
@@ -229,3 +219,4 @@
 
 ;; Does package really have anything to do with `require` though? I would've though that all it does having installed the package is add it's directory to the **load-path**. Having to `(require 'helm-config)` before installing the anything else seems really dissatisfying if only for the fact that Emacs doesn't make a good use of information that it already has. Also, having
 (put 'narrow-to-page 'disabled nil)
+(put 'narrow-to-region 'disabled nil)

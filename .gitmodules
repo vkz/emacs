@@ -1,13 +1,6 @@
-[submodule "site-lisp/dash"]
-        path = site-lisp/dash
-	url = https://github.com/magnars/dash.el.git
 [submodule "site-lisp/jslime"]
         path = site-lisp/jslime
         url = https://github.com/vkz/jslime.git
-	
-[submodule "site-lisp/helm"]
-	path = site-lisp/helm
-	url = https://github.com/emacs-helm/helm.git
 
 [submodule "site-lisp/projectile"]
 	path = site-lisp/projectile
@@ -16,3 +9,8 @@
 [submodule "site-lisp/nodejs-repl.el"]
 	path = site-lisp/nodejs-repl.el
 	url = https://github.com/vkz/nodejs-repl.el.git
+
+[submodule "site-lisp/hydra"]
+	path = site-lisp/hydra
+	url = https://github.com/abo-abo/hydra.git
+

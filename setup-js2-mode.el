@@ -138,6 +138,12 @@
 (define-key js2-mode-map (kbd "TAB") nil)
 (define-key js2-mode-map (kbd "C-c C-e") nil)
 
+;; ;; navigating by paragraph in js code is ineffecient
+(define-key js2-mode-map (kbd "M-e") 'end-of-defun)
+(define-key js2-mode-map (kbd "M-a") 'beginning-of-defun)
+(define-key js2-mode-map (kbd "C-M-e") 'end-of-buffer)
+(define-key js2-mode-map (kbd "C-M-a") 'beginning-of-buffer)
+
 ;; Use lambda for anonymous functions
 (font-lock-add-keywords
  'js2-mode `(("\\(function\\) *("
@@ -160,6 +166,6 @@
 ;; jslime
 (autoload 'jslime-mode "jslime")
 (add-hook 'js2-mode-hook 'jslime-mode)
-
+(add-hook 'js2-mode-hook 'show-smartparens-mode)
 
 (provide 'setup-js2-mode)

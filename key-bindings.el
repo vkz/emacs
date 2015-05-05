@@ -1,3 +1,11 @@
+;; this is XXI century PEOPLE ARE USING GUIs BY DEFAULT
+;; take C-[ and C-i back and bind em usefully
+;; `http://goo.gl/7Xmfn8'
+;; TODO bind (kbd "C-<[>")
+;; TODO bind (kbd "<C-<i>")
+(define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
+(define-key input-decode-map [?\C-i] (kbd "<C-i>"))
+
 ;; Prefix should be central
 (define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
 
@@ -88,15 +96,13 @@
 ;; Searching
 
 ;; Like isearch, but adds region (if any) to history and deactivates mark
-(global-set-key (kbd "C-o") 'isearch-forward-use-region)
+;; (global-set-key (kbd "C-o") 'isearch-forward-use-region)
+(global-set-key (kbd "C-o") 'isearch-forward)
 (define-key dired-mode-map (kbd "C-o") nil)
 (global-set-key (kbd "C-S-o") 'isearch-forward-regexp)
-(global-set-key (kbd "C-r") 'isearch-backward-use-region)
+;; (global-set-key (kbd "C-r") 'isearch-backward-use-region)
+(global-set-key (kbd "C-r") 'isearch-backward)
 (global-set-key (kbd "C-S-r") 'isearch-backward-regexp)
-;; Like isearch-*-use-region, but doesn't fuck with the active region
-;; TODO why would I ever need these?
-(global-set-key (kbd "s-o") 'isearch-forward)
-(global-set-key (kbd "s-r") 'isearch-backward)
 (global-set-key (kbd "C-s") 'helm-swoop)
 (global-set-key (kbd "C-S-s") 'helm-multi-swoop-all)
 (define-key isearch-mode-map (kbd "C-o") 'isearch-repeat-forward)
@@ -168,10 +174,6 @@
 (global-set-key (kbd "M-<down>") 'smart-down)
 (global-set-key (kbd "M-<left>") 'smart-backward)
 (global-set-key (kbd "M-<right>") 'smart-forward)
-
-;; TODO: appears tha "C-i" is force-translated into TAB I guess to
-;; replace not working TAB in terminals. Is there a way to take it
-;; back? It is also bound to `forward button' in *Help*.
 
 ;; Magit
 (global-set-key (kbd "C-x g") 'magit-status)

@@ -7,7 +7,7 @@
 (global-hl-line-mode 1)
 
 ;; Highlight matching parentheses when the point is on them.
-(show-paren-mode 1)
+;; (show-paren-mode 1)
 
 (when window-system
   (tooltip-mode -1))

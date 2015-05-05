@@ -1,15 +1,24 @@
 (require 'package)
-(require 'dash)
 
 ;; Add melpa to package repos
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
 (package-initialize)
 
-(unless (file-exists-p (concat user-emacs-directory "/elpa/archives/melpa"))
+(unless (file-exists-p (concat user-emacs-directory "elpa/archives/melpa"))
   (package-refresh-contents))
 
+;; install required packages
+(let ((install #'(lambda (package)
+                   (unless (package-installed-p package)
+                     (package-install package))
+                   (require package))))
+  (message "Installing required packages %s" ze/required-packages)
+  (mapc install ze/required-packages)
+  (delete-other-windows))
+
 (defun packages-install (packages)
+  (require 'dash)
   (--each packages
     (when (not (package-installed-p it))
       (package-install it)))
