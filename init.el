@@ -45,7 +45,8 @@
 ;; Install extensions if they're missing
 (defun init--install-packages ()
   (packages-install
-   '(dash
+   '(use-package
+     dash
      bash-completion
      magit
      dired+
@@ -220,3 +221,77 @@
 ;; Does package really have anything to do with `require` though? I would've though that all it does having installed the package is add it's directory to the **load-path**. Having to `(require 'helm-config)` before installing the anything else seems really dissatisfying if only for the fact that Emacs doesn't make a good use of information that it already has. Also, having
 (put 'narrow-to-page 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
+
+;; Experimenting with use-package
+(eval-when-compile
+  (require 'use-package))
+
+(require 'bind-key)
+
+;;; OCaml
+;; `https://github.com/realworldocaml/book/wiki/Installation-Instructions'
+;; brew install opam
+;; opam install core utop merlin ocp-indent
+(use-package opam                       ; Initialize Emacs with OPAM env
+  :ensure t
+  :init (opam-init))
+
+(use-package tuareg                     ; OCaml editing
+  :ensure t
+  :defer t
+  :config
+  (progn
+    ;; Disable SMIE indentation in Tuareg.  It's just broken currently…
+    (setq tuareg-use-smie nil)
+
+    ;; Please, Tuareg, don't kill my imenu
+    (define-key tuareg-mode-map [?\C-c ?i] nil)
+
+    ;; Also BACKSPACE, geeez
+    (define-key tuareg-mode-map (kbd "<backspace>") nil)
+    (define-key tuareg-mode-map (kbd "C-<backspace>") nil)
+
+    ;; Gimme better indentation experience
+    (use-package ocp-indent
+      :ensure t)))
+
+(use-package merlin                     ; Powerful Emacs backend for OCaml
+  :ensure t
+  :defer t
+  :init (add-hook 'tuareg-mode-hook #'merlin-mode)
+  :config
+  ;; Use Merlin from current OPAM env
+  (setq merlin-command 'opam
+        ;; Disable Merlin's own error checking in favour of Flycheck
+        merlin-error-after-save nil))
+
+(use-package utop
+  :ensure t
+  :defer t
+  :init (add-hook 'tuareg-mode-hook #'utop-minor-mode))
+
+;; TODO setup flycheck
+;; -------------------
+;; (use-package flycheck-ocaml             ; Check OCaml code with Merlin
+;;   :ensure t
+;;   :defer t
+;;   :init (with-eval-after-load 'merlin
+;;           (flycheck-ocaml-setup)))
+
+;; Quick setup for EMACS
+;; -------------------
+;; Add opam emacs directory to your load-path by appending this to your .emacs:
+;; ;; Add opam emacs directory to the load-path
+;; (setq opam-share (substring (shell-command-to-string "opam config var share 2> /dev/null") 0 -1))
+;; (add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
+;; ;; Load merlin-mode
+;; (require 'merlin)
+;; ;; Start merlin on ocaml files
+;; (add-hook 'tuareg-mode-hook 'merlin-mode t)
+;; (add-hook 'caml-mode-hook 'merlin-mode t)
+;; ;; Enable auto-complete
+;; (setq merlin-use-auto-complete-mode 'easy)
+;; ;; Use opam switch to lookup ocamlmerlin binary
+;; (setq merlin-command 'opam)
+
+;; Take a look at https://github.com/the-lambda-church/merlin for more information
