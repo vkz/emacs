@@ -9,8 +9,3 @@
 [submodule "site-lisp/nodejs-repl.el"]
 	path = site-lisp/nodejs-repl.el
 	url = https://github.com/vkz/nodejs-repl.el.git
-
-[submodule "site-lisp/hydra"]
-	path = site-lisp/hydra
-	url = https://github.com/abo-abo/hydra.git
-
