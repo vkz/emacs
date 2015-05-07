@@ -136,8 +136,25 @@ Homebrew: brew install trash")))
              ze/insert-logo-into-scratch)
   :init (add-hook 'emacs-startup-hook #'ze/insert-logo-into-scratch))
 
-(use-package sanityinc-tomorrow-night-theme                  ; My colour theme
-  :load-path "themes/")
+;; (use-package sanityinc-tomorrow-night-theme                  ; My colour theme
+;;   :load-path "themes/")
+
+(use-package solarized                  ; My colour theme
+  :ensure solarized-theme
+  :defer t
+  :init (load-theme 'solarized-light 'no-confirm)
+  :config nil
+  ;; Disable variable pitch fonts in Solarized theme
+  ;; (setq solarized-use-variable-pitch nil
+  ;;       ;; Don't add too much colours to the fringe
+  ;;       solarized-emphasize-indicators nil
+  ;;       ;; I find different font sizes irritating.
+  ;;       solarized-height-minus-1 1.0
+  ;;       solarized-height-plus-1 1.0
+  ;;       solarized-height-plus-2 1.0
+  ;;       solarized-height-plus-3 1.0
+  ;;       solarized-height-plus-4 1.0)
+  )
 
 (use-package dynamic-fonts              ; Select best available font
   :ensure t
@@ -166,13 +183,6 @@ Homebrew: brew install trash")))
                                                        (`darwin 16)
                                                        (_ 10)))
     (dynamic-fonts-setup)))
-
-;; TODO `persistent-soft' won't work, without it font caching occurs every time
-(use-package unicode-fonts              ; Map Unicode blocks to fonts
-  :ensure t
-  :disabled t
-  :init
-  (unicode-fonts-setup))
 
 
 
