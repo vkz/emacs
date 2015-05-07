@@ -36,6 +36,11 @@
 
 (require 'rx)
 
+(use-package dash
+  :ensure t
+  :config
+  (dash-enable-font-lock))
+
 
 ;;; Initialisations and environment fixup
 (setq inhibit-default-init t)
@@ -124,6 +129,8 @@ Homebrew: brew install trash")))
 ;; Yes/No questions.
 (blink-cursor-mode -1)
 (setq ring-bell-function #'ignore
+      font-lock-maximum-decoration t
+      truncate-partial-width-windows nil
       inhibit-startup-screen t
       initial-scratch-message "Happy hacking!")
 (fset 'yes-or-no-p #'y-or-n-p)
@@ -144,6 +151,7 @@ Homebrew: brew install trash")))
   :defer t
   :init (load-theme 'solarized-light 'no-confirm)
   :config nil
+
   ;; Disable variable pitch fonts in Solarized theme
   ;; (setq solarized-use-variable-pitch nil
   ;;       ;; Don't add too much colours to the fringe
@@ -184,6 +192,257 @@ Homebrew: brew install trash")))
                                                        (_ 10)))
     (dynamic-fonts-setup)))
 
+
+;; don't wrap lines ever
+(setq-default truncate-lines t)
+(setq-default helm-truncate-lines t)
+
+;; make the fringe (gutter) smaller
+(if (fboundp 'fringe-mode)
+    (fringe-mode 4))
+
+
+;;; The mode line
+
+(setq-default header-line-format
+              '(which-func-mode ("" which-func-format " "))
+              mode-line-format
+              '("%e" mode-line-front-space
+                ;; Standard info about the current buffer
+                mode-line-mule-info
+                mode-line-client
+                mode-line-modified
+                mode-line-remote
+                mode-line-frame-identification
+                mode-line-buffer-identification " " mode-line-position
+                ;; Some specific information about the current buffer:
+                ;; - Paredit
+                ;; - Dired Omit Mode
+                (paredit-mode (:propertize " ()" face bold))
+                (dired-omit-mode " ●")
+                ;; Warn if whitespace isn't highlighted or cleaned in this
+                ;; buffer.
+                (:eval (unless buffer-read-only
+                         (cond
+                          ((not (bound-and-true-p whitespace-mode))
+                           (propertize " SPACE" 'face '(bold error)))
+                          ((not (bound-and-true-p whitespace-cleanup-mode))
+                           (propertize " WSC" 'face 'warning)))))
+                (projectile-mode projectile-mode-line)
+                (vc-mode vc-mode)
+                (flycheck-mode flycheck-mode-line) ; Flycheck status
+                (anzu-mode (:eval                  ; isearch pos/matches
+                            (when (> anzu--total-matched 0)
+                              (concat " " (anzu--update-mode-line)))))
+                (multiple-cursors-mode mc/mode-line) ; Number of cursors
+                ;; And the modes, which we don't really care for anyway
+                " " mode-line-misc-info mode-line-modes mode-line-end-spaces)
+              mode-line-remote
+              '(:eval
+                (-when-let (host (file-remote-p default-directory 'host))
+                  (propertize (concat "@" host) 'face
+                              '(italic warning))))
+              ;; Remove which func from the mode line, since we have it in the
+              ;; header line
+              mode-line-misc-info
+              (assq-delete-all 'which-func-mode mode-line-misc-info))
+
+;; Standard stuff
+(line-number-mode)
+(column-number-mode)
+
+(use-package anzu                       ; Position/matches count for isearch
+  :ensure t
+  :init (global-anzu-mode)
+  :config (setq anzu-cons-mode-line-p nil)
+  :diminish anzu-mode)
+
+(use-package which-func                 ; Current function name in header line
+  :init (which-function-mode)
+  :config
+  (setq which-func-unknown "⊥" ; The default is really boring…
+        which-func-format
+        `((:propertize (" ➤ " which-func-current)
+                       local-map ,which-func-keymap
+                       face which-func
+                       mouse-face mode-line-highlight
+                       help-echo "mouse-1: go to beginning\n\
+mouse-2: toggle rest visibility\n\
+mouse-3: go to end"))))
+
+
+;;; The minibuffer
+(setq history-length 1000)              ; Store more history
+
+(use-package savehist                   ; Save minibuffer history
+  :init (savehist-mode t)
+  :config (setq savehist-save-minibuffer-history t
+                savehist-autosave-interval 180))
+
+
+;;; Buffer, Windows and Frames
+
+(setq frame-resize-pixelwise t          ; Resize by pixels
+      frame-title-format
+      '(:eval (if (buffer-file-name)
+                  (abbreviate-file-name (buffer-file-name)) "%b")))
+
+(use-package frame
+  :bind (("C-c t F" . toggle-frame-fullscreen))
+  :init (progn
+          ;; Kill `suspend-frame'
+          (global-set-key (kbd "C-z") nil)
+          (global-set-key (kbd "C-x C-z") nil))
+  :config (add-to-list 'initial-frame-alist '(fullscreen . maximized)))
+
+(use-package ze-buffers          ; Personal buffer tools
+  :load-path "site-lisp/"
+  :commands (ze-force-save-some-buffers
+             ze-do-not-kill-important-buffers)
+  :init (progn
+          (add-hook 'kill-buffer-query-functions
+                    #'ze-do-not-kill-important-buffers)
+
+          ;; Autosave buffers when focus is lost, see
+          ;; http://emacsredux.com/blog/2014/03/22/a-peek-at-emacs-24-dot-4-focus-hooks/
+          (add-hook 'focus-out-hook #'ze-force-save-some-buffers)))
+
+(use-package uniquify                   ; Make buffer names unique
+  :config (setq uniquify-buffer-name-style 'forward))
+
+(use-package ibuffer                    ; Better buffer list
+  :bind (([remap list-buffers] . ibuffer))
+  ;; Show VC Status in ibuffer
+  :config (setq ibuffer-formats
+                '((mark modified read-only vc-status-mini " "
+                        (name 18 18 :left :elide)
+                        " "
+                        (size 9 -1 :right)
+                        " "
+                        (mode 16 16 :left :elide)
+                        " "
+                        (vc-status 16 16 :left)
+                        " "
+                        filename-and-process)
+                  (mark modified read-only " "
+                        (name 18 18 :left :elide)
+                        " "
+                        (size 9 -1 :right)
+                        " "
+                        (mode 16 16 :left :elide)
+                        " " filename-and-process)
+                  (mark " "
+                        (name 16 -1)
+                        " " filename))))
+
+(use-package ibuffer-vc                 ; Group buffers by VC project and status
+  :ensure t
+  :defer t
+  :init (add-hook 'ibuffer-hook
+                  (lambda ()
+                    (ibuffer-vc-set-filter-groups-by-vc-root)
+                    (unless (eq ibuffer-sorting-mode 'alphabetic)
+                      (ibuffer-do-sort-by-alphabetic)))))
+
+(use-package ibuffer-projectile         ; Group buffers by Projectile project
+  :ensure t
+  :defer t)
+
+(use-package ze-window
+  :load-path "site-lisp/"
+  :defer t
+  :bind ("C-c q" . ze-quit-bottom-side-windows))
+
+(use-package windmove                   ; Move between windows with Shift+Arrow
+  :bind (("S-<left>"  . windmove-left)
+         ("S-<right>" . windmove-right)
+         ("S-<up>"    . windmove-up)
+         ("S-<down>"  . windmove-down)))
+
+
+(use-package winner                     ; Undo and redo window configurations
+  :init (winner-mode))
+
+(use-package ediff-wind
+  :defer t
+  :config
+  ;; Prevent Ediff from spamming the frame
+  (setq ediff-window-setup-function #'ediff-setup-windows-plain
+        ediff-split-window-function #'split-window-horizontally))
+
+(use-package desktop                    ; Save buffers, windows and frames
+  :init (desktop-save-mode)
+  :config (progn
+            ;; Save desktops a minute after Emacs was idle.
+            (setq desktop-auto-save-timeout 60)
+
+            (dolist (mode '(magit-mode git-commit-mode))
+              (add-to-list 'desktop-modes-not-to-save mode))))
+
+;; TODO really needs auto-fill mode wrapping around 80 or so
+(use-package writeroom-mode             ; Distraction-free editing
+  :ensure t
+  :bind (("C-c t R" . writeroom-mode)))
+
+
+;;; File handling
+
+;; Keep backup and auto save files out of the way
+(setq backup-directory-alist `((".*" . ,(locate-user-emacs-file ".backup")))
+      auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+
+;; Delete files to trash
+(setq delete-by-moving-to-trash
+      (or (not (eq system-type 'darwin)) ; Trash is well supported on other
+                                        ; systems
+          (fboundp 'system-move-file-to-trash)))
+
+(use-package files
+  :bind (("C-c f u" . revert-buffer))
+  :config
+  ;; Use GNU ls for Emacs
+  (-when-let (gnu-ls (and (eq system-type 'darwin) (executable-find "gls")))
+    (setq insert-directory-program gnu-ls)))
+
+(use-package tramp                      ; Access remote files
+  :defer t
+  :config
+  ;; Store auto-save files locally
+  (setq tramp-auto-save-directory (locate-user-emacs-file "tramp-auto-save")))
+
+(use-package dired                      ; Edit directories
+  :defer t
+  :config
+  (progn
+    (require 'dired-x)
+
+    (setq dired-auto-revert-buffer t    ; Revert on re-visiting
+          ;; Better dired flags: `-l' is mandatory, `-a' shows all files, `-h'
+          ;; uses human-readable sizes, and `-F' appends file-type classifiers
+          ;; to file names (for better highlighting)
+          dired-listing-switches "-alhF"
+          dired-ls-F-marks-symlinks t   ; -F marks links with @
+          ;; Inhibit prompts for simple recursive operations
+          dired-recursive-copies 'always)
+
+    (when (or (memq system-type '(gnu gnu/linux))
+              (string= (file-name-nondirectory insert-directory-program) "gls"))
+      ;; If we are on a GNU system or have GNU ls, add some more `ls' switches:
+      ;; `--group-directories-first' lists directories before files, and `-v'
+      ;; sorts numbers in file names naturally, i.e. "image1" goes before
+      ;; "image02"
+      (setq dired-listing-switches
+            (concat dired-listing-switches " --group-directories-first -v")))))
+
+(use-package dired-x                    ; Additional tools for Dired
+  :bind (("C-x C-j" . dired-jump))
+  :config
+  (progn
+    (setq dired-omit-verbose nil)        ; Shut up, dired
+
+    (when (eq system-type 'darwin)
+      ;; OS X bsdtar is mostly compatible with GNU Tar
+      (setq dired-guess-shell-gnutar "tar"))))
 
 
 ;; ;; Set up appearance early
