@@ -136,6 +136,46 @@ Homebrew: brew install trash")))
              ze/insert-logo-into-scratch)
   :init (add-hook 'emacs-startup-hook #'ze/insert-logo-into-scratch))
 
+(use-package sanityinc-tomorrow-night-theme                  ; My colour theme
+  :load-path "themes/")
+
+(use-package dynamic-fonts              ; Select best available font
+  :ensure t
+  :config
+  (progn
+    (setq
+     dynamic-fonts-preferred-monospace-point-size (pcase system-type
+                                                    (`darwin 16)
+                                                    (_ 10))
+     dynamic-fonts-preferred-proportional-fonts
+     '(
+       ;; http://www.google.com/get/noto/#/
+       "Noto Sans"
+       ;; https://www.mozilla.org/en-US/styleguide/products/firefox-os/typeface/
+       "Fira Sans"
+       ;; System fonts, as last resort
+       "Helvetica"
+       "Segoe UI"
+       "DejaVu Sans"
+       "Bitstream Vera"
+       "Tahoma"
+       "Verdana"
+       "Arial Unicode MS"
+       "Arial")
+     dynamic-fonts-preferred-proportional-point-size (pcase system-type
+                                                       (`darwin 16)
+                                                       (_ 10)))
+    (dynamic-fonts-setup)))
+
+;; TODO `persistent-soft' won't work, without it font caching occurs every time
+(use-package unicode-fonts              ; Map Unicode blocks to fonts
+  :ensure t
+  :disabled t
+  :init
+  (unicode-fonts-setup))
+
+
+
 ;; ;; Set up appearance early
 ;; (require 'appearance)
 
