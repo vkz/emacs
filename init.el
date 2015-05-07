@@ -37,7 +37,7 @@
 (require 'rx)
 
 
-;;; Itialisations and environment fixup
+;;; Initialisations and environment fixup
 (setq inhibit-default-init t)
 
 ;; Environment fixup
@@ -52,7 +52,6 @@
       (add-to-list 'exec-path-from-shell-variables var))
 
     (exec-path-from-shell-initialize)
-
     (setq user-mail-address (getenv "EMAIL"))
 
     ;; Re-initialize the `Info-directory-list' from $INFOPATH.  Since package.el
@@ -114,16 +113,19 @@ Homebrew: brew install trash")))
 ;; Get rid of tool bar, menu bar and scroll bars.  On OS X we preserve the menu
 ;; bar, since the top menu bar is always visible anyway, and we'd just empty it
 ;; which is rather pointless.
-(when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-(when (and (not on-mac) (fboundp 'menu-bar-mode)) (menu-bar-mode -1))
-(when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+(when (fboundp 'tool-bar-mode)
+  (tool-bar-mode -1))
+(when (and (not on-mac) (fboundp 'menu-bar-mode))
+  (menu-bar-mode -1))
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
 
 ;; No blinking and beeping, no startup screen, no scratch message and short
 ;; Yes/No questions.
 (blink-cursor-mode -1)
 (setq ring-bell-function #'ignore
       inhibit-startup-screen t
-      initial-scratch-message "Hello there!\n")
+      initial-scratch-message "Happy hacking!")
 (fset 'yes-or-no-p #'y-or-n-p)
 ;; Opt out from the startup message in the echo area by simply disabling this
 ;; ridiculously bizarre thing entirely.
@@ -132,7 +134,7 @@ Homebrew: brew install trash")))
 (use-package ze-scratch          ; My logo in the scratch buffer
   :commands (ze/insert-logo
              ze/insert-logo-into-scratch)
-  :init (add-hook 'after-init-hook #'ze/insert-logo-into-scratch))
+  :init (add-hook 'emacs-startup-hook #'ze/insert-logo-into-scratch))
 
 ;; ;; Set up appearance early
 ;; (require 'appearance)
