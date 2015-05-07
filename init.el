@@ -444,6 +444,457 @@ mouse-3: go to end"))))
       ;; OS X bsdtar is mostly compatible with GNU Tar
       (setq dired-guess-shell-gnutar "tar"))))
 
+(use-package ignoramus                  ; Ignore uninteresting files everywhere
+  :ensure t
+  :init (ignoramus-setup))
+
+(use-package hardhat                    ; Protect user-writable files
+  :ensure t
+  :init (global-hardhat-mode))
+
+(use-package bookmark                   ; Bookmarks for Emacs buffers
+  :bind (("C-c l b" . list-bookmarks))
+  ;; Save bookmarks immediately after a bookmark was added
+  :config (setq bookmark-save-flag 1))
+
+(use-package recentf                    ; Save recently visited files
+  :init (recentf-mode)
+  :config
+  (setq recentf-max-saved-items 200
+        recentf-max-menu-items 15
+        ;; Cleanup recent files only when Emacs is idle, but not when the mode
+        ;; is enabled, because that unnecessarily slows down Emacs. My Emacs
+        ;; idles often enough to have the recent files list clean up regularly
+        recentf-auto-cleanup 300
+        recentf-exclude (list "/\\.git/.*\\'" ; Git contents
+                              "/elpa/.*\\'" ; Package files
+                              "/node_modules/.*\\'"
+                              "/itsalltext/" ; It's all text temp files
+                              ;; And all other kinds of boring files
+                              #'ignoramus-boring-p)))
+
+(use-package saveplace                  ; Save point position in files
+  :config (setq-default save-place t))
+
+(setq view-read-only t)                 ; View read-only files
+
+(use-package autorevert                 ; Auto-revert buffers of changed files
+  :init (global-auto-revert-mode))
+
+(use-package image-file                 ; Visit images as images
+  :init (auto-image-file-mode))
+
+(use-package launch                     ; Open files in external programs
+  :ensure t
+  :init (global-launch-mode))
+
+
+;;; Basic editing
+
+;; Disable tabs, but given them proper width
+(setq-default indent-tabs-mode nil
+              tab-width 8)
+;; Make Tab complete if the line is indented
+(setq tab-always-indent 'complete)
+
+(use-package elec-pair                  ; Electric pairs
+  :init (electric-pair-mode))
+
+;; Indicate empty lines at the end of a buffer in the fringe, but require a
+;; final new line
+(setq indicate-empty-lines t
+      require-final-newline t)
+
+(setq kill-ring-max 200                 ; More killed items
+      ;; Save the contents of the clipboard to kill ring before killing
+      save-interprogram-paste-before-kill t)
+
+;; Configure a reasonable fill column, indicate it in the buffer and enable
+;; automatic filling
+(setq-default fill-column 75)
+(add-hook 'text-mode-hook #'auto-fill-mode)
+
+(use-package ze-simple           ; Personal editing helpers
+  :load-path "lisp/"
+  :bind (([remap kill-whole-line]        . ze-smart-kill-whole-line)
+         ([remap move-beginning-of-line] . ze-back-to-indentation-or-beginning-of-line)
+         ("C-<backspace>"                . ze-smart-backward-kill-line)
+         ("C-S-j"                        . ze-smart-open-line)
+         ;; Additional utilities
+         ("C-c u d"                      . ze-insert-current-date))
+  :commands (ze-auto-fill-comments-mode)
+  ;; Auto-fill comments in programming modes
+  ;; TODO shorter fill-column for comments maybe
+  :init (add-hook 'prog-mode-hook #'ze-auto-fill-comments-mode))
+
+(use-package delsel                     ; Delete the selection instead of insert
+  :defer t
+  :init (delete-selection-mode))
+
+(use-package whitespace-cleanup-mode    ; Cleanup whitespace in buffers
+  :ensure t
+  :bind (("C-c t c" . whitespace-cleanup-mode))
+  :init (dolist (hook '(prog-mode-hook text-mode-hook conf-mode-hook))
+          (add-hook hook #'whitespace-cleanup-mode))
+  :diminish whitespace-cleanup-mode)
+
+(use-package subword                    ; Subword/superword editing
+  :defer t
+  :diminish subword-mode)
+
+(use-package visual-regexp              ; Regexp replace with in-buffer display
+  :ensure t
+  :bind (("C-c r" . vr/query-replace)
+         ("C-c R" . vr/replace)))
+
+(use-package browse-kill-ring           ; Browse kill ring interactively
+  :ensure t
+  :bind (("C-c y" . browse-kill-ring)))
+
+(use-package zop-to-char
+  :ensure t
+  :bind (("M-z" . zop-to-char)
+         ("M-Z" . zop-up-to-char)))
+
+(use-package easy-kill                  ; Easy killing and marking on C-w
+  :ensure t
+  :bind (([remap kill-ring-save] . easy-kill)
+         ([remap mark-sexp]      . easy-mark)))
+
+(use-package align                      ; Align text in buffers
+  :bind (("C-c A a" . align)
+         ("C-c A c" . align-current)
+         ("C-c A r" . align-regexp)))
+
+(use-package multiple-cursors           ; Edit text with multiple cursors
+  :ensure t
+  :bind (("C-c m e"   . mc/mark-more-like-this-extended)
+         ("C-c m h"   . mc/mark-all-like-this-dwim)
+         ("C-c m l"   . mc/edit-lines)
+         ("C-c m n"   . mc/mark-next-like-this)
+         ("C-c m p"   . mc/mark-previous-like-this)
+         ("C-c m r"   . vr/mc-mark)
+         ("C-c m C-a" . mc/edit-beginnings-of-lines)
+         ("C-c m C-e" . mc/edit-ends-of-lines)
+         ("C-c m C-s" . mc/mark-all-in-region))
+  :config
+  (setq mc/mode-line
+        ;; Simplify the MC mode line indicator
+        '(:propertize (:eval (concat " " (number-to-string (mc/num-cursors))))
+                      face font-lock-warning-face)))
+
+(use-package expand-region              ; Expand region by semantic units
+  :ensure t
+  :bind (("C-=" . er/expand-region)))
+
+(use-package undo-tree                  ; Branching undo
+  :ensure t
+  :init (global-undo-tree-mode)
+  :diminish undo-tree-mode)
+
+(use-package nlinum                     ; Line numbers in display margin
+  :ensure t
+  :bind (("C-c t l" . nlinum-mode)))
+
+;; Give us narrowing back!
+(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
+(put 'narrow-to-defun 'disabled nil)
+
+(use-package server                     ; The server of `emacsclient'
+  :defer t
+  :init (server-start))
+
+;; Additional keybindings
+;; TODO great one, needs better binding
+(bind-key [remap just-one-space] #'cycle-spacing)
+
+
+;;; Navigation and scrolling
+(setq scroll-margin 0                   ; Drag the point along while scrolling
+      scroll-conservatively 1000        ; Never recenter the screen while scrolling
+      scroll-error-top-bottom t         ; Move to beg/end of buffer before
+                                        ; signalling an error
+      ;; These settings make trackpad scrolling on OS X much more predictable
+      ;; and smooth
+      mouse-wheel-progressive-speed nil
+      mouse-wheel-scroll-amount '(1))
+
+(use-package ace-jump-mode              ; Jump to characters in buffers
+  :ensure t
+  :bind (("C-c SPC" . ace-jump-mode)
+         ("C-c j"   . ace-jump-mode)
+         ("C-c J"   . ace-jump-mode-pop-mark))
+  :config
+  ;; Sync marks with Emacs built-in commands
+  (ace-jump-mode-enable-mark-sync))
+
+(use-package page-break-lines           ; Turn page breaks into lines
+  :ensure t
+  :init (global-page-break-lines-mode)
+  :diminish page-break-lines-mode)
+
+(use-package outline                    ; Navigate outlines in buffers
+  :defer t
+  :init (dolist (hook '(text-mode-hook prog-mode-hook))
+          (add-hook hook #'outline-minor-mode))
+  :diminish outline-minor-mode)
+
+(use-package imenu-anywhere             ; IDO-based imenu across open buffers
+  :disabled t
+  :ensure t
+  :bind (("C-c i" . helm-imenu-anywhere)))
+
+
+;;; Search
+(use-package isearch                    ; Search buffers
+  :bind (("C-c s s" . isearch-forward-symbol-at-point)))
+
+(use-package locate                     ; Search files on the system
+  :defer t
+  :config
+  ;; Use mdfind as locate substitute on OS X, to utilize the Spotlight database
+  (-when-let (mdfind (and (eq system-type 'darwin) (executable-find "mdfind")))
+    (setq locate-command mdfind)))
+
+(use-package ag                         ; Search code in files/projects
+  :ensure t
+  :bind (("C-c a d" . ag-dired-regexp)
+         ("C-c a D" . ag-dired)
+         ("C-c a f" . ag-files)
+         ("C-c a k" . ag-kill-other-buffers)
+         ("C-c a K" . ag-kill-buffers))
+  :config
+  (setq ag-reuse-buffers t            ; Don't spam buffer list with ag buffers
+        ag-highlight-search t         ; A little fanciness
+        ;; Use Projectile to find the project root
+        ag-project-root-function (lambda (d) (let ((default-directory d))
+                                               (projectile-project-root)))))
+
+(use-package wgrep                      ; Edit grep/occur/ag results in-place
+  :ensure t
+  :defer t)
+
+(use-package wgrep-ag                   ; Wgrep for ag
+  :ensure t
+  :defer t)
+
+
+;;; Helm
+
+(use-package helm
+  :ensure t
+  :bind (
+         ;; Replace some standard bindings with Helm equivalents
+         ("M-s o"     . helm-occur)
+         ("M-x"       . helm-M-x)
+         ("M-y"       . helm-show-kill-ring)
+         ("C-x r i"   . helm-register)
+         ("C-x b"     . helm-mini)
+         ;; Special helm bindings
+         ("C-c b b"   . helm-resume)
+         ("C-c b C"   . helm-colors)
+         ("C-c b *"   . helm-calcul-expression)
+         ("C-c b 8"   . helm-ucs)
+         ("C-c b M-:" . helm-eval-expression-with-eldoc)
+         ;; Helm features in other maps
+         ("C-c i"     . helm-semantic-or-imenu)
+         ("C-c h a"   . helm-apropos)
+         ("C-c h e"   . helm-info-emacs)
+         ("C-c h i"   . helm-info-at-point)
+         ("C-c h m"   . helm-man-woman)
+         ("C-c f r"   . helm-recentf)
+         ("C-c f f"   . helm-find-files)
+         ("C-c f l"   . helm-locate-library)
+         )
+  :init (progn
+          ;; Shut up, f****** `helm-config'
+          (defvar helm-command-prefix-key)
+          (setq helm-command-prefix-key nil)
+
+          (helm-mode 1))
+  :config (setq helm-split-window-in-side-p t))
+
+(use-package helm-files
+  :ensure helm
+  :defer t
+  :config (setq helm-recentf-fuzzy-match t
+                ;; Use recentf to find recent files
+                helm-ff-file-name-history-use-recentf t
+                ;; Find library from `require', `declare-function' and friends
+                helm-ff-search-library-in-sexp t))
+
+(use-package helm-buffers
+  :ensure helm
+  :defer t
+  :config (setq helm-buffers-fuzzy-matching t))
+
+(use-package helm-ag
+  :ensure t
+  :bind (("C-c a a" . helm-do-ag)
+         ("C-c a A" . helm-ag))
+  :config (setq helm-ag-fuzzy-match t))
+
+
+;;; Highlights
+
+;; A function to disable highlighting of long lines in modes
+(defun ze-whitespace-style-no-long-lines ()
+  "Configure `whitespace-mode' for Org.
+
+Disable the highlighting of overlong lines."
+  (setq-local whitespace-style (-difference whitespace-style
+                                            '(lines lines-tail))))
+
+(defun ze-whitespace-mode-local ()
+  "Enable `whitespace-mode' after local variables where set up."
+  (add-hook 'hack-local-variables-hook #'whitespace-mode nil 'local))
+
+(use-package whitespace                 ; Highlight bad whitespace
+  :bind (("C-c t w" . whitespace-mode))
+  :init (dolist (hook '(prog-mode-hook text-mode-hook conf-mode-hook))
+          (add-hook hook #'ze-whitespace-mode-local))
+  :config
+  ;; Highlight tabs, empty lines at beg/end, trailing whitespaces and overlong
+  ;; portions of lines via faces.  Also indicate tabs via characters
+  (setq whitespace-style '(face indentation space-after-tab space-before-tab
+                                tab-mark empty trailing lines-tail)
+        whitespace-line-column nil)     ; Use `fill-column' for overlong lines
+  :diminish whitespace-mode)
+
+(use-package hl-line                    ; Highlight the current line
+  :init (global-hl-line-mode 1))
+
+(use-package paren                      ; Highlight paired delimiters
+  :init (show-paren-mode)
+  :config (setq show-paren-when-point-inside-paren t
+                show-paren-when-point-in-periphery t))
+
+(use-package rainbow-delimiters         ; Highlight delimiters by depth
+  :ensure t
+  :defer t
+  :init (dolist (hook '(text-mode-hook prog-mode-hook))
+          (add-hook hook #'rainbow-delimiters-mode)))
+
+;; TODO seems like replacement for my TODO, HACK, STUDY, NOTE hacks
+(use-package hi-lock                    ; Custom regexp highlights
+  :init (global-hi-lock-mode))
+
+
+;;; Skeletons, completion and expansion
+
+;; In `completion-at-point', do not pop up silly completion buffers for less
+;; than five candidates.  Cycle instead.
+(setq completion-cycle-threshold 5)
+
+(use-package hippie-exp                 ; Powerful expansion and completion
+  :bind (([remap dabbrev-expand] . hippie-expand))
+  :config
+  (setq hippie-expand-try-functions-list
+        '(try-expand-dabbrev
+          try-expand-dabbrev-all-buffers
+          try-expand-dabbrev-from-kill
+          try-complete-file-name-partially
+          try-complete-file-name
+          try-expand-all-abbrevs
+          try-expand-list
+          try-complete-lisp-symbol-partially
+          try-complete-lisp-symbol
+          ze-try-complete-lisp-symbol-without-namespace)))
+
+(use-package ze-hippie       ; Custom expansion functions
+  :load-path "site-lisp/"
+  :commands (ze-try-complete-lisp-symbol-without-namespace))
+
+;; TODO try `ivy' as completion backend
+(use-package company                    ; Graphical (auto-)completion
+  :ensure t
+  :init (global-company-mode)
+  :config
+  (progn
+    (setq company-tooltip-align-annotations t
+          ;; Easy navigation to candidates with M-<n>
+          company-show-numbers t))
+  :diminish company-mode)
+
+(use-package company-math               ; Completion for Math symbols
+  :ensure t
+  :defer t
+  :init (with-eval-after-load 'company
+          ;; Add backends for math characters
+          (add-to-list 'company-backends 'company-math-symbols-unicode)
+          (add-to-list 'company-backends 'company-math-symbols-latex)))
+
+(use-package helm-company
+  :ensure t
+  :defer t
+  :init (with-eval-after-load 'company
+          ;; Use Company for completion
+          (bind-key [remap completion-at-point] #'helm-company company-mode-map)
+          (bind-key "C-:" #'helm-company company-mode-map)
+          (bind-key "C-:" #'helm-company company-active-map)))
+
+
+;;; Spelling and syntax checking
+(use-package ispell                     ; Spell checking
+  :defer t
+  :config
+  (progn
+    (setq ispell-program-name (if (eq system-type 'darwin)
+                                  (executable-find "aspell")
+                                (executable-find "hunspell"))
+          ispell-dictionary "en_GB"     ; Default dictionnary
+          ispell-silently-savep t       ; Don't ask when saving the private dict
+          ;; Increase the height of the choices window to take our header line
+          ;; into account.
+          ispell-choices-win-default-height 5)
+
+    (unless ispell-program-name
+      (warn "No spell checker available.  Install Hunspell or ASpell for OS X."))))
+
+(use-package flyspell                   ; On-the-fly spell checking
+  :bind (("C-c t s" . flyspell-mode))
+  :init (progn (dolist (hook '(text-mode-hook message-mode-hook))
+                 (add-hook hook 'turn-on-flyspell))
+               (add-hook 'prog-mode-hook 'flyspell-prog-mode))
+  :config
+  (progn
+    (setq flyspell-use-meta-tab nil
+          ;; Make Flyspell less chatty
+          flyspell-issue-welcome-flag nil
+          flyspell-issue-message-flag nil)
+
+    ;; Free C-M-i for completion
+    (define-key flyspell-mode-map "\M-\t" nil))
+  :diminish flyspell-mode)
+
+(use-package flycheck                   ; On-the-fly syntax checking
+  :ensure t
+  :bind (("C-c l e" . list-flycheck-errors)
+         ("C-c t f" . flycheck-mode))
+  :init (global-flycheck-mode)
+  :config (progn
+            (setq flycheck-display-errors-function
+                  #'flycheck-display-error-messages-unless-error-list)
+
+            ;; Use italic face for checker name
+            (set-face-attribute 'flycheck-error-list-checker-name nil
+                                :inherit 'italic)
+
+            (add-to-list 'display-buffer-alist
+                         `(,(rx bos "*Flycheck errors*" eos)
+                           (display-buffer-reuse-window
+                            display-buffer-in-side-window)
+                           (side            . bottom)
+                           (reusable-frames . visible)
+                           (window-height   . 0.4))))
+  :diminish flycheck-mode)
+
+(use-package helm-flycheck
+  :ensure t
+  :bind (("C-c ! L" . helm-flycheck)))
+
+
 
 ;; ;; Set up appearance early
 ;; (require 'appearance)
