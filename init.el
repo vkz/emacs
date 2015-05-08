@@ -1,3 +1,36 @@
+;;; init.el --- Emacs config of Vlad (zeRusski) Kozin -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;; Borrowed heavily from Sebastian Wiesner
+;; TODO borrow from magnars
+;; TODO borrow from bbatsov
+;; TODO borrow from oremacs
+;; TODO keybindings
+;; TODO import customisations from my older setup
+;;
+;; User key prefixes:
+;;
+;; - C-c A: Align
+;; - C-c a: Ag
+;; - C-c b: Helm commands (b for "browse")
+;; - C-c d: Data stuff
+;; - C-c f: Files
+;; - C-c h: Help and documentation
+;; - C-c l: List things
+;; - C-c m: Multiple cursors
+;; - C-c s: Symbol commands
+;; - C-c t: Toggle things and skeletons
+;; - C-c u: Miscellaneous utilities
+;; - C-c v: Version control
+;; - C-c w: Web stuff
+
+;;; Code:
+
+;;; Debugging
+(setq message-log-max 10000)
+
+
 ;;; Package management
 
 ;; Please don't load outdated byte code
@@ -1134,255 +1167,289 @@ Disable the highlighting of overlong lines."
   :defines (css-eldoc-hash-table)
   :init (add-hook 'css-mode-hook #'turn-on-css-eldoc))
 
+
+;;; Version control
+(use-package vc-hooks                   ; Simple version control
+  :defer t
+  :config
+  ;; Always follow symlinks to files in VCS repos
+  (setq vc-follow-symlinks t))
 
-;; ;; Set up appearance early
-;; (require 'appearance)
+(use-package diff-hl                    ; Highlight hunks in fringe
+  :ensure t
+  :defer t
+  :init (progn
+          ;; Highlight changes to the current file in the fringe
+          (global-diff-hl-mode)
+          ;; Highlight changed files in the fringe of Dired
+          (add-hook 'dired-mode-hook 'diff-hl-dired-mode)
 
-;; ;; Write backup files to own directory
-;; (setq backup-directory-alist
-;;       `(("." . ,(expand-file-name
-;;                  (concat user-emacs-directory "backups")))))
+          ;; Fall back to the display margin, if the fringe is unavailable
+          (unless (display-graphic-p)
+            (diff-hl-margin-mode))))
 
-;; ;; Make backups of files, even when they're in version control
-;; (setq vc-make-backup-files t)
+(use-package magit                      ; The one and only Git frontend
+  :ensure t
+  :bind (("C-c g"   . magit-status)
+         ("C-c v g" . magit-status)
+         ("C-c v v" . magit-status)
+         ("C-c v g" . magit-blame-mode)
+         ("C-c v l" . magit-file-log))
+  :init
+  ;; Seriously, Magit?! Set this variable before Magit is loaded to silence the
+  ;; most stupid warning ever
+  (setq magit-last-seen-setup-instructions "1.4.0")
+  :config
+  (progn
+    ;; Shut up, Magit!
+    (setq magit-save-some-buffers 'dontask
+          magit-stage-all-confirm nil
+          magit-unstage-all-confirm nil
+          ;; Except when you ask something useful…
+          magit-set-upstream-on-push t)
 
-;; ;; Save point position between sessions
-;; ;; `saveplace' is part of Emacs
-;; (require 'saveplace)
-;; (setq-default save-place t)
-;; (setq save-place-file (expand-file-name ".places" user-emacs-directory))
+    ;; Set Magit's repo dirs for `magit-status' from Projectile's known
+    ;; projects.  Initialize the `magit-repo-dirs' immediately after Projectile
+    ;; was loaded, and update it every time we switched projects, because the
+    ;; new project might have been unknown before
+    (defun ze-magit-set-repo-dirs-from-projectile ()
+      "Set `magit-repo-dirs' from known Projectile projects."
+      (let ((project-dirs (bound-and-true-p projectile-known-projects)))
+        ;; Remove trailing slashes from project directories, because Magit adds
+        ;; trailing slashes again, which breaks the presentation in the Magit
+        ;; prompt.
+        (setq magit-repo-dirs (mapcar #'directory-file-name project-dirs))))
 
-;; ;; Are we on a mac?
-;; (setq is-mac (equal system-type 'darwin))
+    (with-eval-after-load 'projectile
+      (ze-magit-set-repo-dirs-from-projectile))
 
-;; ;; Lets start with a smattering of sanity
-;; (require 'sane-defaults)
+    (add-hook 'projectile-switch-project-hook
+              #'ze-magit-set-repo-dirs-from-projectile))
 
-;; ;; Setup environment variables from the user's shell.
-;; (when is-mac
-;;   (require-package 'exec-path-from-shell)
-;;   (exec-path-from-shell-initialize))
+  :diminish magit-auto-revert-mode)
 
-;; ;; guide-key
-;; ;; TODO: missing support for js2-refactor prefix "C-c C-r" cause it's using two-key mnemonics
-;; (require 'guide-key)
-;; (setq guide-key/guide-key-sequence '("C-t r" "C-t 4" "C-t v" "C-c h" "C-c p" "C-t p" "C-c C-r" "<f1>"))
-;; (guide-key-mode 1)
-;; (setq guide-key/recursive-key-sequence-flag t)
-;; (setq guide-key/popup-window-position 'right)
+(use-package magit-gh-pulls
+  :ensure t
+  :defer t
+  :init (add-hook 'magit-mode-hook #'turn-on-magit-gh-pulls))
 
-;; ;; Setup extensions
-;; (require 'setup-magit)
-;; (eval-after-load 'dired '(require 'setup-dired))
-;; (eval-after-load 'shell '(require 'setup-shell)) ; TODO: helm support for completion
-;; (require 'setup-hippie)                          ;TODO: practice all expansion methods
-;; (require 'setup-yasnippet)              ; TODO: learn the power of snippets
+(use-package git-commit-mode            ; Git commit message mode
+  :ensure t
+  :defer t)
 
-;; ;; NOTE `https://github.com/bbatsov/projectile/issues/586'
-;; (require 'setup-perspective)
+(use-package gitconfig-mode             ; Git configuration mode
+  :ensure t
+  :defer t)
 
-;; ;; Font lock dash.el
-;; (eval-after-load "dash" '(dash-enable-font-lock))
+(use-package gitignore-mode             ; .gitignore mode
+  :ensure t
+  :defer t)
 
-;; ;; TODO: `semantic-mode' appears to work with `c' `cpp' `js' but not
-;; ;; `elisp'. What major modes does it support? What features does it actually provide?
-;; (semantic-mode 1)
+(use-package gitattributes-mode         ; Git attributes mode
+  :ensure t
+  :defer t)
 
-;; ;; helm
-;; (require 'setup-helm)
+(use-package git-rebase-mode            ; Mode for git rebase -i
+  :ensure t
+  :defer t)
 
-;; ;; projectile
-;; (require 'setup-projectile)
+(use-package git-timemachine            ; Go back in Git time
+  :ensure t
+  :bind (("C-c v t" . git-timemachine)))
 
-;; ;; TODO: 'setup-eshell I do want it, but with shell-mode do I honestly need it?
-;; ;; TODO: 'setup-desktop to preserve emacs state between restarts
-;; ;; TODO: figure out TAGS (etags, ctags etc)
-;; ;; TODO: 'setup-bookmarks (install Bookmarks+)
+
+;;; Project management with Projectile
+(use-package projectile
+  :ensure t
+  :init (projectile-global-mode)
+  :config
+  (progn
+    ;; Remove dead projects when Emacs is idle
+    (run-with-idle-timer 10 nil #'projectile-cleanup-known-projects)
 
-;; ;; TODO: 'setup-pop-win
+    (setq projectile-completion-system 'helm
+          projectile-buffers-filter-function
+          ;; Include buffers with files, processes or Dired
+          #'(lambda (buffers)
+              (seq-filter (lambda (buffer)
+                            (or (buffer-file-name buffer)
+                                (get-buffer-process buffer)
+                                (with-current-buffer buffer
+                                  (derived-mode-p 'dired-mode))))
+                          buffers))
+          projectile-find-dir-includes-top-level t
+          projectile-mode-line '(:propertize
+                                 (:eval (concat " " (projectile-project-name)))
+                                 face font-lock-constant-face)))
+  :diminish projectile-mode)
 
-;; ;; language specific modes
-;; ;; TODO: 'setup-racket
-;; ;; TODO: 'setup-c
-;; (eval-after-load 'js2-mode '(require 'setup-js2-mode))
-;; (add-hook 'js-mode-hook (lambda () (custom-set-default 'js-indent-level 2)))
-;; (setq programming-modes
-;;       '(js2-mode js-mode c-mode c++-mode emacs-lisp-mode racket-mode))
+(use-package helm-projectile
+  :ensure t
+  :defer t
+  :init (with-eval-after-load 'projectile (helm-projectile-on))
+  :config (setq projectile-switch-project-action #'helm-projectile))
 
-;; ;; map files to modes
-;; (require 'mode-mappings)
+
+;;; Tools and utilities
+(use-package bug-reference              ; Turn bug references into buttons
+  :defer t
+  :init (progn (add-hook 'prog-mode-hook #'bug-reference-prog-mode)
+               (add-hook 'text-mode-hook #'bug-reference-mode)))
 
-;; ;; highlight escape sequences, works only in javascript
-;; (require 'highlight-escape-sequences)
-;; (hes-mode)
-;; (put 'font-lock-regexp-grouping-backslash 'face-alias 'js2-function-param)
+(use-package paradox                    ; Better package menu
+  :ensure t
+  :bind (("C-c l p" . paradox-list-packages)
+         ("C-c l P" . package-list-packages-no-fetch))
+  :config
+  ;; Don't ask for a token, please, and don't bug me about asynchronous updates
+  (setq paradox-github-token t
+        paradox-execute-asynchronously nil))
 
-;; ;; Functions (load all files in defuns-dir)
-;; (setq defuns-dir (expand-file-name "defuns" user-emacs-directory))
-;; (dolist (file (directory-files defuns-dir t "\\w+"))
-;;   (when (file-regular-p file)
-;;     (load file)))
+(use-package proced                     ; Edit system processes
+  ;; Proced isn't available on OS X
+  :if (not (eq system-type 'darwin))
+  :bind ("C-x p" . proced))
 
-;; ;; Enable comment annotation keywords in programming modes
-;; (comment-annotations-in-modes programming-modes)
+(use-package calendar                   ; Built-in calendar
+  :bind ("C-c u c" . calendar)
+  :config
+  ;; In Europe we start on Monday
+  (setq calendar-week-start-day 1))
 
-;; (require 'expand-region)
-;; (er/line-wise-select-advice)
+(use-package time                       ; Show current time
+  :bind (("C-c u i" . emacs-init-time)
+         ("C-c u T" . display-time-world))
+  :config
+  (setq display-time-world-time-format "%H:%M %Z, %d. %b"
+        display-time-world-list '(("Europe/Berlin"    "Berlin")
+                                  ("Europe/London"    "London")
+                                  ("Europe/Istanbul"  "Istanbul")
+                                  ("America/Winnipeg" "Winnipeg (CA)")
+                                  ("America/New_York" "New York (USA)")
+                                  ("Asia/Tokyo"       "Tokyo (JP)"))))
 
-;; ;; (require 'smart-forward)
+(use-package bug-hunter                 ; Search init file for bugs
+  :ensure t)
 
-;; ;; Elisp go-to-definition with M-. and back again with M-,
-;; (autoload 'elisp-slime-nav-mode "elisp-slime-nav")
-;; (add-hook 'emacs-lisp-mode-hook
-;;           (lambda ()
-;;             (elisp-slime-nav-mode t)
-;;             (eldoc-mode 1)
-;;             (rainbow-mode +1)))
+
+;;; Terminal emulation and shells
+(use-package shell                      ; Dumb shell in Emacs
+  :bind ("C-c u s" . shell)
+  :config (add-to-list 'display-buffer-alist
+                       `(,(rx bos "*shell")
+                         (display-buffer-reuse-window
+                          display-buffer-in-side-window
+                          (side            . bottom)
+                          (reusable-frames . visible)
+                          (window-height   . 0.4)))))
 
-;; ;; TODO add whitespace auto cleanup on save (see bbatsov's prelude)
-;; ;; whitespace-mode config
-;; ;; TODO this should only be on in programming modes
-;; (require 'whitespace)
-;; (setq whitespace-line-column 80) ;; limit line length
-;; (setq whitespace-style '(face tabs empty trailing lines-tail))
-;; (global-whitespace-mode +1)
+(use-package term                       ; Terminal emulator in Emacs
+  :bind ("C-c u S" . ansi-term))
 
-;; ;; TODO only enable outside of `js2-mode', where Magnar's subst are more powerful.
-;; ;; Automatically insert matching braces and do other clever
-;; ;; things pertaining to braces and such.
-;; ;; (electric-pair-mode 1)
+
+;;; Net & Web
+(use-package browse-url                 ; Browse URLs
+  :bind (("C-c w u" . browse-url)))
 
-;; ;; (require 'setup-smartparens)
-;; (require 'smartparens-config)
-;; (add-hook 'js-mode-hook 'turn-on-smartparens-mode)
-;; (add-hook 'js-mode-hook 'show-smartparens-mode)
+(use-package eww                        ; Emacs' built-in web browser
+  :bind (("C-c w b" . eww-list-bookmarks)
+         ("C-c w w" . eww)))
 
-;; ;; Emacs server
-;; (require 'server)
-;; (unless (server-running-p)
-;;   (server-start))
+(use-package sx                         ; StackExchange client for Emacs
+  :ensure t
+  :bind (("C-c w s" . sx-tab-frontpage)
+         ("C-c w S" . sx-tab-newest)
+         ("C-c w a" . sx-ask)))
 
-;; (require 'key-bindings)
-;; (split-window-right)
+(use-package sx-compose
+  :ensure sx
+  :defer t
+  :config
+  (progn
+    ;; Don't fill in SX questions/answers, and use visual lines instead.  Plays
+    ;; more nicely with the website.
+    (add-hook 'sx-compose-mode-hook #'turn-off-auto-fill)
+    (add-hook 'sx-compose-mode-hook #'visual-line-mode)
+    (add-hook 'sx-compose-mode-hook
+              #'ze-whitespace-style-no-long-lines)
 
-;; ;; revert buffers automatically when underlying files are changed externally
-;; (global-auto-revert-mode t)
+    ;; Clean up whitespace before sending questions
+    (add-hook 'sx-compose-before-send-hook
+              (lambda ()
+                (whitespace-cleanup)
+                t))
 
-;; ;; basic commands act on a whole line with no region marked
-;; (whole-line-or-region-mode +1)
+    (bind-key "M-q" #'ignore sx-compose-mode-map)))
 
-;; ;; Does package really have anything to do with `require` though? I would've though that all it does having installed the package is add it's directory to the **load-path**. Having to `(require 'helm-config)` before installing the anything else seems really dissatisfying if only for the fact that Emacs doesn't make a good use of information that it already has. Also, having
-;; (put 'narrow-to-page 'disabled nil)
-;; (put 'narrow-to-region 'disabled nil)
+(use-package sx-question-mode
+  :ensure sx
+  :defer t
+  ;; Display questions in the same window
+  :config (setq sx-question-mode-display-buffer-function #'switch-to-buffer))
 
-;; ;; Experimenting with use-package
-;; (eval-when-compile
-;;   (require 'use-package))
+(use-package erc                        ; Powerful IRC client
+  :defer t
+  :config
+  (progn
+    ;; Default server and nick
+    (setq erc-server "chat.freenode.net"
+          erc-port 7000
+          erc-nick "zeRusski"
+          erc-nick-uniquifier "_"
+          ;; Never open unencrypted ERC connections
+          erc-server-connect-function 'erc-open-tls-stream)
 
-;; (require 'bind-key)
+    ;; Spell-check ERC buffers
+    (add-to-list 'erc-modules 'spelling)
+    (erc-update-modules))
 
-;; ;;; OCaml
-;; ;; `https://github.com/realworldocaml/book/wiki/Installation-Instructions'
-;; ;; brew install opam
-;; ;; opam install core utop merlin ocp-indent
-;; (use-package opam                       ; Initialize Emacs with OPAM env
-;;   :ensure t
-;;   :init (opam-init))
+  ;; Ignore useless messages
+  (add-hook 'erc-mode-hook
+            '(lambda ()
+               (setq erc-hide-list '("JOIN" "PART" "QUIT" "NICK")
+                     erc-user-full-name "Vlad Kozin"))))
 
-;; (use-package tuareg                     ; OCaml editing
-;;   :ensure t
-;;   :defer t
-;;   :config
-;;   (progn
-;;     ;; Disable SMIE indentation in Tuareg.  It's just broken currently…
-;;     (setq tuareg-use-smie nil)
+(use-package erc-join                   ; Automatically join channels with ERC
+  :defer t
+  :config
+  ;; Standard channels on Freenode
+  (setq erc-autojoin-channels-alist
+        '(("\\.freenode\\.net" . ("#racket" "#ocaml" "#haskell-beginners")))))
 
-;;     ;; Please, Tuareg, don't kill my imenu
-;;     (define-key tuareg-mode-map [?\C-c ?i] nil)
+(use-package erc-track                  ; Track status of ERC in mode line
+  :defer t
+  :config
+  ;; Switch to newest buffer by default, and don't ask before rebinding the keys
+  (setq erc-track-switch-direction 'newest
+        erc-track-enable-keybindings t))
 
-;;     ;; Also BACKSPACE, geeez
-;;     (define-key tuareg-mode-map (kbd "<backspace>") nil)
-;;     (define-key tuareg-mode-map (kbd "C-<backspace>") nil)
+
+;;; Online Help
+(use-package find-func                  ; Find function/variable definitions
+  :bind (("C-x F"   . find-function)
+         ("C-x 4 F" . find-function-other-window)
+         ("C-x K"   . find-function-on-key)
+         ("C-x V"   . find-variable)
+         ("C-x 4 V" . find-variable-other-window)))
 
-;;     ;; Gimme better indentation experience
-;;     (use-package ocp-indent
-;;       :ensure t)))
+(use-package info                       ; Info manual viewer
+  :defer t)
 
-;; (use-package merlin                     ; Powerful Emacs backend for OCaml
-;;   :ensure t
-;;   :defer t
-;;   :init (add-hook 'tuareg-mode-hook #'merlin-mode)
-;;   :config
-;;   ;; Use Merlin from current OPAM env
-;;   (setq merlin-command 'opam
-;;         ;; Disable Merlin's own error checking in favour of Flycheck
-;;         merlin-error-after-save nil))
+(use-package helm-descbinds
+  :ensure t
+  :init (helm-descbinds-mode))
 
-;; (use-package utop
-;;   :ensure t
-;;   :defer t
-;;   :init (add-hook 'tuareg-mode-hook #'utop-minor-mode))
+(use-package dash-at-point
+  :ensure t
+  :defer t
+  :bind (("C-c h d" . dash-at-point)
+         ("C-c h D" . dash-at-point-with-docset)))
 
-;; ;; TODO setup flycheck
-;; ;; -------------------
-;; ;; (use-package flycheck-ocaml             ; Check OCaml code with Merlin
-;; ;;   :ensure t
-;; ;;   :defer t
-;; ;;   :init (with-eval-after-load 'merlin
-;; ;;           (flycheck-ocaml-setup)))
+(bind-key "C-c h b" #'describe-personal-keybindings)
 
-;; ;; Quick setup for EMACS
-;; ;; -------------------
-;; ;; Add opam emacs directory to your load-path by appending this to your .emacs:
-;; ;; ;; Add opam emacs directory to the load-path
-;; ;; (setq opam-share (substring (shell-command-to-string "opam config var share 2> /dev/null") 0 -1))
-;; ;; (add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
-;; ;; ;; Load merlin-mode
-;; ;; (require 'merlin)
-;; ;; ;; Start merlin on ocaml files
-;; ;; (add-hook 'tuareg-mode-hook 'merlin-mode t)
-;; ;; (add-hook 'caml-mode-hook 'merlin-mode t)
-;; ;; ;; Enable auto-complete
-;; ;; (setq merlin-use-auto-complete-mode 'easy)
-;; ;; ;; Use opam switch to lookup ocamlmerlin binary
-;; ;; (setq merlin-command 'opam)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 
-;; ;; Take a look at https://github.com/the-lambda-church/merlin for more information
-
-;; (use-package page-break-lines           ; Turn page breaks into lines
-;;   :ensure t
-;;   :init (global-page-break-lines-mode)
-;;   :diminish page-break-lines-mode)
-
-;; ;; (defun init--install-packages ()
-;; ;;   (packages-install
-;; ;;    '(use-package
-;; ;;      dash
-;; ;;      bash-completion
-;; ;;      magit
-;; ;;      dired+
-;; ;;      yasnippet
-;; ;;      guide-key
-;; ;;      highlight-escape-sequences
-;; ;;      whitespace-cleanup-mode
-;; ;;      elisp-slime-nav
-;; ;;      smooth-scrolling
-;; ;;      undo-tree
-;; ;;      shell-command
-;; ;;      helm
-;; ;;      helm-descbinds
-;; ;;      helm-c-yasnippet
-;; ;;      helm-swoop
-;; ;;      expand-region
-;; ;;      ;; smart-forward
-;; ;;      js2-refactor
-;; ;;      js2-mode
-;; ;;      easy-kill
-;; ;;      rainbow-mode
-;; ;;      diminish
-;; ;;      whole-line-or-region
-;; ;;      smartparens
-;; ;;      perspective
-;; ;;      persp-projectile
-;; ;;      helm-projectile
-;; ;;      )))
+;;; init.el ends here
