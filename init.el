@@ -603,7 +603,10 @@ mouse-3: go to end"))))
 
 (use-package server                     ; The server of `emacsclient'
   :defer t
-  :init (server-start))
+  :functions (server-running server-start)
+  :init (with-eval-after-load 'server
+          (unless (server-running-p)
+            (server-start))))
 
 ;; Additional keybindings
 ;; TODO great one, needs better binding
@@ -894,6 +897,242 @@ Disable the highlighting of overlong lines."
   :ensure t
   :bind (("C-c ! L" . helm-flycheck)))
 
+(use-package ze-flycheck         ; Personal Flycheck helpers
+  :load-path "site-lisp/"
+  :defer t
+  :commands (ze-discard-undesired-html-tidy-error
+             ze-flycheck-mode-line-status)
+  :init (with-eval-after-load 'flycheck
+          ;; Don't highlight undesired errors from html tidy
+          (add-hook 'flycheck-process-error-functions
+                    #'ze-discard-undesired-html-tidy-error)
+
+          (setq flycheck-mode-line
+                '(:eval (ze-flycheck-mode-line-status)))))
+
+
+;;; Other editing stuff
+(use-package json-reformat              ; Reformat JSON
+  :ensure t
+  :defer t
+  :bind (("C-c u j" . json-reformat-region)))
+
+
+;;; Programming utilities
+(use-package compile                    ; Compile from Emacs
+  :bind (("C-c c" . compile)
+         ("C-c C" . recompile))
+  :config (progn
+            (setq compilation-ask-about-save nil
+                  ;; Kill old compilation processes before starting new ones,
+                  ;; and automatically scroll up to the first error.
+                  compilation-scroll-output 'first-error)
+
+            (add-to-list 'display-buffer-alist
+                         `(,(rx bos "*compilation")
+                           (display-buffer-reuse-window
+                            display-buffer-in-side-window)
+                           (side            . bottom)
+                           (reusable-frames . visible)
+                           (window-height   . 0.4)))))
+
+(use-package ze-compile          ; Personal helpers for compilation
+  :load-path "lisp/"
+  :commands (ze-colorize-compilation-buffer)
+  ;; Colorize output of Compilation Mode, see
+  ;; http://stackoverflow.com/a/3072831/355252
+  :init (add-hook 'compilation-filter-hook
+                  #'ze-colorize-compilation-buffer))
+
+(use-package highlight-numbers          ; Fontify number literals
+  :ensure t
+  :defer t
+  :init (add-hook 'prog-mode-hook #'highlight-numbers-mode))
+
+(use-package rainbow-mode               ; Fontify color values in code
+  :ensure t
+  :bind (("C-c t r" . rainbow-mode))
+  :config (dolist (hook '(css-mode-hook emacs-lisp-mode-hook))
+            (add-hook hook #'rainbow-mode)))
+
+(use-package highlight-symbol           ; Highlighting and commands for symbols
+  :ensure t
+  :defer t
+  :bind
+  (("C-c s %" . highlight-symbol-query-replace)
+   ("C-c s n" . highlight-symbol-next-in-defun)
+   ("C-c s o" . highlight-symbol-occur)
+   ("C-c s p" . highlight-symbol-prev-in-defun))
+  ;; Navigate occurrences of the symbol under point with M-n and M-p, and
+  ;; highlight symbol occurrences
+  :init (progn (add-hook 'prog-mode-hook #'highlight-symbol-nav-mode)
+               (add-hook 'prog-mode-hook #'highlight-symbol-mode))
+  :config
+  (setq highlight-symbol-idle-delay 0.4     ; Highlight almost immediately
+        highlight-symbol-on-navigation-p t) ; Highlight immediately after
+                                        ; navigation
+  :diminish highlight-symbol-mode)
+
+(use-package elide-head                 ; Elide lengthy GPL headers
+  :bind (("C-c u h" . elide-head))
+  :init (add-hook 'prog-mode-hook #'elide-head))
+
+(use-package eldoc                      ; Documentation in minibuffer
+  :defer t
+  ;; Enable Eldoc for `eval-expression', too
+  :init (add-hook 'eval-expression-minibuffer-setup-hook #'eldoc-mode)
+  :config
+  (setq-default eldoc-documentation-function #'describe-char-eldoc))
+
+
+;;; Generic Lisp
+;; TODO try `Lispy' first
+
+
+;;; Emacs Lisp
+(use-package elisp-slime-nav            ; Jump to definition of symbol at point
+  :ensure t
+  :defer t
+  :init (add-hook 'emacs-lisp-mode-hook #'elisp-slime-nav-mode)
+  :diminish elisp-slime-nav-mode)
+
+(use-package flycheck-cask              ; Setup Flycheck by Cask projects
+  :ensure t
+  :defer t
+  :init (add-hook 'flycheck-mode-hook #'flycheck-cask-setup))
+
+(use-package flycheck-package           ; Check package conventions with Flycheck
+  :ensure t
+  :defer t
+  :init (with-eval-after-load 'flycheck (flycheck-package-setup)))
+
+(use-package pcre2el                    ; Convert regexps to RX and back
+  :disabled t
+  :ensure t
+  :init (rxt-global-mode))
+
+(use-package macrostep                  ; Interactively expand macros in code
+  :ensure t
+  :defer t
+  :init (with-eval-after-load 'lisp-mode
+          (bind-key "C-c e" #'macrostep-expand emacs-lisp-mode-map)
+          (bind-key "C-c e" #'macrostep-expand lisp-interaction-mode-map)))
+
+(use-package ielm                       ; Emacs Lisp REPL
+  :bind (("C-c u z" . ielm)))
+
+(use-package lisp-mode                  ; Emacs Lisp editing
+  :defer t
+  :interpreter ("emacs" . emacs-lisp-mode)
+  :mode ("/Cask\\'" . emacs-lisp-mode)
+  :config
+  (progn
+    (require 'ert)))
+
+(use-package ze-lisp             ; Personal tools for Emacs Lisp
+  :load-path "site-lisp/"
+  :commands (ze-find-cask-file
+             ze-add-use-package-to-imenu)
+  :init (progn
+          (add-hook 'emacs-lisp-mode-hook #'ze-add-use-package-to-imenu)
+
+          (with-eval-after-load 'lisp-mode
+            (bind-key "C-c f c" #'ze-find-cask-file
+                      emacs-lisp-mode-map))))
+
+(bind-key "C-c t d" #'toggle-debug-on-error)
+
+
+;;; Scala
+
+
+;;; Python
+
+
+;;; Haskell
+
+
+;;; OCaml
+;; `https://github.com/realworldocaml/book/wiki/Installation-Instructions'
+;; brew install opam
+;; opam install core utop merlin ocp-indent
+(use-package opam                       ; Initialize Emacs with OPAM env
+  :ensure t
+  :init (opam-init))
+
+(use-package tuareg                     ; OCaml editing
+  :ensure t
+  :defer t
+  :config
+  (progn
+    ;; Disable SMIE indentation in Tuareg.  It's just broken currently…
+    (setq tuareg-use-smie nil)
+
+    ;; Please, Tuareg, don't kill my imenu
+    (define-key tuareg-mode-map [?\C-c ?i] nil)
+
+    ;; Also BACKSPACE, geeez
+    (define-key tuareg-mode-map (kbd "<backspace>") nil)
+    (define-key tuareg-mode-map (kbd "C-<backspace>") nil)
+
+    ;; Gimme better indentation experience
+    (use-package ocp-indent
+      :ensure t)))
+
+(use-package merlin                     ; Powerful Emacs backend for OCaml
+  :ensure t
+  :defer t
+  :init (add-hook 'tuareg-mode-hook #'merlin-mode)
+  :config
+  ;; Use Merlin from current OPAM env
+  (setq merlin-command 'opam
+        ;; Disable Merlin's own error checking in favour of Flycheck
+        merlin-error-after-save nil))
+
+(use-package utop
+  :ensure t
+  :defer t
+  :init (add-hook 'tuareg-mode-hook #'utop-minor-mode))
+
+(use-package flycheck-ocaml             ; Check OCaml code with Merlin
+  :ensure t
+  :defer t
+  :init (with-eval-after-load 'merlin
+          (flycheck-ocaml-setup)))
+
+
+;;; Web languages
+
+(use-package web-mode                   ; Template editing
+  :ensure t
+  :defer t
+  :config
+  (setq web-mode-markup-indent-offset 2))
+
+(use-package js2-mode                   ; Javascript editing
+  :ensure t
+  :mode "\\.js$"
+  :init
+  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
+  :config (progn
+            (setq-default js2-basic-offset 2)))
+
+(use-package css-mode
+  :defer t
+  :config
+  (progn
+    ;; Run Prog Mode hooks, because for whatever reason CSS Mode derives from
+    ;; `fundamental-mode'.
+    (add-hook 'css-mode-hook (lambda () (run-hooks 'prog-mode-hook)))
+
+    ;; Mark css-indent-offset as safe local variable.  TODO: Report upstream
+    (put 'css-indent-offset 'safe-local-variable #'integerp)))
+
+(use-package css-eldoc                  ; Basic Eldoc for CSS
+  :ensure t
+  :commands (turn-on-css-eldoc)
+  :defines (css-eldoc-hash-table)
+  :init (add-hook 'css-mode-hook #'turn-on-css-eldoc))
 
 
 ;; ;; Set up appearance early
