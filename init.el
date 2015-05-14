@@ -538,7 +538,7 @@ mouse-3: go to end"))))
 
 ;; Configure a reasonable fill column, indicate it in the buffer and enable
 ;; automatic filling
-(setq-default fill-column 75)
+(setq-default fill-column 85)
 (add-hook 'text-mode-hook #'auto-fill-mode)
 
 (use-package ze-simple           ; Personal editing helpers
@@ -650,6 +650,7 @@ mouse-3: go to end"))))
       mouse-wheel-progressive-speed nil
       mouse-wheel-scroll-amount '(1))
 
+;; TODO use avy-jump instead
 (use-package ace-jump-mode              ; Jump to characters in buffers
   :ensure t
   :bind (("C-c SPC" . ace-jump-mode)
@@ -1440,6 +1441,103 @@ Disable the highlighting of overlong lines."
          ("C-c h D" . dash-at-point-with-docset)))
 
 (bind-key "C-c h b" #'describe-personal-keybindings)
+
+
+;;; Key-bindings
+
+(use-package ze-misc
+  :load-path "site-lisp/"
+  :demand t)
+
+(use-package ze-snippet-helpers
+  :load-path "site-lisp/"
+  :demand t)
+
+;; this is XXI century PEOPLE ARE USING GUIs BY DEFAULT
+;; take C-[ and C-i back and bind em usefully
+;; `http://goo.gl/7Xmfn8'
+;; TODO bind (kbd "C-<[>")
+;; TODO bind (kbd "<C-<i>")
+(define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
+(define-key input-decode-map [?\C-i] (kbd "<C-i>"))
+
+;; Prefix should be central
+(define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
+
+;; I don't need to kill emacs that easily
+;; the mnemonic is C-x REALLY QUIT
+;; TODO 'delete-frame appears to misbehave when more than 1 frame left
+(global-set-key (kbd "C-x r q") 'save-buffers-kill-terminal)
+(global-set-key (kbd "C-x C-c") 'delete-frame)
+
+(when on-mac
+  (setq mac-command-modifier 'meta)
+  ;; (setq mac-option-modifier 'super)
+  (setq mac-option-modifier nil))
+
+;; Help
+(global-set-key (kbd "<f1>") 'help-command)
+(global-set-key (kbd "<f1> h") 'helm-apropos)
+(global-set-key (kbd "S-<f1>") 'helm-apropos)
+(global-set-key (kbd "M-<f1>") 'helm-apropos)
+
+;; Killing stuff
+(define-key key-translation-map [?\C-h] [?\C-?])
+(global-set-key (kbd "C-w") 'kill-region)
+(global-set-key (kbd "M-h") 'kill-region-or-backward-word)
+(global-set-key [remap kill-ring-save] 'easy-kill) ;M-w
+
+;; Repeat last command
+(global-set-key (kbd "<C-return>") 'repeat)
+
+;; Windows, buffers, frames
+(global-set-key (kbd "<backspace>") 'other-window)
+(global-set-key (kbd "C-<tab>") 'other-window)
+;; Toggle two most recent buffers
+(global-set-key (kbd "C-<backspace>") 'quick-switch-buffer)
+(global-set-key (kbd "S-<backspace>") 'other-frame)
+(global-set-key (kbd "M-<backspace>") 'other-frame)
+(global-set-key (kbd "<backtab>") 'other-frame)
+(global-set-key (kbd "C-c <tab>") 'prelude-swap-windows)
+(global-set-key (kbd "C-c <backspace>") 'i-meant-other-window)
+
+(global-set-key (kbd "C-x 3") 'split-window-right-and-move-there-dammit)
+
+;; Navigation bindings
+;; TODO 'smart-bindings are questionable do I really need these?
+(global-set-key (kbd "M-p") 'backward-paragraph)
+(global-set-key (kbd "M-n") 'forward-paragraph)
+
+
+;; Expand region (increases selected region by semantic units)
+
+;; Comment/uncomment block
+(global-set-key (kbd "C-c c") 'comment-or-uncomment-region-or-line)
+(global-set-key (kbd "C-c u") 'uncomment-region)
+
+;; experimental
+;; TODO are there better commands than pop-to-mark
+(global-set-key (kbd "C-j") 'pop-to-mark-command)
+
+;; alternate between beginning of text and line
+(global-set-key [remap move-beginning-of-line] 'prelude-move-beginning-of-line)
+
+;; Swap undo and universal argument
+(define-key undo-tree-map (kbd "C-/") nil)
+(define-key undo-tree-map (kbd "C-?") nil)
+(define-key undo-tree-map (kbd "C-_") nil)
+(global-set-key (kbd "C-u") 'undo-tree-undo)
+(global-set-key (kbd "C-S-u") 'undo-tree-redo)
+(global-set-key (kbd "C-M-u") 'undo-tree-visualize)
+(global-set-key (kbd "C-/") 'universal-argument)
+(global-set-key (kbd "C-?") 'negative-argument)
+(global-set-key (kbd "C--") 'set-mark-command)
+(global-set-key (kbd "M-m") 'set-mark-command)
+
+;; Duplicate region
+(global-set-key (kbd "C-c d") 'prelude-duplicate-current-line-or-region)
+(global-set-key (kbd "C-c M-d") 'prelude-duplicate-and-comment-current-line-or-region)
+
 
 ;; Local Variables:
 ;; coding: utf-8
