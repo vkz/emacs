@@ -31,15 +31,15 @@
 (setq message-log-max 10000)
 
 
-;;; Package management
+;;; Bootstrap
 
 ;; Please don't load outdated byte code
 (setq load-prefer-newer t)
 
+;; Package
 (require 'package)
 (setq package-enable-at-startup nil)
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-
 (package-initialize)
 
 ;; Bootstrap `use-package'
@@ -58,9 +58,6 @@
 ;; Always use emacs.d of the current init.el
 (setq user-emacs-directory (file-name-directory (file-truename (ze/this-file))))
 
-
-;;; Requires
-
 (eval-when-compile
   (require 'use-package))
 
@@ -75,7 +72,7 @@
   (dash-enable-font-lock))
 
 
-;;; Initialisations and environment fixup
+;;; Env
 (setq inhibit-default-init t)
 
 ;; Environment fixup
@@ -117,7 +114,7 @@
   :init (load ze/custom-file 'no-error 'no-message))
 
 
-;;; OS X support
+;;; OS X
 (defconst on-mac (eq system-type 'darwin)
   "Are we on OSX?")
 
@@ -146,7 +143,7 @@ Install Trash from https://github.com/ali-rantakari/trash!
 Homebrew: brew install trash")))
 
 
-;;; User interface
+;;; Look and feel
 
 ;; Get rid of tool bar, menu bar and scroll bars.  On OS X we preserve the menu
 ;; bar, since the top menu bar is always visible anyway, and we'd just empty it
@@ -176,32 +173,40 @@ Homebrew: brew install trash")))
              ze/insert-logo-into-scratch)
   :init (add-hook 'emacs-startup-hook #'ze/insert-logo-into-scratch))
 
-;; (use-package sanityinc-tomorrow-night-theme                  ; My colour theme
-;;   :load-path "themes/")
+;; Custom themes
+(when (boundp 'custom-theme-load-path)
+  (add-to-list 'custom-theme-load-path
+               (file-name-as-directory
+                (expand-file-name "themes" user-emacs-directory))))
 
-(use-package solarized                  ; My colour theme
-  :ensure solarized-theme
+(use-package sanityinc-tomorrow-night-theme                ; My color theme
+  :load-path "themes/"
   :defer t
-  :init (load-theme 'solarized-light 'no-confirm)
-  :config nil
+  :init (load-theme 'sanityinc-tomorrow-night 'no-confirm)
+  :config nil)
 
-  ;; Disable variable pitch fonts in Solarized theme
-  ;; (setq solarized-use-variable-pitch nil
-  ;;       ;; Don't add too much colours to the fringe
-  ;;       solarized-emphasize-indicators nil
-  ;;       ;; I find different font sizes irritating.
-  ;;       solarized-height-minus-1 1.0
-  ;;       solarized-height-plus-1 1.0
-  ;;       solarized-height-plus-2 1.0
-  ;;       solarized-height-plus-3 1.0
-  ;;       solarized-height-plus-4 1.0)
-  )
+(use-package solarized
+  :ensure solarized-theme
+  :disabled t
+  :defer t
+  :init (load-theme 'solarized-dark 'no-confirm)
+  :config nil)
 
 (use-package dynamic-fonts              ; Select best available font
   :ensure t
   :config
   (progn
     (setq
+     dynamic-fonts-preferred-monospace-fonts
+     '(
+       "Monaco"
+       "Menlo"
+       "Fira Mono"
+       "DejaVu Sans Mono"
+       "Inconsolata"
+       "Consolas"
+       "Bitstream Vera Mono"
+       "Courier New")
      dynamic-fonts-preferred-monospace-point-size (pcase system-type
                                                     (`darwin 16)
                                                     (_ 10))
@@ -224,7 +229,6 @@ Homebrew: brew install trash")))
                                                        (`darwin 16)
                                                        (_ 10)))
     (dynamic-fonts-setup)))
-
 
 ;; don't wrap lines ever
 (setq-default truncate-lines t)
