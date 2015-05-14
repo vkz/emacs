@@ -34,7 +34,7 @@
 
 (defun ze/move-file-to-trash (file)
   "Move FILE to trash on OS X."
-  (call-process lunaryorn-darwin-trash-tool nil nil nil (expand-file-name file)))
+  (call-process ze/trash-tool nil nil nil (expand-file-name file)))
 
 (defun ze/homebrew-prefix (&optional formula)
   "Get the homebrew prefix for FORMULA.
@@ -53,7 +53,7 @@ directory does not exist."
 
 Without FORMULA determine whether Homebrew itself is available."
   (if formula
-      (lunaryorn-homebrew-prefix formula)
+      (ze/homebrew-prefix formula)
     (executable-find "brew")))
 
 (provide 'ze-osx)

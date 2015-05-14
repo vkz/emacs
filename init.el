@@ -381,22 +381,12 @@ mouse-3: go to end"))))
                     (unless (eq ibuffer-sorting-mode 'alphabetic)
                       (ibuffer-do-sort-by-alphabetic)))))
 
+;; TODO appears to be OFF by default
 (use-package ibuffer-projectile         ; Group buffers by Projectile project
   :ensure t
   :defer t)
 
-(use-package ze-window
-  :load-path "site-lisp/"
-  :defer t
-  :bind ("C-c q" . ze-quit-bottom-side-windows))
-
-(use-package windmove                   ; Move between windows with Shift+Arrow
-  :bind (("S-<left>"  . windmove-left)
-         ("S-<right>" . windmove-right)
-         ("S-<up>"    . windmove-up)
-         ("S-<down>"  . windmove-down)))
-
-
+;; TODO deserves a good binding
 (use-package winner                     ; Undo and redo window configurations
   :init (winner-mode))
 
