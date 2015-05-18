@@ -72,7 +72,7 @@
   (dash-enable-font-lock))
 
 
-;;; Env
+;;; zeBasics
 (setq inhibit-default-init t)
 
 ;; Environment fixup
@@ -97,8 +97,7 @@
         (when dir
           (add-to-list 'Info-directory-list dir))))))
 
-
-;;; Customization interface
+;; Customization interface
 (defconst ze/custom-file (locate-user-emacs-file "custom.el")
   "File used to store settings from Customization UI.")
 
@@ -113,8 +112,28 @@
         custom-unlispify-menu-entries nil)
   :init (load ze/custom-file 'no-error 'no-message))
 
-
-;;; OS X
+;; zeMinibuffer
+(setq history-length 1000)              ; Store more history
+
+(use-package savehist                   ; Save minibuffer history
+  :init (savehist-mode t)
+  :config (setq savehist-save-minibuffer-history t
+                savehist-autosave-interval 180))
+
+(use-package desktop                    ; Save buffers, windows and frames
+  :init (desktop-save-mode)
+  :config (progn
+            ;; Save desktops a minute after Emacs was idle.
+            (setq desktop-auto-save-timeout 60)
+
+            (dolist (mode '(magit-mode git-commit-mode))
+              (add-to-list 'desktop-modes-not-to-save mode))))
+
+;; TODO deserves a good binding
+(use-package winner                     ; Undo and redo window configurations
+  :init (winner-mode))
+
+;; OSX
 (defconst on-mac (eq system-type 'darwin)
   "Are we on OSX?")
 
@@ -142,8 +161,36 @@
 Install Trash from https://github.com/ali-rantakari/trash!
 Homebrew: brew install trash")))
 
+;; Keep backup and auto save files out of the way
+(setq backup-directory-alist `((".*" . ,(locate-user-emacs-file ".backup")))
+      auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+
+;; Delete files to trash
+(setq delete-by-moving-to-trash
+      (or (not (eq system-type 'darwin)) ; Trash is well supported on other
+                                        ; systems
+          (fboundp 'system-move-file-to-trash)))
+
+(use-package server                     ; The server of `emacsclient'
+  :defer t
+  :functions (server-running server-start)
+  :init (with-eval-after-load 'server
+          (unless (server-running-p)
+            (server-start))))
+
 
-;;; Look and feel
+;;; zeHelpers
+
+(use-package ze-misc
+  :load-path "site-lisp/"
+  :demand t)
+
+(use-package ze-snippet-helpers
+  :load-path "site-lisp/"
+  :demand t)
+
+
+;;; zeLook'n'Feel
 
 ;; Get rid of tool bar, menu bar and scroll bars.  On OS X we preserve the menu
 ;; bar, since the top menu bar is always visible anyway, and we'd just empty it
@@ -155,9 +202,9 @@ Homebrew: brew install trash")))
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
 
-;; No blinking and beeping, no startup screen, no scratch message and short
+;; No beeping, no startup screen, no scratch message and short
 ;; Yes/No questions.
-(blink-cursor-mode -1)
+(blink-cursor-mode 1)
 (setq ring-bell-function #'ignore
       font-lock-maximum-decoration t
       truncate-partial-width-windows nil
@@ -238,9 +285,80 @@ Homebrew: brew install trash")))
 (if (fboundp 'fringe-mode)
     (fringe-mode 4))
 
-
-;;; The mode line
+;; Frames
+(setq frame-resize-pixelwise t          ; Resize by pixels
+      frame-title-format
+      '(:eval (if (buffer-file-name)
+                  (abbreviate-file-name (buffer-file-name)) "%b")))
 
+(use-package frame
+  :bind (("C-c t F" . toggle-frame-fullscreen))
+  :init (progn
+          ;; Kill `suspend-frame'
+          (global-set-key (kbd "C-z") nil)
+          (global-set-key (kbd "C-x C-z") nil))
+  :config (add-to-list 'initial-frame-alist '(fullscreen . maximized)))
+
+(setq scroll-margin 0                   ; Drag the point along while scrolling
+      scroll-conservatively 1000        ; Never recenter the screen while scrolling
+      scroll-error-top-bottom t         ; Move to beg/end of buffer before
+                                        ; signalling an error
+      ;; These settings make trackpad scrolling on OS X much more predictable
+      ;; and smooth
+      mouse-wheel-progressive-speed nil
+      mouse-wheel-scroll-amount '(1))
+
+(use-package page-break-lines           ; Turn page breaks into lines
+  :ensure t
+  :init (global-page-break-lines-mode)
+  :diminish page-break-lines-mode)
+
+;; A function to disable highlighting of long lines in modes
+(defun ze-whitespace-style-no-long-lines ()
+  "Configure `whitespace-mode' for Org.
+
+Disable the highlighting of overlong lines."
+  (setq-local whitespace-style (-difference whitespace-style
+                                            '(lines lines-tail))))
+
+(defun ze-whitespace-mode-local ()
+  "Enable `whitespace-mode' after local variables where set up."
+  (add-hook 'hack-local-variables-hook #'whitespace-mode nil 'local))
+
+(use-package whitespace                 ; Highlight bad whitespace
+  :bind (("C-c t w" . whitespace-mode))
+  :init (dolist (hook '(prog-mode-hook text-mode-hook conf-mode-hook))
+          (add-hook hook #'ze-whitespace-mode-local))
+  :config
+  ;; Highlight tabs, empty lines at beg/end, trailing whitespaces and overlong
+  ;; portions of lines via faces.  Also indicate tabs via characters
+  (setq whitespace-style '(face indentation space-after-tab space-before-tab
+                                tab-mark empty trailing lines-tail)
+        whitespace-line-column nil)     ; Use `fill-column' for overlong lines
+  :diminish whitespace-mode)
+
+(use-package hl-line                    ; Highlight the current line
+  :init (global-hl-line-mode 1))
+
+(use-package paren                      ; Highlight paired delimiters
+  :init (show-paren-mode)
+  :config (setq show-paren-when-point-inside-paren t
+                show-paren-when-point-in-periphery t))
+
+(use-package rainbow-delimiters         ; Highlight delimiters by depth
+  :ensure t
+  :defer t
+  :init (dolist (hook '(text-mode-hook prog-mode-hook))
+          (add-hook hook #'rainbow-delimiters-mode)))
+
+;; TODO seems like replacement for my TODO, HACK, STUDY, NOTE hacks
+(use-package hi-lock                    ; Custom regexp highlights
+  :init (global-hi-lock-mode))
+
+
+;;; zeModeline
+
+;; TODO smart-mode-line with powerline theme
 (setq-default header-line-format
               '(which-func-mode ("" which-func-format " "))
               mode-line-format
@@ -308,29 +426,7 @@ mouse-2: toggle rest visibility\n\
 mouse-3: go to end"))))
 
 
-;;; The minibuffer
-(setq history-length 1000)              ; Store more history
-
-(use-package savehist                   ; Save minibuffer history
-  :init (savehist-mode t)
-  :config (setq savehist-save-minibuffer-history t
-                savehist-autosave-interval 180))
-
-
-;;; Buffer, Windows and Frames
-
-(setq frame-resize-pixelwise t          ; Resize by pixels
-      frame-title-format
-      '(:eval (if (buffer-file-name)
-                  (abbreviate-file-name (buffer-file-name)) "%b")))
-
-(use-package frame
-  :bind (("C-c t F" . toggle-frame-fullscreen))
-  :init (progn
-          ;; Kill `suspend-frame'
-          (global-set-key (kbd "C-z") nil)
-          (global-set-key (kbd "C-x C-z") nil))
-  :config (add-to-list 'initial-frame-alist '(fullscreen . maximized)))
+;;; zeBuffers
 
 (use-package ze-buffers          ; Personal buffer tools
   :load-path "site-lisp/"
@@ -386,46 +482,11 @@ mouse-3: go to end"))))
   :ensure t
   :defer t)
 
-;; TODO deserves a good binding
-(use-package winner                     ; Undo and redo window configurations
-  :init (winner-mode))
-
-(use-package ediff-wind
-  :defer t
-  :config
-  ;; Prevent Ediff from spamming the frame
-  (setq ediff-window-setup-function #'ediff-setup-windows-plain
-        ediff-split-window-function #'split-window-horizontally))
-
-(use-package desktop                    ; Save buffers, windows and frames
-  :init (desktop-save-mode)
-  :config (progn
-            ;; Save desktops a minute after Emacs was idle.
-            (setq desktop-auto-save-timeout 60)
-
-            (dolist (mode '(magit-mode git-commit-mode))
-              (add-to-list 'desktop-modes-not-to-save mode))))
-
-;; TODO really needs auto-fill mode wrapping around 80 or so
-(use-package writeroom-mode             ; Distraction-free editing
-  :ensure t
-  :bind (("C-c t R" . writeroom-mode)))
-
 
-;;; File handling
-
-;; Keep backup and auto save files out of the way
-(setq backup-directory-alist `((".*" . ,(locate-user-emacs-file ".backup")))
-      auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
-
-;; Delete files to trash
-(setq delete-by-moving-to-trash
-      (or (not (eq system-type 'darwin)) ; Trash is well supported on other
-                                        ; systems
-          (fboundp 'system-move-file-to-trash)))
+;;; zeFiles
 
 (use-package files
-  :bind (("C-c f u" . revert-buffer))
+  :bind (("C-c f v" . revert-buffer))
   :config
   ;; Use GNU ls for Emacs
   (-when-let (gnu-ls (and (eq system-type 'darwin) (executable-find "gls")))
@@ -462,7 +523,7 @@ mouse-3: go to end"))))
             (concat dired-listing-switches " --group-directories-first -v")))))
 
 (use-package dired-x                    ; Additional tools for Dired
-  :bind (("C-x C-j" . dired-jump))
+  :bind (("C-x J" . dired-jump))
   :config
   (progn
     (setq dired-omit-verbose nil)        ; Shut up, dired
@@ -478,11 +539,6 @@ mouse-3: go to end"))))
 (use-package hardhat                    ; Protect user-writable files
   :ensure t
   :init (global-hardhat-mode))
-
-(use-package bookmark                   ; Bookmarks for Emacs buffers
-  :bind (("C-c l b" . list-bookmarks))
-  ;; Save bookmarks immediately after a bookmark was added
-  :config (setq bookmark-save-flag 1))
 
 (use-package recentf                    ; Save recently visited files
   :init (recentf-mode)
@@ -516,7 +572,7 @@ mouse-3: go to end"))))
   :init (global-launch-mode))
 
 
-;;; Basic editing
+;;; zeEditor
 
 ;; Disable tabs, but given them proper width
 (setq-default indent-tabs-mode nil
@@ -524,6 +580,7 @@ mouse-3: go to end"))))
 ;; Make Tab complete if the line is indented
 (setq tab-always-indent 'complete)
 
+;; TODO replace with custom pairing in js2-mode and smartparens elsewhere
 (use-package elec-pair                  ; Electric pairs
   :init (electric-pair-mode))
 
@@ -538,11 +595,13 @@ mouse-3: go to end"))))
 
 ;; Configure a reasonable fill column, indicate it in the buffer and enable
 ;; automatic filling
+;; TODO reasonable on my Air is around 65
 (setq-default fill-column 85)
 (add-hook 'text-mode-hook #'auto-fill-mode)
 
+;; TODO revise and reconcile with my current bindings and functions
 (use-package ze-simple           ; Personal editing helpers
-  :load-path "lisp/"
+  :load-path "site-lisp/"
   :bind (([remap kill-whole-line]        . ze-smart-kill-whole-line)
          ([remap move-beginning-of-line] . ze-back-to-indentation-or-beginning-of-line)
          ("C-<backspace>"                . ze-smart-backward-kill-line)
@@ -578,11 +637,13 @@ mouse-3: go to end"))))
   :ensure t
   :bind (("C-c y" . browse-kill-ring)))
 
+;; TODO deserves better binding? Try actually using it.
 (use-package zop-to-char
   :ensure t
   :bind (("M-z" . zop-to-char)
          ("M-Z" . zop-up-to-char)))
 
+;; TODO try actually using it!
 (use-package easy-kill                  ; Easy killing and marking on C-w
   :ensure t
   :bind (([remap kill-ring-save] . easy-kill)
@@ -593,6 +654,8 @@ mouse-3: go to end"))))
          ("C-c A c" . align-current)
          ("C-c A r" . align-regexp)))
 
+;; TODO deserves easier binding (paired with `expand-region', maybe using
+;; `hydra')
 (use-package multiple-cursors           ; Edit text with multiple cursors
   :ensure t
   :bind (("C-c m e"   . mc/mark-more-like-this-extended)
@@ -628,42 +691,15 @@ mouse-3: go to end"))))
 (put 'narrow-to-page 'disabled nil)
 (put 'narrow-to-defun 'disabled nil)
 
-(use-package server                     ; The server of `emacsclient'
-  :defer t
-  :functions (server-running server-start)
-  :init (with-eval-after-load 'server
-          (unless (server-running-p)
-            (server-start))))
+;; Other key-bindings for editing
 
-;; Additional keybindings
 ;; TODO great one, needs better binding
 (bind-key [remap just-one-space] #'cycle-spacing)
 
 
-;;; Navigation and scrolling
-(setq scroll-margin 0                   ; Drag the point along while scrolling
-      scroll-conservatively 1000        ; Never recenter the screen while scrolling
-      scroll-error-top-bottom t         ; Move to beg/end of buffer before
-                                        ; signalling an error
-      ;; These settings make trackpad scrolling on OS X much more predictable
-      ;; and smooth
-      mouse-wheel-progressive-speed nil
-      mouse-wheel-scroll-amount '(1))
+;;; zeNavigator
 
-;; TODO use avy-jump instead
-(use-package ace-jump-mode              ; Jump to characters in buffers
-  :ensure t
-  :bind (("C-c SPC" . ace-jump-mode)
-         ("C-c j"   . ace-jump-mode)
-         ("C-c J"   . ace-jump-mode-pop-mark))
-  :config
-  ;; Sync marks with Emacs built-in commands
-  (ace-jump-mode-enable-mark-sync))
-
-(use-package page-break-lines           ; Turn page breaks into lines
-  :ensure t
-  :init (global-page-break-lines-mode)
-  :diminish page-break-lines-mode)
+;; TODO `avy-jump'
 
 (use-package outline                    ; Navigate outlines in buffers
   :defer t
@@ -676,8 +712,9 @@ mouse-3: go to end"))))
   :ensure t
   :bind (("C-c i" . helm-imenu-anywhere)))
 
-
-;;; Search
+;; TODO `swiper'
+
+;; Search
 (use-package isearch                    ; Search buffers
   :bind (("C-c s s" . isearch-forward-symbol-at-point)))
 
@@ -711,8 +748,10 @@ mouse-3: go to end"))))
   :defer t)
 
 
-;;; Helm
+;;; zeHelm
 
+;; TODO reconcile this with my current helm settings
+;; TODO pick and bind stuff that I actually use
 (use-package helm
   :ensure t
   :bind (
@@ -767,52 +806,7 @@ mouse-3: go to end"))))
   :config (setq helm-ag-fuzzy-match t))
 
 
-;;; Highlights
-
-;; A function to disable highlighting of long lines in modes
-(defun ze-whitespace-style-no-long-lines ()
-  "Configure `whitespace-mode' for Org.
-
-Disable the highlighting of overlong lines."
-  (setq-local whitespace-style (-difference whitespace-style
-                                            '(lines lines-tail))))
-
-(defun ze-whitespace-mode-local ()
-  "Enable `whitespace-mode' after local variables where set up."
-  (add-hook 'hack-local-variables-hook #'whitespace-mode nil 'local))
-
-(use-package whitespace                 ; Highlight bad whitespace
-  :bind (("C-c t w" . whitespace-mode))
-  :init (dolist (hook '(prog-mode-hook text-mode-hook conf-mode-hook))
-          (add-hook hook #'ze-whitespace-mode-local))
-  :config
-  ;; Highlight tabs, empty lines at beg/end, trailing whitespaces and overlong
-  ;; portions of lines via faces.  Also indicate tabs via characters
-  (setq whitespace-style '(face indentation space-after-tab space-before-tab
-                                tab-mark empty trailing lines-tail)
-        whitespace-line-column nil)     ; Use `fill-column' for overlong lines
-  :diminish whitespace-mode)
-
-(use-package hl-line                    ; Highlight the current line
-  :init (global-hl-line-mode 1))
-
-(use-package paren                      ; Highlight paired delimiters
-  :init (show-paren-mode)
-  :config (setq show-paren-when-point-inside-paren t
-                show-paren-when-point-in-periphery t))
-
-(use-package rainbow-delimiters         ; Highlight delimiters by depth
-  :ensure t
-  :defer t
-  :init (dolist (hook '(text-mode-hook prog-mode-hook))
-          (add-hook hook #'rainbow-delimiters-mode)))
-
-;; TODO seems like replacement for my TODO, HACK, STUDY, NOTE hacks
-(use-package hi-lock                    ; Custom regexp highlights
-  :init (global-hi-lock-mode))
-
-
-;;; Skeletons, completion and expansion
+;;; Completion
 
 ;; In `completion-at-point', do not pop up silly completion buffers for less
 ;; than five candidates.  Cycle instead.
@@ -939,14 +933,8 @@ Disable the highlighting of overlong lines."
                 '(:eval (ze-flycheck-mode-line-status)))))
 
 
-;;; Other editing stuff
-(use-package json-reformat              ; Reformat JSON
-  :ensure t
-  :defer t
-  :bind (("C-c u j" . json-reformat-region)))
+;;; General programming
 
-
-;;; Programming utilities
 (use-package compile                    ; Compile from Emacs
   :bind (("C-c c" . compile)
          ("C-c C" . recompile))
@@ -965,7 +953,7 @@ Disable the highlighting of overlong lines."
                            (window-height   . 0.4)))))
 
 (use-package ze-compile          ; Personal helpers for compilation
-  :load-path "lisp/"
+  :load-path "site-lisp/"
   :commands (ze-colorize-compilation-buffer)
   ;; Colorize output of Compilation Mode, see
   ;; http://stackoverflow.com/a/3072831/355252
@@ -1013,7 +1001,8 @@ Disable the highlighting of overlong lines."
   (setq-default eldoc-documentation-function #'describe-char-eldoc))
 
 
-;;; Generic Lisp
+;;; General lisp programming
+
 ;; TODO try `Lispy' first
 
 
@@ -1071,7 +1060,13 @@ Disable the highlighting of overlong lines."
 (bind-key "C-c t d" #'toggle-debug-on-error)
 
 
+;;; Racket
+
+
 ;;; Scala
+
+
+;;; Clojure
 
 
 ;;; Python
@@ -1129,7 +1124,7 @@ Disable the highlighting of overlong lines."
           (flycheck-ocaml-setup)))
 
 
-;;; Web languages
+;;; JavaScript and zeWebs
 
 (use-package web-mode                   ; Template editing
   :ensure t
@@ -1163,7 +1158,7 @@ Disable the highlighting of overlong lines."
   :init (add-hook 'css-mode-hook #'turn-on-css-eldoc))
 
 
-;;; Version control
+;;; zeVC
 (use-package vc-hooks                   ; Simple version control
   :defer t
   :config
@@ -1253,7 +1248,7 @@ Disable the highlighting of overlong lines."
   :bind (("C-c v t" . git-timemachine)))
 
 
-;;; Project management with Projectile
+;;; Project management
 (use-package projectile
   :ensure t
   :init (projectile-global-mode)
@@ -1286,6 +1281,12 @@ Disable the highlighting of overlong lines."
 
 
 ;;; Tools and utilities
+
+(use-package json-reformat              ; Reformat JSON
+  :ensure t
+  :defer t
+  :bind (("C-c u j" . json-reformat-region)))
+
 (use-package bug-reference              ; Turn bug references into buttons
   :defer t
   :init (progn (add-hook 'prog-mode-hook #'bug-reference-prog-mode)
@@ -1326,8 +1327,7 @@ Disable the highlighting of overlong lines."
 (use-package bug-hunter                 ; Search init file for bugs
   :ensure t)
 
-
-;;; Terminal emulation and shells
+;; Terminal emulation and shells
 (use-package shell                      ; Dumb shell in Emacs
   :bind ("C-c u s" . shell)
   :config (add-to-list 'display-buffer-alist
@@ -1341,8 +1341,7 @@ Disable the highlighting of overlong lines."
 (use-package term                       ; Terminal emulator in Emacs
   :bind ("C-c u S" . ansi-term))
 
-
-;;; Net & Web
+;; Net & Web
 (use-package browse-url                 ; Browse URLs
   :bind (("C-c w u" . browse-url)))
 
@@ -1419,7 +1418,7 @@ Disable the highlighting of overlong lines."
         erc-track-enable-keybindings t))
 
 
-;;; Online Help
+;;; Help
 (use-package find-func                  ; Find function/variable definitions
   :bind (("C-x F"   . find-function)
          ("C-x 4 F" . find-function-other-window)
@@ -1442,16 +1441,26 @@ Disable the highlighting of overlong lines."
 
 (bind-key "C-c h b" #'describe-personal-keybindings)
 
+(use-package ediff-wind
+  :defer t
+  :config
+  ;; Prevent Ediff from spamming the frame
+  (setq ediff-window-setup-function #'ediff-setup-windows-plain
+        ediff-split-window-function #'split-window-horizontally))
+
+;; TODO really needs auto-fill mode wrapping around 80 or so
+(use-package writeroom-mode             ; Distraction-free editing
+  :ensure t
+  :bind (("C-c t R" . writeroom-mode)))
+
+(use-package bookmark                   ; Bookmarks for Emacs buffers
+  :bind (("C-c l b" . list-bookmarks))
+  ;; Save bookmarks immediately after a bookmark was added
+  :config (setq bookmark-save-flag 1))
+
 
 ;;; Key-bindings
 
-(use-package ze-misc
-  :load-path "site-lisp/"
-  :demand t)
-
-(use-package ze-snippet-helpers
-  :load-path "site-lisp/"
-  :demand t)
 
 ;; this is XXI century PEOPLE ARE USING GUIs BY DEFAULT
 ;; take C-[ and C-i back and bind em usefully
