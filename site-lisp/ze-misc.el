@@ -9,6 +9,7 @@
      (interactive)
      ,@body))
 
+;;;###autoload
 (defun my-start-or-switch-to (function buffer-name &optional here)
   "Invoke FUNCTION if there is no buffer with BUFFER-NAME.
 Otherwise switch to the buffer named BUFFER-NAME.  Don't clobber
@@ -21,19 +22,23 @@ the current buffer."
       (unless here (other-window 1))
       (funcall function))))
 
+;;;###autoload
 (defun start-or-switch-to-shell (&optional here)
   (interactive)
   (my-start-or-switch-to 'shell "*shell*" here))
 
+;;;###autoload
 (defun start-or-switch-to-nodejs ()
   (interactive)
   (my-start-or-switch-to 'nodejs-repl "*nodejs*"))
 
+;;;###autoload
 (defun prelude-top-join-line ()
   "Join the current line with the line beneath it."
   (interactive)
   (delete-indentation 1))
 
+;;;###autoload
 (defun prelude-get-positions-of-line-or-region ()
   "Return positions (beg . end) of the current line
 or region."
@@ -46,6 +51,7 @@ or region."
     (setq end (line-end-position))
     (cons beg end)))
 
+;;;###autoload
 (defun prelude-duplicate-current-line-or-region (arg)
   "Duplicates the current line or region ARG times.
 If there's no region, the current line will be duplicated.  However, if
@@ -62,6 +68,7 @@ there's a region, all lines that region covers will be duplicated."
         (setq end (point))))
     (goto-char (+ origin (* (length region) arg) arg))))
 
+;;;###autoload
 (defun prelude-duplicate-and-comment-current-line-or-region (arg)
   "Duplicates and comments the current line or region ARG times.
 If there's no region, the current line will be duplicated.  However, if
@@ -81,6 +88,7 @@ there's a region, all lines that region covers will be duplicated."
     (goto-char (+ origin (* (length region) arg) arg))))
 
 (require 'windmove)
+;;;###autoload
 (defun prelude-swap-windows ()
   "If you have 2 windows, it swaps them."
   (interactive)
@@ -99,6 +107,7 @@ there's a region, all lines that region covers will be duplicated."
   (let ((leftmost (or (windmove-find-other-window 'left) (selected-window))))
     (select-window leftmost)))
 
+;;;###autoload
 (defun prelude-move-beginning-of-line (arg)
   "Move point back to indentation of beginning of line.
 
@@ -122,6 +131,7 @@ point reaches the beginning or end of the buffer, stop there."
     (when (= orig-point (point))
       (move-beginning-of-line 1))))
 
+;;;###autoload
 (defun prelude-kill-whole-line (&optional arg)
   "A simple wrapper around command `kill-whole-line' that respects indentation.
 Passes ARG to command `kill-whole-line' when provided."
@@ -129,30 +139,33 @@ Passes ARG to command `kill-whole-line' when provided."
   (kill-whole-line arg)
   (back-to-indentation))
 
-;; From Magnars
-;; kill region if active, otherwise kill backward word
+;;;###autoload
 (defun kill-region-or-backward-word ()
   (interactive)
   (if (region-active-p)
       (kill-region (region-beginning) (region-end))
     (backward-kill-word 1)))
 
+;;;###autoload
 (defun kill-and-retry-line ()
   "Kill the entire current line and reposition point at indentation"
   (interactive)
   (back-to-indentation)
   (kill-line))
 
+;;;###autoload
 (defun kill-to-beginning-of-line ()
   (interactive)
   (kill-region (save-excursion (beginning-of-line) (point))
                (point)))
 
+;;;###autoload
 (defun split-window-right-and-move-there-dammit ()
   (interactive)
   (split-window-right)
   (windmove-right))
 
+;;;###autoload
 (defun eval-and-replace ()
   "Replace the preceding sexp with its value."
   (interactive)
@@ -163,10 +176,12 @@ Passes ARG to command `kill-whole-line' when provided."
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
 
+;;;###autoload
 (defun region-as-string ()
   (buffer-substring (region-beginning)
                     (region-end)))
 
+;;;###autoload
 (defun isearch-forward-use-region ()
   (interactive)
   (when (region-active-p)
@@ -174,6 +189,7 @@ Passes ARG to command `kill-whole-line' when provided."
     (deactivate-mark))
   (call-interactively 'isearch-forward))
 
+;;;###autoload
 (defun isearch-backward-use-region ()
   (interactive)
   (when (region-active-p)
@@ -181,6 +197,7 @@ Passes ARG to command `kill-whole-line' when provided."
     (deactivate-mark))
   (call-interactively 'isearch-backward))
 
+;;;###autoload
 (defun comment-or-uncomment-region-or-line ()
   (interactive)
   (if (region-active-p)
@@ -190,6 +207,7 @@ Passes ARG to command `kill-whole-line' when provided."
                                    (save-excursion (end-of-line) (point)))
       (next-line))))
 
+;;;###autoload
 (defun create-scratch-buffer nil
   "create a new scratch buffer to work in. (could be *scratch* - *scratchX*)"
   (interactive)
@@ -205,6 +223,7 @@ Passes ARG to command `kill-whole-line' when provided."
     (emacs-lisp-mode)
     ))
 
+;;;###autoload
 (defun font-lock-comment-annotations (mode)
   (font-lock-add-keywords
    mode
@@ -214,6 +233,7 @@ Passes ARG to command `kill-whole-line' when provided."
      ("\\<\\(IMPORTANT\\)" 1 'font-lock-important-annotation t)
      ("\\<\\(NOTE\\)" 1 'font-lock-note-annotation t))))
 
+;;;###autoload
 (defun comment-annotations-in-modes (modes)
   "Highlight a bunch of well known comment annotations."
   (mapc 'font-lock-comment-annotations
@@ -222,12 +242,14 @@ Passes ARG to command `kill-whole-line' when provided."
 (autoload 'zap-up-to-char "misc"
   "Kill up to, but not including ARGth occurrence of CHAR.")
 
+;;;###autoload
 (defun quick-switch-buffer ()
   "Quickly swap current buffer with the one its hiding."
   (interactive)
   (let (buf (car (helm-buffer-list)))
     (pop-to-buffer-same-window buf)))
 
+;;;###autoload
 (defun i-meant-other-window ()
   "Oh, I meant find file or buffer in the other window."
   (interactive)
@@ -235,6 +257,7 @@ Passes ARG to command `kill-whole-line' when provided."
     (bury-buffer)
     (switch-to-buffer-other-window buf)))
 
+;;;###autoload
 (defun helm-mini/projectile-switch ()
   (interactive)
   (let* ((vkz-session helm-buffer)
@@ -245,6 +268,7 @@ Passes ARG to command `kill-whole-line' when provided."
     (helm-run-after-quit switch-to)))
 
 
+;;;###autoload
 (defun er/line-wise-select-advice ()
   "Expand region to whole lines whenever as long as the initial
 mark wasn't set by `expand-region'."

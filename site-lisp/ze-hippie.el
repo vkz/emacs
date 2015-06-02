@@ -27,6 +27,7 @@
 
 (require 'ze-lisp)
 
+;;;###autoload
 (defun try-complete-lisp-symbol-without-namespace (old)
   "Hippie expand \"try\" function which expands \"-foo\" to \"modname-foo\" in elisp."
   (unless old
@@ -44,6 +45,7 @@
 (defvar he-search-loc-backward (make-marker))
 (defvar he-search-loc-forward (make-marker))
 
+;;;###autoload
 (defun try-expand-dabbrev-closest-first (old)
   "Try to expand word \"dynamically\", searching the current buffer.
 The argument OLD has to be nil the first call of this function, and t
@@ -113,6 +115,7 @@ string).  It returns t if a new expansion is found, nil otherwise."
         (he-substitute-string expansion t)
         t))))
 
+;;;###autoload
 (defun try-expand-line-closest-first (old)
   "Try to complete the current line to an entire line in the buffer.
 The argument OLD has to be nil the first call of this function, and t
@@ -187,7 +190,7 @@ string).  It returns t if a new completion is found, nil otherwise."
         (he-substitute-string expansion t)
         t))))
 
-;; Create own function to expand lines
+;;;###autoload
 (defun hippie-expand-lines ()
   (interactive)
   (let ((hippie-expand-try-functions-list '(try-expand-line-closest-first
@@ -195,7 +198,7 @@ string).  It returns t if a new completion is found, nil otherwise."
     (end-of-line)
     (hippie-expand nil)))
 
-;; Don't case-fold when expanding with hippe
+;;;###autoload
 (defun hippie-expand-no-case-fold ()
   (interactive)
   (let ((case-fold-search nil))

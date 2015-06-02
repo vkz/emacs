@@ -212,14 +212,25 @@ Homebrew: brew install trash")))
 ;; Homerow prefix
 (define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
 
-;; Don't kill Emacs that easily
-(bind-keys ("C-x r q" . save-buffers-kill-terminal)
-           ("C-x C-c" . delete-frame))
+(bind-keys
 
-(bind-keys ("C-?" . universal-argument)
-           ("C-!" . negative-argument))
+ ;; Don't kill Emacs that easily
+ ("C-x r q" . save-buffers-kill-terminal)
+ ("C-x C-c" . delete-frame)
 
-(bind-key* "C-." 'set-mark-command)
+ ;; Universal arg
+ ("C-?" . universal-argument)
+ ("C-!" . negative-argument)
+
+ ;; Switching frames, windows, buffers
+ ("<backspace>" . other-window)
+ ("M-<backspace>" . other-frame)
+ ("C-<backspace>" . quick-switch-buffer)
+ ("C-c <tab>" . prelude-swap-windows)
+ ("C-c <backspace>" . i-meant-other-window))
+
+(bind-keys* ("C-." . set-mark-command)
+            ("<C-return>" . repeat))
 
 ;;; zeHelpers
 
@@ -609,10 +620,10 @@ Disable the highlighting of overlong lines."
 ;; TODO revise and reconcile with my current bindings and functions
 (use-package ze-simple           ; Personal editing helpers
   :load-path "site-lisp/"
-  :bind (([remap kill-whole-line]        . ze-smart-kill-whole-line)
+  :bind (;; ([remap kill-whole-line]        . ze-smart-kill-whole-line)
          ([remap move-beginning-of-line] . ze-back-to-indentation-or-beginning-of-line)
-         ("C-<backspace>"                . ze-smart-backward-kill-line)
-         ("C-S-j"                        . ze-smart-open-line)
+         ;; ("C-<backspace>"                . ze-smart-backward-kill-line)
+         ("C-o"                        . ze-smart-open-line)
          ;; Additional utilities
          ("C-c u d"                      . ze-insert-current-date))
   :commands (ze-auto-fill-comments-mode)
@@ -1417,57 +1428,8 @@ Disable the highlighting of overlong lines."
 (global-set-key (kbd "M-h") 'kill-region-or-backward-word)
 (global-set-key [remap kill-ring-save] 'easy-kill) ;M-w
 
-;; Repeat last command
-(global-set-key (kbd "<C-return>") 'repeat)
-
-;; Windows, buffers, frames
-(global-set-key (kbd "<backspace>") 'other-window)
-(global-set-key (kbd "C-<tab>") 'other-window)
-;; Toggle two most recent buffers
-(global-set-key (kbd "C-<backspace>") 'quick-switch-buffer)
-(global-set-key (kbd "S-<backspace>") 'other-frame)
-(global-set-key (kbd "M-<backspace>") 'other-frame)
-(global-set-key (kbd "<backtab>") 'other-frame)
-(global-set-key (kbd "C-c <tab>") 'prelude-swap-windows)
-(global-set-key (kbd "C-c <backspace>") 'i-meant-other-window)
 
 (global-set-key (kbd "C-x 3") 'split-window-right-and-move-there-dammit)
-
-;; Navigation bindings
-;; TODO 'smart-bindings are questionable do I really need these?
-(global-set-key (kbd "M-p") 'backward-paragraph)
-(global-set-key (kbd "M-n") 'forward-paragraph)
-
-
-;; Expand region (increases selected region by semantic units)
-
-;; Comment/uncomment block
-(global-set-key (kbd "C-c c") 'comment-or-uncomment-region-or-line)
-(global-set-key (kbd "C-c u") 'uncomment-region)
-
-;; experimental
-;; TODO are there better commands than pop-to-mark
-(global-set-key (kbd "C-j") 'pop-to-mark-command)
-
-;; alternate between beginning of text and line
-(global-set-key [remap move-beginning-of-line] 'prelude-move-beginning-of-line)
-
-;; Swap undo and universal argument
-(define-key undo-tree-map (kbd "C-/") nil)
-(define-key undo-tree-map (kbd "C-?") nil)
-(define-key undo-tree-map (kbd "C-_") nil)
-(global-set-key (kbd "C-u") 'undo-tree-undo)
-(global-set-key (kbd "C-S-u") 'undo-tree-redo)
-(global-set-key (kbd "C-M-u") 'undo-tree-visualize)
-(global-set-key (kbd "C-/") 'universal-argument)
-(global-set-key (kbd "C-?") 'negative-argument)
-(global-set-key (kbd "C--") 'set-mark-command)
-(global-set-key (kbd "M-m") 'set-mark-command)
-
-;; Duplicate region
-(global-set-key (kbd "C-c d") 'prelude-duplicate-current-line-or-region)
-(global-set-key (kbd "C-c M-d") 'prelude-duplicate-and-comment-current-line-or-region)
-
 
 ;; Local Variables:
 ;; coding: utf-8
