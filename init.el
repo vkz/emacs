@@ -200,6 +200,27 @@ Homebrew: brew install trash")))
           (unless (server-running-p)
             (server-start))))
 
+;; this is XXI century PEOPLE ARE USING GUIs BY DEFAULT
+;; take C-[ and C-i back and bind em usefully
+;; `http://goo.gl/7Xmfn8'
+;; TODO bind (kbd "C-<[>")
+;; TODO bind (kbd "<C-<i>")
+(define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
+(define-key input-decode-map [?\C-i] (kbd "<C-i>"))
+(define-key input-decode-map [?\C-\S-i] (kbd "<C-I>"))
+
+;; Homerow prefix
+(define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
+
+;; Don't kill Emacs that easily
+(bind-keys ("C-x r q" . save-buffers-kill-terminal)
+           ("C-x C-c" . delete-frame))
+
+(bind-keys ("C-?" . universal-argument)
+           ("C-!" . negative-argument))
+
+(bind-key* "C-." 'set-mark-command)
+
 ;;; zeHelpers
 
 (use-package ze-misc
@@ -665,7 +686,14 @@ Disable the highlighting of overlong lines."
 
 (use-package undo-tree                  ; Branching undo
   :ensure t
-  :init (global-undo-tree-mode)
+  :init (progn
+          (global-undo-tree-mode)
+          (unbind-key "C-/" undo-tree-map)
+          (unbind-key "C-?" undo-tree-map)
+          (unbind-key "C-_" undo-tree-map))
+  :bind (("C-u"   . undo-tree-undo)
+         ("M-u"   . undo-tree-redo)
+         ("C-M-u" . undo-tree-visualize))
   :diminish undo-tree-mode)
 
 (use-package nlinum                     ; Line numbers in display margin
@@ -761,6 +789,7 @@ Disable the highlighting of overlong lines."
          ;; Replace some standard bindings with Helm equivalents
          ("M-s o"     . helm-occur)
          ("M-x"       . helm-M-x)
+         ("C-t C-m"   . helm-M-x)
          ("M-y"       . helm-show-kill-ring)
          ("C-x r i"   . helm-register)
          ("C-x b"     . helm-mini)
@@ -815,23 +844,28 @@ Disable the highlighting of overlong lines."
 (setq completion-cycle-threshold 5)
 
 (use-package hippie-exp                 ; Powerful expansion and completion
-  :bind (([remap dabbrev-expand] . hippie-expand))
-  :config
-  (setq hippie-expand-try-functions-list
-        '(try-expand-dabbrev
-          try-expand-dabbrev-all-buffers
-          try-expand-dabbrev-from-kill
-          try-complete-file-name-partially
-          try-complete-file-name
-          try-expand-all-abbrevs
-          try-expand-list
-          try-complete-lisp-symbol-partially
-          try-complete-lisp-symbol
-          ze-try-complete-lisp-symbol-without-namespace)))
+  :defer t
+  :config (setq hippie-expand-try-functions-list
+                '(try-expand-dabbrev-closest-first
+                  try-complete-file-name
+                  try-expand-dabbrev-all-buffers
+                  try-expand-dabbrev-from-kill
+                  try-expand-all-abbrevs
+                  try-complete-lisp-symbol-partially
+                  try-complete-lisp-symbol
+                  try-complete-lisp-symbol-without-namespace)))
 
 (use-package ze-hippie       ; Custom expansion functions
   :load-path "site-lisp/"
-  :commands (ze-try-complete-lisp-symbol-without-namespace))
+  :bind (("<C-i>" . hippie-expand-no-case-fold)
+         ("<C-I>" . hippie-expand-lines))
+  :defines (he-search-loc-backward
+            he-search-loc-forward)
+  :commands (try-complete-lisp-symbol-without-namespace
+             try-expand-dabbrev-closest-first
+             try-expand-line-closest-first
+             hippie-expand-lines
+             hippie-expand-no-case-fold))
 
 ;; TODO try `ivy' as completion backend
 (use-package company                    ; Graphical (auto-)completion
@@ -940,16 +974,6 @@ Disable the highlighting of overlong lines."
   :defer t
   :init (add-hook 'emacs-lisp-mode-hook #'elisp-slime-nav-mode)
   :diminish elisp-slime-nav-mode)
-
-(use-package flycheck-cask              ; Setup Flycheck by Cask projects
-  :ensure t
-  :defer t
-  :init (add-hook 'flycheck-mode-hook #'flycheck-cask-setup))
-
-(use-package flycheck-package           ; Check package conventions with Flycheck
-  :ensure t
-  :defer t
-  :init (with-eval-after-load 'flycheck (flycheck-package-setup)))
 
 (use-package pcre2el                    ; Convert regexps to RX and back
   :disabled t
@@ -1380,27 +1404,6 @@ Disable the highlighting of overlong lines."
 
 ;;; zeBindings
 
-;; this is XXI century PEOPLE ARE USING GUIs BY DEFAULT
-;; take C-[ and C-i back and bind em usefully
-;; `http://goo.gl/7Xmfn8'
-;; TODO bind (kbd "C-<[>")
-;; TODO bind (kbd "<C-<i>")
-(define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
-(define-key input-decode-map [?\C-i] (kbd "<C-i>"))
-
-;; Prefix should be central
-(define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
-
-;; I don't need to kill emacs that easily
-;; the mnemonic is C-x REALLY QUIT
-;; TODO 'delete-frame appears to misbehave when more than 1 frame left
-(global-set-key (kbd "C-x r q") 'save-buffers-kill-terminal)
-(global-set-key (kbd "C-x C-c") 'delete-frame)
-
-(when on-mac
-  (setq mac-command-modifier 'meta)
-  ;; (setq mac-option-modifier 'super)
-  (setq mac-option-modifier nil))
 
 ;; Help
 (global-set-key (kbd "<f1>") 'help-command)
