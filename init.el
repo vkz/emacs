@@ -58,16 +58,6 @@
 ;; Please don't load outdated byte code
 (setq load-prefer-newer t)
 
-;; Package
-(require 'package)
-(setq package-enable-at-startup nil)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(package-initialize)
-
-;; Bootstrap `use-package'
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
 
 (defun ze/this-file ()
   "Return true path to this file."
@@ -79,6 +69,17 @@
 
 ;; Always use emacs.d of the current init.el
 (setq user-emacs-directory (file-name-directory (file-truename (ze/this-file))))
+
+;; Package
+(require 'package)
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(package-initialize)
+
+;; Bootstrap `use-package'
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
 (eval-when-compile
   (require 'use-package))
@@ -726,6 +727,7 @@ Disable the highlighting of overlong lines."
 (use-package avy
   :load-path "site-lisp/avy/"
   :defer t
+  :commands (avy--regex-candidates)     ;HACK swiper needs it
   :init (setq avy-styles-alist '((avy-goto-char-2 . post)
                                  (avy-goto-char   . post))
               avy-background t
@@ -754,12 +756,13 @@ Disable the highlighting of overlong lines."
 
 (use-package swiper
   :ensure t
+  :defer t
   :init (setq ivy-use-virtual-buffers t)
   :config (ivy-mode 1)
   :bind (("C-s"     . swiper)
          ("C-r"     . swiper)
          ("C-c C-r" . ivy-resume)
-         ("<f6>"      . ivy-resume)))
+         ("<f6>"    . ivy-resume)))
 
 (use-package locate                     ; Search files on the system
   :defer t
