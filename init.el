@@ -223,25 +223,16 @@ Homebrew: brew install trash")))
  ("C-?" . universal-argument)
  ("C-!" . negative-argument)
 
+ ;; Help
+ ("<f1>" . help-command)
+ ("<f1> h" . helm-apropos)
+
  ;; Switching frames, windows, buffers
  ("<backspace>" . other-window)
- ("M-<backspace>" . other-frame)
- ("C-<backspace>" . quick-switch-buffer)
- ("C-c <tab>" . prelude-swap-windows)
- ("C-c <backspace>" . i-meant-other-window))
+ ("M-<backspace>" . other-frame))
 
 (bind-keys* ("C-." . set-mark-command)
             ("<C-return>" . repeat))
-
-;;; zeHelpers
-
-(use-package ze-misc
-  :load-path "site-lisp/"
-  :demand t)
-
-(use-package ze-snippet-helpers
-  :load-path "site-lisp/"
-  :demand t)
 
 ;;; zeLook
 
@@ -542,7 +533,8 @@ Disable the highlighting of overlong lines."
             (concat dired-listing-switches " --group-directories-first -v")))))
 
 (use-package dired-x                    ; Additional tools for Dired
-  :bind (("C-x J" . dired-jump))
+  :bind (("C-x J" . dired-jump)
+         ("C-x j" . dired-jump-other-window))
   :config
   (progn
     (setq dired-omit-verbose nil)        ; Shut up, dired
@@ -618,20 +610,6 @@ Disable the highlighting of overlong lines."
 (setq-default fill-column 85)
 (add-hook 'text-mode-hook #'auto-fill-mode)
 
-;; TODO revise and reconcile with my current bindings and functions
-(use-package ze-simple           ; Personal editing helpers
-  :load-path "site-lisp/"
-  :bind (;; ([remap kill-whole-line]        . ze-smart-kill-whole-line)
-         ([remap move-beginning-of-line] . ze-back-to-indentation-or-beginning-of-line)
-         ;; ("C-<backspace>"                . ze-smart-backward-kill-line)
-         ("C-o"                        . ze-smart-open-line)
-         ;; Additional utilities
-         ("C-c u d"                      . ze-insert-current-date))
-  :commands (ze-auto-fill-comments-mode)
-  ;; Auto-fill comments in programming modes
-  ;; TODO shorter fill-column for comments maybe
-  :init (add-hook 'prog-mode-hook #'ze-auto-fill-comments-mode))
-
 (use-package delsel                     ; Delete the selection instead of insert
   :defer t
   :init (delete-selection-mode))
@@ -694,7 +672,8 @@ Disable the highlighting of overlong lines."
 
 (use-package expand-region              ; Expand region by semantic units
   :ensure t
-  :bind (("C-=" . er/expand-region)))
+  :bind (("C-=" . er/expand-region)
+         ("M-=" . ze-mark-paragraph)))
 
 (use-package undo-tree                  ; Branching undo
   :ensure t
@@ -1287,7 +1266,7 @@ Disable the highlighting of overlong lines."
 
 ;; Terminal emulation and shells
 (use-package shell                      ; Dumb shell in Emacs
-  :bind ("C-c u s" . shell)
+  :bind ("C-c j" . start-or-switch-to-shell)
   :config (add-to-list 'display-buffer-alist
                        `(,(rx bos "*shell")
                          (display-buffer-reuse-window
@@ -1416,23 +1395,41 @@ Disable the highlighting of overlong lines."
   ;; Save bookmarks immediately after a bookmark was added
   :config (setq bookmark-save-flag 1))
 
+;;; zeHelpers
+
+(use-package ze-misc
+  :load-path "site-lisp/"
+  :defer t
+  :commands (ze-auto-fill-comments-mode)
+  :bind (("C-x 3" . split-window-right-and-move-there-dammit)
+         ([remap move-beginning-of-line] . ze-back-to-indentation-or-beginning-of-line)
+         ("C-o" . ze-smart-open-line)
+         ("C-c u d" . ze-insert-current-date)
+         ("C-c c" . comment-or-uncomment-region-or-line)
+         ("C-c d" . prelude-duplicate-current-line-or-region)
+         ("C-c M-d" . prelude-duplicate-and-comment-current-line-or-region)
+         ("C-<backspace>" . quick-switch-buffer)
+         ("C-c <tab>" . prelude-swap-windows)
+         ("C-c <backspace>" . i-meant-other-window)
+         ("<escape>" . ze-bury-buffer-then-switch)
+         ("S-<escape>" . bury-buffer))
+  :init (add-hook 'prog-mode-hook #'ze-auto-fill-comments-mode))
+
+(use-package ze-snippet-helpers
+  :load-path "site-lisp/"
+  :demand t)
+
 ;;; zeBindings
 
 
-;; Help
-(global-set-key (kbd "<f1>") 'help-command)
-(global-set-key (kbd "<f1> h") 'helm-apropos)
-(global-set-key (kbd "S-<f1>") 'helm-apropos)
-(global-set-key (kbd "M-<f1>") 'helm-apropos)
-
 ;; Killing stuff
+;; TODO install `whole-line-or-region'
 (define-key key-translation-map [?\C-h] [?\C-?])
 (global-set-key (kbd "C-w") 'kill-region)
 (global-set-key (kbd "M-h") 'kill-region-or-backward-word)
 (global-set-key [remap kill-ring-save] 'easy-kill) ;M-w
 
 
-(global-set-key (kbd "C-x 3") 'split-window-right-and-move-there-dammit)
 
 ;; Local Variables:
 ;; coding: utf-8
