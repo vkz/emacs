@@ -9,3 +9,7 @@
 [submodule "site-lisp/nodejs-repl.el"]
 	path = site-lisp/nodejs-repl.el
 	url = https://github.com/vkz/nodejs-repl.el.git
+
+[submodule "site-lisp/avy"]
+	path = site-lisp/avy
+	url = https://github.com/abo-abo/avy.git	

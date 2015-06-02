@@ -258,4 +258,9 @@
 ;; other-frame would make it consistend with my "<backspace>"
 ;; bindings.
 
+;; Markdown bindings
+(define-key markdown-mode-map (kbd "<backspace>") nil)
+(define-key markdown-mode-map (kbd "C-<backspace>") nil)
+(define-key markdown-mode-map (kbd "M-<backspace>") nil)
+
 (provide 'key-bindings)

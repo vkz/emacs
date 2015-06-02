@@ -2,6 +2,26 @@
 
 ;;; Commentary:
 
+;; - look
+;;
+;; - switch windows and frames
+;; - files (in project)
+;; - buffers (in project)
+;;
+;; - search
+;; - jump to stuff
+;;
+;; - replace stuff
+;; - align stuff
+;; - cleanup buffer
+;;
+;; - shell
+;; - eshell
+;;
+;; - get help
+;;
+;; - version control
+
 ;; Borrowed heavily from Sebastian Wiesner
 ;; TODO borrow from magnars
 ;; TODO borrow from bbatsov
@@ -27,7 +47,9 @@
 
 ;;; Code:
 
+
 ;;; Debugging
+
 (setq message-log-max 10000)
 
 
@@ -71,14 +93,19 @@
   :config
   (dash-enable-font-lock))
 
-
 ;;; zeBasics
+
 (setq inhibit-default-init t)
+
+
+;; OSX
+(defconst on-mac (eq system-type 'darwin)
+  "Are we on OSX?")
 
 ;; Environment fixup
 (use-package exec-path-from-shell
   :ensure t
-  :if (and (eq system-type 'darwin) (display-graphic-p))
+  :if (and on-mac (display-graphic-p))
   :config
   (progn
     (setq exec-path-from-shell-arguments '("-l"))
@@ -133,10 +160,6 @@
 (use-package winner                     ; Undo and redo window configurations
   :init (winner-mode))
 
-;; OSX
-(defconst on-mac (eq system-type 'darwin)
-  "Are we on OSX?")
-
 (use-package ns-win                     ; OS X window support
   :defer t
   :if on-mac
@@ -167,8 +190,7 @@ Homebrew: brew install trash")))
 
 ;; Delete files to trash
 (setq delete-by-moving-to-trash
-      (or (not (eq system-type 'darwin)) ; Trash is well supported on other
-                                        ; systems
+      (or (not on-mac) ; Trash is well supported on other systems
           (fboundp 'system-move-file-to-trash)))
 
 (use-package server                     ; The server of `emacsclient'
@@ -178,9 +200,8 @@ Homebrew: brew install trash")))
           (unless (server-running-p)
             (server-start))))
 
-
 ;;; zeHelpers
-
+
 (use-package ze-misc
   :load-path "site-lisp/"
   :demand t)
@@ -189,9 +210,8 @@ Homebrew: brew install trash")))
   :load-path "site-lisp/"
   :demand t)
 
+;;; zeLook
 
-;;; zeLook'n'Feel
-
 ;; Get rid of tool bar, menu bar and scroll bars.  On OS X we preserve the menu
 ;; bar, since the top menu bar is always visible anyway, and we'd just empty it
 ;; which is rather pointless.
@@ -238,6 +258,48 @@ Homebrew: brew install trash")))
   :defer t
   :init (load-theme 'solarized-dark 'no-confirm)
   :config nil)
+
+;; Modeline
+(use-package smart-mode-line-powerline-theme
+  :ensure t)
+
+(use-package smart-mode-line
+  :ensure t
+  :init
+  (setq sml/no-confirm-load-theme t)
+  (sml/setup)
+  :config
+  (setq sml/theme 'powerline)
+  (setq-default header-line-format
+                '(which-func-mode ("" which-func-format " "))
+
+                ;; Remove which func from the mode line, since we have it in the
+                ;; header line
+                mode-line-misc-info
+                (assq-delete-all 'which-func-mode mode-line-misc-info)))
+
+;; Standard stuff
+(line-number-mode)
+(column-number-mode)
+
+(use-package anzu                       ; Position/matches count for isearch
+  :ensure t
+  :init (global-anzu-mode)
+  :config (setq anzu-cons-mode-line-p nil)
+  :diminish anzu-mode)
+
+(use-package which-func                 ; Current function name in header line
+  :init (which-function-mode)
+  :config
+  (setq which-func-unknown "⊥" ; The default is really boring…
+        which-func-format
+        `((:propertize (" ➤ " which-func-current)
+                       local-map ,which-func-keymap
+                       face which-func
+                       mouse-face mode-line-highlight
+                       help-echo "mouse-1: go to beginning\n\
+mouse-2: toggle rest visibility\n\
+mouse-3: go to end"))))
 
 (use-package dynamic-fonts              ; Select best available font
   :ensure t
@@ -351,83 +413,8 @@ Disable the highlighting of overlong lines."
   :init (dolist (hook '(text-mode-hook prog-mode-hook))
           (add-hook hook #'rainbow-delimiters-mode)))
 
-;; TODO seems like replacement for my TODO, HACK, STUDY, NOTE hacks
-(use-package hi-lock                    ; Custom regexp highlights
-  :init (global-hi-lock-mode))
-
-
-;;; zeModeline
-
-;; TODO smart-mode-line with powerline theme
-(setq-default header-line-format
-              '(which-func-mode ("" which-func-format " "))
-              mode-line-format
-              '("%e" mode-line-front-space
-                ;; Standard info about the current buffer
-                mode-line-mule-info
-                mode-line-client
-                mode-line-modified
-                mode-line-remote
-                mode-line-frame-identification
-                mode-line-buffer-identification " " mode-line-position
-                ;; Some specific information about the current buffer:
-                ;; - Paredit
-                ;; - Dired Omit Mode
-                (paredit-mode (:propertize " ()" face bold))
-                (dired-omit-mode " ●")
-                ;; Warn if whitespace isn't highlighted or cleaned in this
-                ;; buffer.
-                (:eval (unless buffer-read-only
-                         (cond
-                          ((not (bound-and-true-p whitespace-mode))
-                           (propertize " SPACE" 'face '(bold error)))
-                          ((not (bound-and-true-p whitespace-cleanup-mode))
-                           (propertize " WSC" 'face 'warning)))))
-                (projectile-mode projectile-mode-line)
-                (vc-mode vc-mode)
-                (flycheck-mode flycheck-mode-line) ; Flycheck status
-                (anzu-mode (:eval                  ; isearch pos/matches
-                            (when (> anzu--total-matched 0)
-                              (concat " " (anzu--update-mode-line)))))
-                (multiple-cursors-mode mc/mode-line) ; Number of cursors
-                ;; And the modes, which we don't really care for anyway
-                " " mode-line-misc-info mode-line-modes mode-line-end-spaces)
-              mode-line-remote
-              '(:eval
-                (-when-let (host (file-remote-p default-directory 'host))
-                  (propertize (concat "@" host) 'face
-                              '(italic warning))))
-              ;; Remove which func from the mode line, since we have it in the
-              ;; header line
-              mode-line-misc-info
-              (assq-delete-all 'which-func-mode mode-line-misc-info))
-
-;; Standard stuff
-(line-number-mode)
-(column-number-mode)
-
-(use-package anzu                       ; Position/matches count for isearch
-  :ensure t
-  :init (global-anzu-mode)
-  :config (setq anzu-cons-mode-line-p nil)
-  :diminish anzu-mode)
-
-(use-package which-func                 ; Current function name in header line
-  :init (which-function-mode)
-  :config
-  (setq which-func-unknown "⊥" ; The default is really boring…
-        which-func-format
-        `((:propertize (" ➤ " which-func-current)
-                       local-map ,which-func-keymap
-                       face which-func
-                       mouse-face mode-line-highlight
-                       help-echo "mouse-1: go to beginning\n\
-mouse-2: toggle rest visibility\n\
-mouse-3: go to end"))))
-
-
 ;;; zeBuffers
-
+
 (use-package ze-buffers          ; Personal buffer tools
   :load-path "site-lisp/"
   :commands (ze-force-save-some-buffers
@@ -482,14 +469,13 @@ mouse-3: go to end"))))
   :ensure t
   :defer t)
 
-
 ;;; zeFiles
-
+
 (use-package files
   :bind (("C-c f v" . revert-buffer))
   :config
   ;; Use GNU ls for Emacs
-  (-when-let (gnu-ls (and (eq system-type 'darwin) (executable-find "gls")))
+  (-when-let (gnu-ls (and on-mac (executable-find "gls")))
     (setq insert-directory-program gnu-ls)))
 
 (use-package tramp                      ; Access remote files
@@ -528,7 +514,7 @@ mouse-3: go to end"))))
   (progn
     (setq dired-omit-verbose nil)        ; Shut up, dired
 
-    (when (eq system-type 'darwin)
+    (when on-mac
       ;; OS X bsdtar is mostly compatible with GNU Tar
       (setq dired-guess-shell-gnutar "tar"))))
 
@@ -571,16 +557,16 @@ mouse-3: go to end"))))
   :ensure t
   :init (global-launch-mode))
 
-
 ;;; zeEditor
-
+
 ;; Disable tabs, but given them proper width
 (setq-default indent-tabs-mode nil
               tab-width 8)
 ;; Make Tab complete if the line is indented
 (setq tab-always-indent 'complete)
 
-;; TODO replace with custom pairing in js2-mode and smartparens elsewhere
+;; TODO replace with custom pairing in js2-mode
+;; TODO smartparens elsewhere
 (use-package elec-pair                  ; Electric pairs
   :init (electric-pair-mode))
 
@@ -696,10 +682,21 @@ mouse-3: go to end"))))
 ;; TODO great one, needs better binding
 (bind-key [remap just-one-space] #'cycle-spacing)
 
+;;; zeNav
 
-;;; zeNavigator
-
-;; TODO `avy-jump'
+(use-package avy
+  :load-path "site-lisp/avy/"
+  :defer t
+  :init (setq avy-styles-alist '((avy-goto-char-2 . post)
+                                 (avy-goto-char   . post))
+              avy-background t
+              avy-all-windows nil)
+  ;; TODO need better bindings, better yet j- bi-sequences like jw, jl, jc
+  :bind (("M-'"   . avy-goto-char)
+         ("C-'"   . avy-goto-char-2)
+         ("M-g g" . avy-goto-line)
+         ("M-g w" . avy-goto-word-1))
+  :config (avy-setup-default))
 
 (use-package outline                    ; Navigate outlines in buffers
   :defer t
@@ -712,17 +709,24 @@ mouse-3: go to end"))))
   :ensure t
   :bind (("C-c i" . helm-imenu-anywhere)))
 
-;; TODO `swiper'
-
 ;; Search
 (use-package isearch                    ; Search buffers
   :bind (("C-c s s" . isearch-forward-symbol-at-point)))
+
+(use-package swiper
+  :ensure t
+  :init (setq ivy-use-virtual-buffers t)
+  :config (ivy-mode 1)
+  :bind (("C-s"     . swiper)
+         ("C-r"     . swiper)
+         ("C-c C-r" . ivy-resume)
+         ("<f6>"      . ivy-resume)))
 
 (use-package locate                     ; Search files on the system
   :defer t
   :config
   ;; Use mdfind as locate substitute on OS X, to utilize the Spotlight database
-  (-when-let (mdfind (and (eq system-type 'darwin) (executable-find "mdfind")))
+  (-when-let (mdfind (and on-mac (executable-find "mdfind")))
     (setq locate-command mdfind)))
 
 (use-package ag                         ; Search code in files/projects
@@ -747,9 +751,8 @@ mouse-3: go to end"))))
   :ensure t
   :defer t)
 
-
 ;;; zeHelm
-
+
 ;; TODO reconcile this with my current helm settings
 ;; TODO pick and bind stuff that I actually use
 (use-package helm
@@ -805,9 +808,8 @@ mouse-3: go to end"))))
          ("C-c a A" . helm-ag))
   :config (setq helm-ag-fuzzy-match t))
 
+;;; zeComplete
 
-;;; Completion
-
 ;; In `completion-at-point', do not pop up silly completion buffers for less
 ;; than five candidates.  Cycle instead.
 (setq completion-cycle-threshold 5)
@@ -859,82 +861,8 @@ mouse-3: go to end"))))
           (bind-key "C-:" #'helm-company company-mode-map)
           (bind-key "C-:" #'helm-company company-active-map)))
 
+;;; zeProg
 
-;;; Spelling and syntax checking
-(use-package ispell                     ; Spell checking
-  :defer t
-  :config
-  (progn
-    (setq ispell-program-name (if (eq system-type 'darwin)
-                                  (executable-find "aspell")
-                                (executable-find "hunspell"))
-          ispell-dictionary "en_GB"     ; Default dictionnary
-          ispell-silently-savep t       ; Don't ask when saving the private dict
-          ;; Increase the height of the choices window to take our header line
-          ;; into account.
-          ispell-choices-win-default-height 5)
-
-    (unless ispell-program-name
-      (warn "No spell checker available.  Install Hunspell or ASpell for OS X."))))
-
-(use-package flyspell                   ; On-the-fly spell checking
-  :bind (("C-c t s" . flyspell-mode))
-  :init (progn (dolist (hook '(text-mode-hook message-mode-hook))
-                 (add-hook hook 'turn-on-flyspell))
-               (add-hook 'prog-mode-hook 'flyspell-prog-mode))
-  :config
-  (progn
-    (setq flyspell-use-meta-tab nil
-          ;; Make Flyspell less chatty
-          flyspell-issue-welcome-flag nil
-          flyspell-issue-message-flag nil)
-
-    ;; Free C-M-i for completion
-    (define-key flyspell-mode-map "\M-\t" nil))
-  :diminish flyspell-mode)
-
-(use-package flycheck                   ; On-the-fly syntax checking
-  :ensure t
-  :bind (("C-c l e" . list-flycheck-errors)
-         ("C-c t f" . flycheck-mode))
-  :init (global-flycheck-mode)
-  :config (progn
-            (setq flycheck-display-errors-function
-                  #'flycheck-display-error-messages-unless-error-list)
-
-            ;; Use italic face for checker name
-            (set-face-attribute 'flycheck-error-list-checker-name nil
-                                :inherit 'italic)
-
-            (add-to-list 'display-buffer-alist
-                         `(,(rx bos "*Flycheck errors*" eos)
-                           (display-buffer-reuse-window
-                            display-buffer-in-side-window)
-                           (side            . bottom)
-                           (reusable-frames . visible)
-                           (window-height   . 0.4))))
-  :diminish flycheck-mode)
-
-(use-package helm-flycheck
-  :ensure t
-  :bind (("C-c ! L" . helm-flycheck)))
-
-(use-package ze-flycheck         ; Personal Flycheck helpers
-  :load-path "site-lisp/"
-  :defer t
-  :commands (ze-discard-undesired-html-tidy-error
-             ze-flycheck-mode-line-status)
-  :init (with-eval-after-load 'flycheck
-          ;; Don't highlight undesired errors from html tidy
-          (add-hook 'flycheck-process-error-functions
-                    #'ze-discard-undesired-html-tidy-error)
-
-          (setq flycheck-mode-line
-                '(:eval (ze-flycheck-mode-line-status)))))
-
-
-;;; General programming
-
 (use-package compile                    ; Compile from Emacs
   :bind (("C-c c" . compile)
          ("C-c C" . recompile))
@@ -1000,13 +928,13 @@ mouse-3: go to end"))))
   :config
   (setq-default eldoc-documentation-function #'describe-char-eldoc))
 
+;;; zeLisp
 
-;;; General lisp programming
 
 ;; TODO try `Lispy' first
 
+;;; zeElisp
 
-;;; Emacs Lisp
 (use-package elisp-slime-nav            ; Jump to definition of symbol at point
   :ensure t
   :defer t
@@ -1059,23 +987,17 @@ mouse-3: go to end"))))
 
 (bind-key "C-c t d" #'toggle-debug-on-error)
 
+;;; zeRacket
 
-;;; Racket
 
+;;; zeScala
 
-;;; Scala
 
+;;; zeHaskell
 
-;;; Clojure
 
+;;; zeOCaml
 
-;;; Python
-
-
-;;; Haskell
-
-
-;;; OCaml
 ;; `https://github.com/realworldocaml/book/wiki/Installation-Instructions'
 ;; brew install opam
 ;; opam install core utop merlin ocp-indent
@@ -1123,9 +1045,8 @@ mouse-3: go to end"))))
   :init (with-eval-after-load 'merlin
           (flycheck-ocaml-setup)))
 
+;;; zeJS and zeWebs
 
-;;; JavaScript and zeWebs
-
 (use-package web-mode                   ; Template editing
   :ensure t
   :defer t
@@ -1157,8 +1078,8 @@ mouse-3: go to end"))))
   :defines (css-eldoc-hash-table)
   :init (add-hook 'css-mode-hook #'turn-on-css-eldoc))
 
-
 ;;; zeVC
+
 (use-package vc-hooks                   ; Simple version control
   :defer t
   :config
@@ -1247,8 +1168,8 @@ mouse-3: go to end"))))
   :ensure t
   :bind (("C-c v t" . git-timemachine)))
 
+;;; zeProjects
 
-;;; Project management
 (use-package projectile
   :ensure t
   :init (projectile-global-mode)
@@ -1279,9 +1200,8 @@ mouse-3: go to end"))))
   :init (with-eval-after-load 'projectile (helm-projectile-on))
   :config (setq projectile-switch-project-action #'helm-projectile))
 
+;;; zeUtils
 
-;;; Tools and utilities
-
 (use-package json-reformat              ; Reformat JSON
   :ensure t
   :defer t
@@ -1303,7 +1223,7 @@ mouse-3: go to end"))))
 
 (use-package proced                     ; Edit system processes
   ;; Proced isn't available on OS X
-  :if (not (eq system-type 'darwin))
+  :if (not on-mac)
   :bind ("C-x p" . proced))
 
 (use-package calendar                   ; Built-in calendar
@@ -1417,8 +1337,8 @@ mouse-3: go to end"))))
   (setq erc-track-switch-direction 'newest
         erc-track-enable-keybindings t))
 
+;;; zeHelp
 
-;;; Help
 (use-package find-func                  ; Find function/variable definitions
   :bind (("C-x F"   . find-function)
          ("C-x 4 F" . find-function-other-window)
@@ -1458,10 +1378,8 @@ mouse-3: go to end"))))
   ;; Save bookmarks immediately after a bookmark was added
   :config (setq bookmark-save-flag 1))
 
+;;; zeBindings
 
-;;; Key-bindings
-
-
 ;; this is XXI century PEOPLE ARE USING GUIs BY DEFAULT
 ;; take C-[ and C-i back and bind em usefully
 ;; `http://goo.gl/7Xmfn8'
