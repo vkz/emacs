@@ -33,13 +33,13 @@ the current buffer."
   (my-start-or-switch-to 'nodejs-repl "*nodejs*"))
 
 ;;;###autoload
-(defun prelude-top-join-line ()
+(defun ze-top-join-line ()
   "Join the current line with the line beneath it."
   (interactive)
   (delete-indentation 1))
 
 ;;;###autoload
-(defun prelude-get-positions-of-line-or-region ()
+(defun ze-get-positions-of-line-or-region ()
   "Return positions (beg . end) of the current line
 or region."
   (let (beg end)
@@ -52,13 +52,13 @@ or region."
     (cons beg end)))
 
 ;;;###autoload
-(defun prelude-duplicate-current-line-or-region (arg)
+(defun ze-dup (arg)
   "Duplicates the current line or region ARG times.
 If there's no region, the current line will be duplicated.  However, if
 there's a region, all lines that region covers will be duplicated."
   (interactive "p")
   (pcase-let* ((origin (point))
-               (`(,beg . ,end) (prelude-get-positions-of-line-or-region))
+               (`(,beg . ,end) (ze-get-positions-of-line-or-region))
                (region (buffer-substring-no-properties beg end)))
     (-dotimes arg
       (lambda (n)
@@ -69,13 +69,13 @@ there's a region, all lines that region covers will be duplicated."
     (goto-char (+ origin (* (length region) arg) arg))))
 
 ;;;###autoload
-(defun prelude-duplicate-and-comment-current-line-or-region (arg)
+(defun ze-dup-and-comment (arg)
   "Duplicates and comments the current line or region ARG times.
 If there's no region, the current line will be duplicated.  However, if
 there's a region, all lines that region covers will be duplicated."
   (interactive "p")
   (pcase-let* ((origin (point))
-               (`(,beg . ,end) (prelude-get-positions-of-line-or-region))
+               (`(,beg . ,end) (ze-get-positions-of-line-or-region))
                (region (buffer-substring-no-properties beg end)))
     (comment-or-uncomment-region beg end)
     (setq end (line-end-position))
@@ -90,7 +90,7 @@ there's a region, all lines that region covers will be duplicated."
 (require 'windmove)
 
 ;;;###autoload
-(defun prelude-swap-windows ()
+(defun ze-swap-windows ()
   "If you have 2 windows, it swaps them."
   (interactive)
   (if (/= (count-windows) 2)
@@ -109,7 +109,7 @@ there's a region, all lines that region covers will be duplicated."
     (select-window leftmost)))
 
 ;;;###autoload
-(defun prelude-move-beginning-of-line (arg)
+(defun ze-move-beginning-of-line (arg)
   "Move point back to indentation of beginning of line.
 
 Move point to the first non-whitespace character on this line.
@@ -133,7 +133,7 @@ point reaches the beginning or end of the buffer, stop there."
       (move-beginning-of-line 1))))
 
 ;;;###autoload
-(defun prelude-kill-whole-line (&optional arg)
+(defun ze-kill-whole-line (&optional arg)
   "A simple wrapper around command `kill-whole-line' that respects indentation.
 Passes ARG to command `kill-whole-line' when provided."
   (interactive "p")
@@ -161,7 +161,7 @@ Passes ARG to command `kill-whole-line' when provided."
                (point)))
 
 ;;;###autoload
-(defun split-window-right-and-move-there-dammit ()
+(defun ze-split-window-right ()
   (interactive)
   (split-window-right)
   (windmove-right))
@@ -199,7 +199,8 @@ Passes ARG to command `kill-whole-line' when provided."
   (call-interactively 'isearch-backward))
 
 ;;;###autoload
-(defun comment-or-uncomment-region-or-line ()
+(defun ze-toggle-comment ()
+  "Comment or uncomment region or line."
   (interactive)
   (if (region-active-p)
       (comment-or-uncomment-region (region-beginning) (region-end))
@@ -244,14 +245,14 @@ Passes ARG to command `kill-whole-line' when provided."
   "Kill up to, but not including ARGth occurrence of CHAR.")
 
 ;;;###autoload
-(defun quick-switch-buffer ()
+(defun ze-buffer-behind ()
   "Quickly swap current buffer with the one its hiding."
   (interactive)
   (let (buf (car (helm-buffer-list)))
     (pop-to-buffer-same-window buf)))
 
 ;;;###autoload
-(defun i-meant-other-window ()
+(defun ze-other-window ()
   "Oh, I meant find file or buffer in the other window."
   (interactive)
   (let ((buf (current-buffer)))
@@ -324,7 +325,7 @@ Kill the whole line with function `kill-whole-line' and then move
   (newline-and-indent))
 
 ;;;###autoload
-(defun ze-back-to-indentation-or-beginning-of-line (arg)
+(defun ze-bol (arg)
   "Move point back to indentation of beginning of line.
 
 Move point to the first non-whitespace character on this line.

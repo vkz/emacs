@@ -1368,6 +1368,7 @@ Disable the highlighting of overlong lines."
 
 (use-package helm-descbinds
   :ensure t
+  :defer t
   :init (helm-descbinds-mode))
 
 (use-package dash-at-point
@@ -1401,18 +1402,19 @@ Disable the highlighting of overlong lines."
   :load-path "site-lisp/"
   :defer t
   :commands (ze-auto-fill-comments-mode)
-  :bind (("C-x 3" . split-window-right-and-move-there-dammit)
-         ([remap move-beginning-of-line] . ze-back-to-indentation-or-beginning-of-line)
-         ("C-o" . ze-smart-open-line)
-         ("C-c u d" . ze-insert-current-date)
-         ("C-c c" . comment-or-uncomment-region-or-line)
-         ("C-c d" . prelude-duplicate-current-line-or-region)
-         ("C-c M-d" . prelude-duplicate-and-comment-current-line-or-region)
-         ("C-<backspace>" . quick-switch-buffer)
-         ("C-c <tab>" . prelude-swap-windows)
-         ("C-c <backspace>" . i-meant-other-window)
-         ("<escape>" . ze-bury-buffer-then-switch)
-         ("S-<escape>" . bury-buffer))
+  :bind
+  (("C-x 3"                        . ze-split-window-right)
+   ([remap move-beginning-of-line] . ze-bol)
+   ("C-o"                          . ze-smart-open-line)
+   ("C-c u d"                      . ze-insert-current-date)
+   ("C-c c"                        . ze-toggle-comment)
+   ("C-c d"                        . ze-dup)
+   ("C-c M-d"                      . ze-dup-and-comment)
+   ("C-<backspace>"                . ze-buffer-behind)
+   ("C-c <tab>"                    . ze-swap-windows)
+   ("C-c <backspace>"              . ze-other-window)
+   ("<escape>"                     . ze-bury-buffer-then-switch)
+   ("S-<escape>"                   . bury-buffer))
   :init (add-hook 'prog-mode-hook #'ze-auto-fill-comments-mode))
 
 (use-package ze-snippet-helpers
