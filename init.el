@@ -2,32 +2,10 @@
 
 ;;; Commentary:
 
-;; - look
-;;
-;; - switch windows and frames
-;; - files (in project)
-;; - buffers (in project)
-;;
-;; - search
-;; - jump to stuff
-;;
-;; - replace stuff
-;; - align stuff
-;; - cleanup buffer
-;;
-;; - shell
-;; - eshell
-;;
-;; - get help
-;;
-;; - version control
-
 ;; Borrowed heavily from Sebastian Wiesner
 ;; TODO borrow from magnars
 ;; TODO borrow from bbatsov
 ;; TODO borrow from oremacs
-;; TODO keybindings
-;; TODO import customisations from my older setup
 ;;
 ;; User key prefixes:
 ;;
@@ -47,17 +25,15 @@
 
 ;;; Code:
 
-
 ;;; Debugging
+
 
 (setq message-log-max 10000)
 
-
 ;;; Bootstrap
-
+
 ;; Please don't load outdated byte code
 (setq load-prefer-newer t)
-
 
 (defun ze/this-file ()
   "Return true path to this file."
@@ -157,7 +133,7 @@
             (dolist (mode '(magit-mode git-commit-mode))
               (add-to-list 'desktop-modes-not-to-save mode))))
 
-;; TODO deserves a good binding
+;; TODO deserves a good binding and learn it
 (use-package winner                     ; Undo and redo window configurations
   :init (winner-mode))
 
@@ -205,13 +181,21 @@ Homebrew: brew install trash")))
 ;; take C-[ and C-i back and bind em usefully
 ;; `http://goo.gl/7Xmfn8'
 ;; TODO bind (kbd "C-<[>")
-;; TODO bind (kbd "<C-<i>")
 (define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
 (define-key input-decode-map [?\C-i] (kbd "<C-i>"))
 (define-key input-decode-map [?\C-\S-i] (kbd "<C-I>"))
 
 ;; Homerow prefix
-(define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
+;; (define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
+;; TODO better binding for "M-t"
+;; TODO better binding for "M-u"
+;; TODO better binding for "M-c"
+;; TODO better binding for "M-."
+;; TODO better binding for "C-,"
+;; TODO better binding for "M-,"
+(bind-keys* ("C-." . Control-X-prefix)  ;nice and symmetric to C-c
+            ("C-t" . set-mark-command)  ;easy to press and follow with j* key-pairs
+            ("<C-return>" . repeat))
 
 (bind-keys
 
@@ -220,6 +204,7 @@ Homebrew: brew install trash")))
  ("C-x C-c" . delete-frame)
 
  ;; Universal arg
+ ;; TODO terrible binding?
  ("C-?" . universal-argument)
  ("C-!" . negative-argument)
 
@@ -230,9 +215,6 @@ Homebrew: brew install trash")))
  ;; Switching frames, windows, buffers
  ("<backspace>" . other-window)
  ("M-<backspace>" . other-frame))
-
-(bind-keys* ("C-." . set-mark-command)
-            ("<C-return>" . repeat))
 
 ;;; zeLook
 
@@ -306,12 +288,7 @@ Homebrew: brew install trash")))
 (line-number-mode)
 (column-number-mode)
 
-(use-package anzu                       ; Position/matches count for isearch
-  :ensure t
-  :init (global-anzu-mode)
-  :config (setq anzu-cons-mode-line-p nil)
-  :diminish anzu-mode)
-
+;; TODO doesn't seem smart in some cases. Needs monitoring.
 (use-package which-func                 ; Current function name in header line
   :init (which-function-mode)
   :config
@@ -426,6 +403,7 @@ Disable the highlighting of overlong lines."
 (use-package hl-line                    ; Highlight the current line
   :init (global-hl-line-mode 1))
 
+;; TODO is this good enough or should I be using smartparens or smth else?
 (use-package paren                      ; Highlight paired delimiters
   :init (show-paren-mode)
   :config (setq show-paren-when-point-inside-paren t
@@ -532,9 +510,10 @@ Disable the highlighting of overlong lines."
       (setq dired-listing-switches
             (concat dired-listing-switches " --group-directories-first -v")))))
 
+;; TODO bind "C-x C-d" to something more useful than list-directory
 (use-package dired-x                    ; Additional tools for Dired
-  :bind (("C-x J" . dired-jump)
-         ("C-x j" . dired-jump-other-window))
+  :bind (("C-x D" . dired-jump)
+         ("C-x d" . dired-jump-other-window))
   :config
   (progn
     (setq dired-omit-verbose nil)        ; Shut up, dired
@@ -782,7 +761,7 @@ Disable the highlighting of overlong lines."
          ;; Replace some standard bindings with Helm equivalents
          ("M-s o"     . helm-occur)
          ("M-x"       . helm-M-x)
-         ("C-t C-m"   . helm-M-x)
+         ("C-. C-m"   . helm-M-x)
          ("M-y"       . helm-show-kill-ring)
          ("C-x r i"   . helm-register)
          ("C-x b"     . helm-mini)
