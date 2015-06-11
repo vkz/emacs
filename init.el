@@ -18,10 +18,33 @@
 ;; - C-c l: List things
 ;; - C-c m: Multiple cursors
 ;; - C-c s: Symbol commands
+
+;; TODO make it a prefix, so guide-key can show hints
 ;; - C-c t: Toggle things and skeletons
+
 ;; - C-c u: Miscellaneous utilities
 ;; - C-c v: Version control
 ;; - C-c w: Web stuff
+
+;; TODO modes requiring solid setup and use
+;; * zop-to-char
+;; * multiple-cursors
+;; * smartparens
+;; * avy (go-to-char and friends)
+;; * buffer search with: isearch + swiper
+;; * inter-file search with: ag, grep, wgrep, locate etc
+;; * hippie-expand
+
+;; TODO proper open-line stuff bound to C-o
+
+;; TODO proglangs
+;; * Racket
+;; * JavaScript (browser and Node) / TypeScript
+;; * OCaml
+;; * Haskell
+
+
+;; TODO learn vc / magit
 
 ;;; Code:
 
@@ -563,14 +586,15 @@ Disable the highlighting of overlong lines."
 
 ;;; zeEditor
 
-;; Disable tabs, but given them proper width
+;; Disable tabs, but give them proper width
 (setq-default indent-tabs-mode nil
               tab-width 8)
 ;; Make Tab complete if the line is indented
 (setq tab-always-indent 'complete)
 
-;; TODO replace with custom pairing in js2-mode
-;; TODO smartparens elsewhere
+;; TODO elec-pair is busted and needs to be replaced
+;; * replace with custom pairing in js2-mode
+;; * smartparens elsewhere
 (use-package elec-pair                  ; Electric pairs
   :init (electric-pair-mode))
 
@@ -613,7 +637,8 @@ Disable the highlighting of overlong lines."
   :ensure t
   :bind (("C-c y" . browse-kill-ring)))
 
-;; TODO deserves better binding? Try actually using it.
+;; TODO deserves better binding! Versatile enough to completely replace M-d[h]
+;; bindings. Create a Hydra for it.
 (use-package zop-to-char
   :ensure t
   :bind (("M-z" . zop-to-char)
@@ -625,13 +650,13 @@ Disable the highlighting of overlong lines."
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp]      . easy-mark)))
 
+;; TODO better binding?
 (use-package align                      ; Align text in buffers
   :bind (("C-c A a" . align)
          ("C-c A c" . align-current)
          ("C-c A r" . align-regexp)))
 
-;; TODO deserves easier binding (paired with `expand-region', maybe using
-;; `hydra')
+;; TODO deserves easier binding, particularly mark-more-like-this
 (use-package multiple-cursors           ; Edit text with multiple cursors
   :ensure t
   :bind (("C-c m e"   . mc/mark-more-like-this-extended)
@@ -753,15 +778,15 @@ Disable the highlighting of overlong lines."
 
 ;;; zeHelm
 
-;; TODO reconcile this with my current helm settings
-;; TODO pick and bind stuff that I actually use
+;; TODO work through the tutorial again
+;; TODO choose stuff I actually need and bind it appropriately
 (use-package helm
   :ensure t
   :bind (
          ;; Replace some standard bindings with Helm equivalents
          ("M-s o"     . helm-occur)
          ("M-x"       . helm-M-x)
-         ("C-. C-m"   . helm-M-x)
+         ("C-x C-m"   . helm-M-x)
          ("M-y"       . helm-show-kill-ring)
          ("C-x r i"   . helm-register)
          ("C-x b"     . helm-mini)
@@ -798,6 +823,8 @@ Disable the highlighting of overlong lines."
                 ;; Find library from `require', `declare-function' and friends
                 helm-ff-search-library-in-sexp t))
 
+;; TODO fix how helm-buffers look! Smaller face, no stupid size column, fix path
+;; column, or rid of it: make it freaking helpful.
 (use-package helm-buffers
   :ensure helm
   :defer t
@@ -923,10 +950,6 @@ Disable the highlighting of overlong lines."
                                         ; navigation
   :diminish highlight-symbol-mode)
 
-(use-package elide-head                 ; Elide lengthy GPL headers
-  :bind (("C-c u h" . elide-head))
-  :init (add-hook 'prog-mode-hook #'elide-head))
-
 (use-package eldoc                      ; Documentation in minibuffer
   :defer t
   ;; Enable Eldoc for `eval-expression', too
@@ -947,6 +970,7 @@ Disable the highlighting of overlong lines."
   :init (add-hook 'emacs-lisp-mode-hook #'elisp-slime-nav-mode)
   :diminish elisp-slime-nav-mode)
 
+;; TODO experiment with it
 (use-package pcre2el                    ; Convert regexps to RX and back
   :disabled t
   :ensure t
@@ -1049,6 +1073,8 @@ Disable the highlighting of overlong lines."
   :config
   (setq web-mode-markup-indent-offset 2))
 
+;; TODO add js customizations from `setup-js2-mode.el', needs review and
+;; trimming
 (use-package js2-mode                   ; Javascript editing
   :ensure t
   :mode "\\.js$"
@@ -1097,11 +1123,11 @@ Disable the highlighting of overlong lines."
 
 (use-package magit                      ; The one and only Git frontend
   :ensure t
-  :bind (("C-c g"   . magit-status)
-         ("C-c v g" . magit-status)
-         ("C-c v v" . magit-status)
-         ("C-c v g" . magit-blame-mode)
-         ("C-c v l" . magit-file-log))
+  :bind (("C-x g"   . magit-status)
+         ("C-x v g" . magit-status)
+         ("C-x v v" . magit-status)
+         ("C-x v g" . magit-blame-mode)
+         ("C-x v l" . magit-file-log))
   :init
   ;; Seriously, Magit?! Set this variable before Magit is loaded to silence the
   ;; most stupid warning ever

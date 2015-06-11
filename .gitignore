@@ -11,3 +11,7 @@
 /recentf
 /semanticdb/
 /#setup-helm.el#
+/.backup/
+/.sx/
+/abbrev_defs
+/bookmarks

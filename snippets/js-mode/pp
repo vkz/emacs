@@ -1,4 +1,0 @@
-# -*- mode: snippet -*-
-#name : pp
-# --
-pp(${1:this}, {prompt: "${2:${1:$(yas-text)}}"});$0

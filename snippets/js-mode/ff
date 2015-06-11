@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: immediately-invoked-function-expression
-# key: ff
-# --
-(function ($2) {
- $0
-}($1));
