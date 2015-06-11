@@ -145,7 +145,8 @@
 (use-package savehist                   ; Save minibuffer history
   :init (savehist-mode t)
   :config (setq savehist-save-minibuffer-history t
-                savehist-autosave-interval 180))
+                savehist-autosave-interval 180
+                savehist-file (expand-file-name ".savehist" user-emacs-directory)))
 
 (use-package desktop                    ; Save buffers, windows and frames
   :init (desktop-save-mode)
@@ -567,10 +568,12 @@ Disable the highlighting of overlong lines."
                               "/node_modules/.*\\'"
                               "/itsalltext/" ; It's all text temp files
                               ;; And all other kinds of boring files
-                              #'ignoramus-boring-p)))
+                              #'ignoramus-boring-p)
+        recentf-save-file (expand-file-name ".recentf" user-emacs-directory)))
 
 (use-package saveplace                  ; Save point position in files
-  :config (setq-default save-place t))
+  :config (setq-default save-place t
+                        save-place-file (expand-file-name ".places" user-emacs-directory)))
 
 (setq view-read-only t)                 ; View read-only files
 
@@ -1213,7 +1216,9 @@ Disable the highlighting of overlong lines."
           projectile-find-dir-includes-top-level t
           projectile-mode-line '(:propertize
                                  (:eval (concat " " (projectile-project-name)))
-                                 face font-lock-constant-face)))
+                                 face font-lock-constant-face)
+          projectile-cache-file (expand-file-name ".projectile.cache" user-emacs-directory)
+          projectile-known-projects-file (expand-file-name ".projectile-bookmarks.eld" user-emacs-directory)))
   :diminish projectile-mode)
 
 (use-package helm-projectile
