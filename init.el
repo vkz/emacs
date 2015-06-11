@@ -93,6 +93,9 @@
   :config
   (dash-enable-font-lock))
 
+(use-package s
+  :ensure t)
+
 ;;; zeBasics
 
 (setq inhibit-default-init t)
@@ -1076,15 +1079,30 @@ Disable the highlighting of overlong lines."
   :config
   (setq web-mode-markup-indent-offset 2))
 
-;; TODO add js customizations from `setup-js2-mode.el', needs review and
-;; trimming
+(use-package nodejs-repl
+  :ensure t)
+
 (use-package js2-mode                   ; Javascript editing
   :ensure t
   :mode "\\.js$"
   :init
-  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
+  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode)))
+
+(use-package js2-refactor
+  :ensure t
+  :load-path ("site-lisp/js2-refactor.el/" "site-lisp/")
+  :commands js2-refactor-mode
   :config (progn
-            (setq-default js2-basic-offset 2)))
+            ;; TODO temp binding, js customizations and refactoring need
+            ;; cleaning up
+            (js2r-add-keybindings-with-prefix "C-c M-r")
+            (require 'ze-javascript)))
+(add-hook 'js2-mode-hook #'js2-refactor-mode)
+
+(use-package jslime
+  :load-path "site-lisp/jslime/"
+  :commands jslime-mode)
+(add-hook 'js2-mode-hook #'jslime-mode)
 
 (use-package css-mode
   :defer t
