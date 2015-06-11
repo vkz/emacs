@@ -281,7 +281,7 @@ Homebrew: brew install trash")))
 
 (use-package sanityinc-tomorrow-night-theme                ; My color theme
   :load-path "themes/"
-  :defer t
+  :demand t
   :init (load-theme 'sanityinc-tomorrow-night 'no-confirm)
   :config nil)
 
@@ -294,9 +294,11 @@ Homebrew: brew install trash")))
 
 ;; Modeline
 (use-package smart-mode-line-powerline-theme
+  :disabled t
   :ensure t)
 
 (use-package smart-mode-line
+  :disabled t
   :ensure t
   :init
   (setq sml/no-confirm-load-theme t)
@@ -513,10 +515,12 @@ Disable the highlighting of overlong lines."
   ;; Store auto-save files locally
   (setq tramp-auto-save-directory (locate-user-emacs-file "tramp-auto-save")))
 
+;; TODO reallign with my old setup-dired.el
 (use-package dired                      ; Edit directories
-  :defer t
   :config
   (progn
+    (use-package dired+
+      :ensure t)
     (require 'dired-x)
 
     (setq dired-auto-revert-buffer t    ; Revert on re-visiting
@@ -822,7 +826,7 @@ Disable the highlighting of overlong lines."
 
 (use-package helm-files
   :ensure helm
-  :defer t
+  :bind (([remap find-file] . helm-find-files))
   :config (setq helm-recentf-fuzzy-match t
                 ;; Use recentf to find recent files
                 helm-ff-file-name-history-use-recentf t
@@ -1294,7 +1298,6 @@ Disable the highlighting of overlong lines."
 
 ;; Terminal emulation and shells
 (use-package shell                      ; Dumb shell in Emacs
-  :bind ("C-c j" . start-or-switch-to-shell)
   :config (add-to-list 'display-buffer-alist
                        `(,(rx bos "*shell")
                          (display-buffer-reuse-window
@@ -1428,10 +1431,10 @@ Disable the highlighting of overlong lines."
 
 (use-package ze-misc
   :load-path "site-lisp/"
-  :defer t
   :commands (ze-auto-fill-comments-mode)
   :bind
-  (("C-x 3"                        . ze-split-window-right)
+  (("C-c j" . start-or-switch-to-shell)
+   ("C-x 3"                        . ze-split-window-right)
    ([remap move-beginning-of-line] . ze-bol)
    ("C-o"                          . ze-smart-open-line)
    ("C-c u d"                      . ze-insert-current-date)
