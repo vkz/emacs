@@ -2,22 +2,55 @@
 
 ;;; Commentary:
 
+;; Toggle stuff
 ;; TODO bind prefix for toggling stuff
+;; ???
 
-;; TODO modes requiring solid setup and use
-;; * zop-to-char
-;; * multiple-cursors
-;; * smartparens
-;; * avy (go-to-char and friends)
-;; * buffer search with: isearch + swiper
-;; * inter-file search with: ag, grep, wgrep, locate etc
-;; * hippie-expand
 
-;; TODO proglangs
-;; * Racket
-;; * JavaScript (browser and Node) / TypeScript
-;; * OCaml
-;; * Haskell
+;; TODO setup projectile
+;; TODO try find-file-in-project (any other alts to projectile)
+;; TODO refine bindings
+;; TODO practice winner mode
+;; TODO setup smartparens
+;; TODO try lispy mode
+
+;; Look
+;; TODO fix helm-mini look
+;; TODO fix helm-projectile look
+;; TODO tune smartmodeline
+;; TODO clean up my theme's code (see solarised/zenburn/eclipse themes)
+
+;; Edit
+;; TODO practice zop-to-char
+;; TODO practice hippie-expand
+;; TODO practice multiple-cursors
+;; TODO practice easy-kill
+;; TODO practice marking stuff
+
+;; Navigate
+;; TODO practice avy (go-to-char and friends)
+;; TODO practice buffer search: isearch + swiper
+;; TODO practice inter-file search: ag, grep, wgrep, locate etc
+;; TODO practice adding outlines and navigating them
+;; TODO practice bookmarks and registers
+
+;; Filesystem
+;; TODO practice dired
+;; TODO practice ibuffer
+
+;; Proglangs
+;; TODO Racket
+;; TODO JavaScript (browser and Node) / TypeScript
+;; TODO OCaml
+;; TODO Haskell
+;; TODO C
+;; TODO C# and F#
+
+;; Optimize
+;; TODO byte-compile everything
+;; TODO speedup the startup
+;; TODO port to Windows
+;; TODO port to Linux/BSD
 
 ;;; Code:
 
@@ -539,6 +572,8 @@ Disable the highlighting of overlong lines."
         ;; Cleanup recent files only when Emacs is idle, but not when the mode
         ;; is enabled, because that unnecessarily slows down Emacs. My Emacs
         ;; idles often enough to have the recent files list clean up regularly
+        ;; TODO help claims setting this var directly does not take effect, says
+        ;; to use ns-show-prefs which doesn't seem exist
         recentf-auto-cleanup 300
         recentf-exclude (list "/\\.git/.*\\'" ; Git contents
                               "/elpa/.*\\'" ; Package files
@@ -714,6 +749,7 @@ Disable the highlighting of overlong lines."
 
 ;; Search
 (use-package isearch                    ; Search buffers
+  ;; TODO deserves better binding
   :bind (("C-c s s" . isearch-forward-symbol-at-point)))
 
 (use-package swiper
@@ -916,6 +952,7 @@ Disable the highlighting of overlong lines."
             (add-hook hook #'rainbow-mode)))
 
 (use-package highlight-symbol           ; Highlighting and commands for symbols
+  ;; TODO practice that one
   :ensure t
   :defer t
   :bind
@@ -1088,7 +1125,7 @@ Disable the highlighting of overlong lines."
     ;; `fundamental-mode'.
     (add-hook 'css-mode-hook (lambda () (run-hooks 'prog-mode-hook)))
 
-    ;; Mark css-indent-offset as safe local variable.  TODO: Report upstream
+    ;; Mark css-indent-offset as safe local variable.
     (put 'css-indent-offset 'safe-local-variable #'integerp)))
 
 (use-package css-eldoc                  ; Basic Eldoc for CSS
