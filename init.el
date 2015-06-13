@@ -232,14 +232,11 @@ Homebrew: brew install trash")))
 ;; TODO better binding for "C-,"
 ;; TODO better binding for "M-,"
 (bind-keys* ("C-." . Control-X-prefix)  ;nice and symmetric to C-c
-            ("C-t" . set-mark-command)  ;easy to press and follow with j* key-pairs
-            ("<C-return>" . repeat))
+            ("<C-return>" . repeat)
+            ("<f1>" . help-command))
 
-(unbind-key "C-x h")
 (bind-keys
- ;; TODO go over subcommands in help
- ("C-x h" . help-command)
-
+ ("C-t" . set-mark-command)  ;easy to press and follow with j* key-pairs
  ;; Don't kill Emacs that easily
  ("C-x r q" . save-buffers-kill-terminal)
  ("C-x C-c" . delete-frame)
@@ -613,6 +610,7 @@ Disable the highlighting of overlong lines."
 (setq tab-always-indent 'complete)
 
 (use-package smartparens
+  ;; TODO `M-x sp-cheat-sheet' is amazing to learn the mode
   :ensure t
   :config
   (require 'smartparens-config)
@@ -824,7 +822,7 @@ Disable the highlighting of overlong lines."
          ("C-c b M-:" . helm-eval-expression-with-eldoc)
          ;; Helm features in other maps
          ("C-c i"     . helm-semantic-or-imenu)
-         ("<f1>" . helm-apropos)
+         ("<f1> h" . helm-apropos)
          ;; TODO really don't like these prefixes
          ("C-c h e" . helm-apropos)
          ("C-c h e"   . helm-info-emacs)
@@ -840,9 +838,14 @@ Disable the highlighting of overlong lines."
           (setq helm-command-prefix-key nil)
 
           (helm-mode 1))
-  :config (setq helm-quick-update                     t
+  :config
+  (setq helm-quick-update                     t
                 helm-split-window-in-side-p           nil
-                helm-split-window-default-side        'other))
+                helm-split-window-default-side        'other)
+  (bind-keys :map helm-map
+             ("<tab>" . helm-execute-persistent-action)
+             ("C-<tab>" . helm-select-action)
+             ("C-t" . helm-toggle-visible-mark)))
 
 (use-package helm-files
   :ensure helm
@@ -963,7 +966,7 @@ Disable the highlighting of overlong lines."
             (add-hook hook #'rainbow-mode)))
 
 (use-package highlight-symbol           ; Highlighting and commands for symbols
-  ;; TODO practice that one
+  ;; TODO practice that one, rebind it to M-s (which I think is the default)
   :ensure t
   :defer t
   :bind
@@ -984,9 +987,12 @@ Disable the highlighting of overlong lines."
 (use-package eldoc                      ; Documentation in minibuffer
   :defer t
   ;; Enable Eldoc for `eval-expression', too
-  :init (add-hook 'eval-expression-minibuffer-setup-hook #'eldoc-mode)
-  :config
-  (setq-default eldoc-documentation-function #'describe-char-eldoc))
+  :init
+  (--each '(eval-expression-minibuffer-setup-hook
+            emacs-lisp-mode-hook
+            ;; TODO fails to run eldoc-mode in the scratch buffer
+            lisp-interaction-mode-hook)
+    (add-hook it #'eldoc-mode)))
 
 ;;; zeLisp
 
