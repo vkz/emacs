@@ -2,29 +2,7 @@
 
 ;;; Commentary:
 
-;; Borrowed heavily from Sebastian Wiesner
-;; TODO borrow from magnars
-;; TODO borrow from bbatsov
-;; TODO borrow from oremacs
-;;
-;; User key prefixes:
-;;
-;; - C-c A: Align
-;; - C-c a: Ag
-;; - C-c b: Helm commands (b for "browse")
-;; - C-c d: Data stuff
-;; - C-c f: Files
-;; - C-c h: Help and documentation
-;; - C-c l: List things
-;; - C-c m: Multiple cursors
-;; - C-c s: Symbol commands
-
-;; TODO make it a prefix, so guide-key can show hints
-;; - C-c t: Toggle things and skeletons
-
-;; - C-c u: Miscellaneous utilities
-;; - C-c v: Version control
-;; - C-c w: Web stuff
+;; TODO bind prefix for toggling stuff
 
 ;; TODO modes requiring solid setup and use
 ;; * zop-to-char
@@ -35,16 +13,11 @@
 ;; * inter-file search with: ag, grep, wgrep, locate etc
 ;; * hippie-expand
 
-;; TODO proper open-line stuff bound to C-o
-
 ;; TODO proglangs
 ;; * Racket
 ;; * JavaScript (browser and Node) / TypeScript
 ;; * OCaml
 ;; * Haskell
-
-
-;; TODO learn vc / magit
 
 ;;; Code:
 
@@ -160,8 +133,8 @@
             (dolist (mode '(magit-mode git-commit-mode))
               (add-to-list 'desktop-modes-not-to-save mode))))
 
-;; TODO deserves a good binding and learn it
 (use-package winner                     ; Undo and redo window configurations
+  ;; TODO deserves a good binding and learn it
   :init (winner-mode))
 
 (use-package ns-win                     ; OS X window support
@@ -207,14 +180,13 @@ Homebrew: brew install trash")))
 ;; this is XXI century PEOPLE ARE USING GUIs BY DEFAULT
 ;; take C-[ and C-i back and bind em usefully
 ;; `http://goo.gl/7Xmfn8'
-;; TODO bind (kbd "C-<[>")
 (define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
 (define-key input-decode-map [?\C-i] (kbd "<C-i>"))
 (define-key input-decode-map [?\C-\S-i] (kbd "<C-I>"))
 
 ;; Homerow prefix
 ;; (define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
-;; TODO better binding for "M-t"
+;; TODO better binding for "M-t" something to do with mark (exchange point and mark?)
 ;; TODO better binding for "M-u"
 ;; TODO better binding for "M-c"
 ;; TODO better binding for "M-."
@@ -222,7 +194,11 @@ Homebrew: brew install trash")))
 ;; TODO better binding for "M-,"
 (bind-keys* ("C-." . Control-X-prefix)  ;nice and symmetric to C-c
             ("C-t" . set-mark-command)  ;easy to press and follow with j* key-pairs
-            ("<C-return>" . repeat))
+            ("<C-return>" . repeat)
+
+            ;; Help
+            ;; TODO go over subcommands in help
+            ("C-x h" . help-command))
 
 (bind-keys
 
@@ -234,10 +210,6 @@ Homebrew: brew install trash")))
  ;; TODO terrible binding?
  ("C-?" . universal-argument)
  ("C-!" . negative-argument)
-
- ;; Help
- ("<f1>" . help-command)
- ("<f1> h" . helm-apropos)
 
  ;; Switching frames, windows, buffers
  ("<backspace>" . other-window)
@@ -294,11 +266,9 @@ Homebrew: brew install trash")))
 
 ;; Modeline
 (use-package smart-mode-line-powerline-theme
-  :disabled t
   :ensure t)
 
 (use-package smart-mode-line
-  :disabled t
   :ensure t
   :init
   (setq sml/no-confirm-load-theme t)
@@ -317,8 +287,8 @@ Homebrew: brew install trash")))
 (line-number-mode)
 (column-number-mode)
 
-;; TODO doesn't seem smart in some cases. Needs monitoring.
 (use-package which-func                 ; Current function name in header line
+  ;; TODO doesn't seem smart in some cases. Needs monitoring.
   :init (which-function-mode)
   :config
   (setq which-func-unknown "⊥" ; The default is really boring…
@@ -432,8 +402,8 @@ Disable the highlighting of overlong lines."
 (use-package hl-line                    ; Highlight the current line
   :init (global-hl-line-mode 1))
 
-;; TODO is this good enough or should I be using smartparens or smth else?
 (use-package paren                      ; Highlight paired delimiters
+  ;; TODO is this good enough or should I be using smartparens or smth else?
   :init (show-paren-mode)
   :config (setq show-paren-when-point-inside-paren t
                 show-paren-when-point-in-periphery t))
@@ -495,8 +465,8 @@ Disable the highlighting of overlong lines."
                     (unless (eq ibuffer-sorting-mode 'alphabetic)
                       (ibuffer-do-sort-by-alphabetic)))))
 
-;; TODO appears to be OFF by default
 (use-package ibuffer-projectile         ; Group buffers by Projectile project
+  ;; TODO appears to be OFF by default
   :ensure t
   :defer t)
 
@@ -515,8 +485,8 @@ Disable the highlighting of overlong lines."
   ;; Store auto-save files locally
   (setq tramp-auto-save-directory (locate-user-emacs-file "tramp-auto-save")))
 
-;; TODO reallign with my old setup-dired.el
 (use-package dired                      ; Edit directories
+  ;; TODO reallign with my old setup-dired.el
   :config
   (progn
     (use-package dired+
@@ -541,8 +511,8 @@ Disable the highlighting of overlong lines."
       (setq dired-listing-switches
             (concat dired-listing-switches " --group-directories-first -v")))))
 
-;; TODO bind "C-x C-d" to something more useful than list-directory
 (use-package dired-x                    ; Additional tools for Dired
+  ;; TODO bind "C-x C-d" to something more useful than list-directory
   :bind (("C-x D" . dired-jump)
          ("C-x d" . dired-jump-other-window))
   :config
@@ -602,10 +572,10 @@ Disable the highlighting of overlong lines."
 ;; Make Tab complete if the line is indented
 (setq tab-always-indent 'complete)
 
-;; TODO elec-pair is busted and needs to be replaced
-;; * replace with custom pairing in js2-mode
-;; * smartparens elsewhere
 (use-package elec-pair                  ; Electric pairs
+  ;; TODO elec-pair is busted and needs to be replaced
+  ;; * replace with custom pairing in js2-mode
+  ;; * smartparens elsewhere
   :init (electric-pair-mode))
 
 ;; Indicate empty lines at the end of a buffer in the fringe, but require a
@@ -647,27 +617,27 @@ Disable the highlighting of overlong lines."
   :ensure t
   :bind (("C-c y" . browse-kill-ring)))
 
-;; TODO deserves better binding! Versatile enough to completely replace M-d[h]
-;; bindings. Create a Hydra for it.
 (use-package zop-to-char
+  ;; TODO deserves better binding! Versatile enough to completely replace M-d[h]
+  ;; bindings. Create a Hydra for it.
   :ensure t
   :bind (("M-z" . zop-to-char)
          ("M-Z" . zop-up-to-char)))
 
-;; TODO try actually using it!
 (use-package easy-kill                  ; Easy killing and marking on C-w
+  ;; TODO try actually using it!
   :ensure t
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp]      . easy-mark)))
 
-;; TODO better binding?
 (use-package align                      ; Align text in buffers
+  ;; TODO better binding?
   :bind (("C-c A a" . align)
          ("C-c A c" . align-current)
          ("C-c A r" . align-regexp)))
 
-;; TODO deserves easier binding, particularly mark-more-like-this
 (use-package multiple-cursors           ; Edit text with multiple cursors
+  ;; TODO deserves easier binding, particularly mark-more-like-this
   :ensure t
   :bind (("C-c m e"   . mc/mark-more-like-this-extended)
          ("C-c m h"   . mc/mark-all-like-this-dwim)
@@ -739,7 +709,6 @@ Disable the highlighting of overlong lines."
   :diminish outline-minor-mode)
 
 (use-package imenu-anywhere             ; IDO-based imenu across open buffers
-  :disabled t
   :ensure t
   :bind (("C-c i" . helm-imenu-anywhere)))
 
@@ -788,9 +757,9 @@ Disable the highlighting of overlong lines."
 
 ;;; zeHelm
 
-;; TODO work through the tutorial again
-;; TODO choose stuff I actually need and bind it appropriately
 (use-package helm
+  ;; TODO work through the tutorial again
+  ;; TODO choose stuff I actually need and bind it appropriately
   :ensure t
   :bind (
          ;; Replace some standard bindings with Helm equivalents
@@ -808,7 +777,9 @@ Disable the highlighting of overlong lines."
          ("C-c b M-:" . helm-eval-expression-with-eldoc)
          ;; Helm features in other maps
          ("C-c i"     . helm-semantic-or-imenu)
-         ("C-c h a"   . helm-apropos)
+         ("<f1>" . helm-apropos)
+         ;; TODO really don't like these prefixes
+         ("C-c h e" . helm-apropos)
          ("C-c h e"   . helm-info-emacs)
          ("C-c h i"   . helm-info-at-point)
          ("C-c h m"   . helm-man-woman)
@@ -822,7 +793,9 @@ Disable the highlighting of overlong lines."
           (setq helm-command-prefix-key nil)
 
           (helm-mode 1))
-  :config (setq helm-split-window-in-side-p t))
+  :config (setq helm-quick-update                     t
+                helm-split-window-in-side-p           nil
+                helm-split-window-default-side        'other))
 
 (use-package helm-files
   :ensure helm
@@ -833,9 +806,9 @@ Disable the highlighting of overlong lines."
                 ;; Find library from `require', `declare-function' and friends
                 helm-ff-search-library-in-sexp t))
 
-;; TODO fix how helm-buffers look! Smaller face, no stupid size column, fix path
-;; column, or rid of it: make it freaking helpful.
 (use-package helm-buffers
+  ;; TODO fix how helm-buffers look! Smaller face, no stupid size column, fix path
+  ;; column, or rid of it: make it freaking helpful.
   :ensure helm
   :defer t
   :config (setq helm-buffers-fuzzy-matching t))
@@ -876,8 +849,8 @@ Disable the highlighting of overlong lines."
              hippie-expand-lines
              hippie-expand-no-case-fold))
 
-;; TODO try `ivy' as completion backend
 (use-package company                    ; Graphical (auto-)completion
+  ;; TODO try `ivy' as completion backend
   :ensure t
   :init (global-company-mode)
   :config
@@ -980,9 +953,8 @@ Disable the highlighting of overlong lines."
   :init (add-hook 'emacs-lisp-mode-hook #'elisp-slime-nav-mode)
   :diminish elisp-slime-nav-mode)
 
-;; TODO experiment with it
 (use-package pcre2el                    ; Convert regexps to RX and back
-  :disabled t
+  ;; TODO experiment with it
   :ensure t
   :init (rxt-global-mode))
 
@@ -1417,12 +1389,13 @@ Disable the highlighting of overlong lines."
   (setq ediff-window-setup-function #'ediff-setup-windows-plain
         ediff-split-window-function #'split-window-horizontally))
 
-;; TODO really needs auto-fill mode wrapping around 80 or so
 (use-package writeroom-mode             ; Distraction-free editing
+  ;; TODO really needs auto-fill mode wrapping around 80 or so
   :ensure t
   :bind (("C-c t R" . writeroom-mode)))
 
 (use-package bookmark                   ; Bookmarks for Emacs buffers
+  ;; TODO deserves better binding and more use
   :bind (("C-c l b" . list-bookmarks))
   ;; Save bookmarks immediately after a bookmark was added
   :config (setq bookmark-save-flag 1))
