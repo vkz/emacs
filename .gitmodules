@@ -12,8 +12,12 @@
 
 [submodule "site-lisp/avy"]
 	path = site-lisp/avy
-	url = https://github.com/abo-abo/avy.git	
+	url = https://github.com/abo-abo/avy.git
 
 [submodule "site-lisp/js2-refactor.el"]
 	path = site-lisp/js2-refactor.el
-	url = https://github.com/magnars/js2-refactor.el.git	
+	url = https://github.com/magnars/js2-refactor.el.git
+
+[submodule "site-lisp/racket-mode"]
+	path = site-lisp/racket-mode
+	url = https://github.com/greghendershott/racket-mode.git

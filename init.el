@@ -16,6 +16,7 @@
 ;; TODO setup shell
 ;; TODO setup eshell
 ;; TODO setup term
+;; TODO set :diminish in relevant use-packages
 
 ;; Look
 ;; TODO fix helm-mini look
@@ -222,6 +223,8 @@ Homebrew: brew install trash")))
 (define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
 (define-key input-decode-map [?\C-i] (kbd "<C-i>"))
 (define-key input-decode-map [?\C-\S-i] (kbd "<C-I>"))
+
+(define-key key-translation-map [?\C-h] [?\C-?])
 
 ;; Homerow prefix
 ;; (define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
@@ -1045,6 +1048,13 @@ Disable the highlighting of overlong lines."
 
 ;;; zeRacket
 
+(use-package racket-mode
+  :load-path "site-lisp/racket-mode/"
+  :mode ("\\.rkt\\'" . racket-mode)
+  :interpreter ("racket" . racket-repl-mode)
+  :config
+  (add-hook 'racket-mode-hook      #'racket-unicode-input-method-enable)
+  (add-hook 'racket-repl-mode-hook #'racket-unicode-input-method-enable))
 
 ;;; zeScala
 
@@ -1460,7 +1470,9 @@ Disable the highlighting of overlong lines."
   :load-path "site-lisp/"
   :commands (ze-auto-fill-comments-mode)
   :bind
-  (("C-c j" . start-or-switch-to-shell)
+  (("C-w" . kill-region)
+   ("M-h" . kill-region-or-backward-word)
+   ("C-c j" . start-or-switch-to-shell)
    ("C-x 3"                        . ze-split-window-right)
    ([remap move-beginning-of-line] . ze-bol)
    ("C-o"                          . ze-smart-open-line)
@@ -1468,12 +1480,13 @@ Disable the highlighting of overlong lines."
    ("C-c c"                        . ze-toggle-comment)
    ("C-c d"                        . ze-dup)
    ("C-c M-d"                      . ze-dup-and-comment)
-   ("C-<backspace>"                . ze-buffer-behind)
+   ("<C-backspace>"                . ze-buffer-behind)
    ("C-c <tab>"                    . ze-swap-windows)
    ("C-c <backspace>"              . ze-other-window)
    ("<escape>"                     . ze-bury-buffer-then-switch)
-   ("S-<escape>"                   . bury-buffer))
-  :init (add-hook 'prog-mode-hook #'ze-auto-fill-comments-mode))
+   ("<S-escape>"                   . bury-buffer))
+  :init
+  (add-hook 'prog-mode-hook #'ze-auto-fill-comments-mode))
 
 (use-package ze-snippet-helpers
   :load-path "site-lisp/"
@@ -1482,12 +1495,6 @@ Disable the highlighting of overlong lines."
 ;;; zeBindings
 
 
-;; Killing stuff
-;; TODO install `whole-line-or-region'
-(define-key key-translation-map [?\C-h] [?\C-?])
-(global-set-key (kbd "C-w") 'kill-region)
-(global-set-key (kbd "M-h") 'kill-region-or-backward-word)
-(global-set-key [remap kill-ring-save] 'easy-kill) ;M-w
 
 
 
