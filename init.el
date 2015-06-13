@@ -6,18 +6,22 @@
 ;; TODO bind prefix for toggling stuff
 ;; ???
 
-
 ;; TODO setup projectile
 ;; TODO try find-file-in-project (any other alts to projectile)
 ;; TODO refine bindings
 ;; TODO practice winner mode
 ;; TODO setup smartparens
 ;; TODO try lispy mode
+;; TODO setup j-pairs
+;; TODO setup shell
+;; TODO setup eshell
+;; TODO setup term
 
 ;; Look
 ;; TODO fix helm-mini look
 ;; TODO fix helm-projectile look
 ;; TODO tune smartmodeline
+;; TODO diminish uninformative modes
 ;; TODO clean up my theme's code (see solarised/zenburn/eclipse themes)
 
 ;; Edit
@@ -47,6 +51,7 @@
 ;; TODO C# and F#
 
 ;; Optimize
+;; TODO clean up all ze-... files
 ;; TODO byte-compile everything
 ;; TODO speedup the startup
 ;; TODO port to Windows
@@ -95,17 +100,18 @@
 (require 'rx)
 
 (use-package dash
+  ;; TODO learn `dash'
   :ensure t
   :config
   (dash-enable-font-lock))
 
 (use-package s
+  ;; TODO learn `s'
   :ensure t)
 
 ;;; zeBasics
 
 (setq inhibit-default-init t)
-
 
 ;; OSX
 (defconst on-mac (eq system-type 'darwin)
@@ -227,13 +233,12 @@ Homebrew: brew install trash")))
 ;; TODO better binding for "M-,"
 (bind-keys* ("C-." . Control-X-prefix)  ;nice and symmetric to C-c
             ("C-t" . set-mark-command)  ;easy to press and follow with j* key-pairs
-            ("<C-return>" . repeat)
+            ("<C-return>" . repeat))
 
-            ;; Help
-            ;; TODO go over subcommands in help
-            ("C-x h" . help-command))
-
+(unbind-key "C-x h")
 (bind-keys
+ ;; TODO go over subcommands in help
+ ("C-x h" . help-command)
 
  ;; Don't kill Emacs that easily
  ("C-x r q" . save-buffers-kill-terminal)
@@ -241,8 +246,8 @@ Homebrew: brew install trash")))
 
  ;; Universal arg
  ;; TODO terrible binding?
- ("C-?" . universal-argument)
- ("C-!" . negative-argument)
+ ("C-," . universal-argument)
+ ("C-?" . negative-argument)
 
  ;; Switching frames, windows, buffers
  ("<backspace>" . other-window)
@@ -607,11 +612,17 @@ Disable the highlighting of overlong lines."
 ;; Make Tab complete if the line is indented
 (setq tab-always-indent 'complete)
 
-(use-package elec-pair                  ; Electric pairs
-  ;; TODO elec-pair is busted and needs to be replaced
-  ;; * replace with custom pairing in js2-mode
-  ;; * smartparens elsewhere
-  :init (electric-pair-mode))
+(use-package smartparens
+  :ensure t
+  :config
+  (require 'smartparens-config)
+  (setq sp-base-key-bindings 'paredit
+        sp-autoskip-closing-pair 'always
+        sp-hybrid-kill-entire-symbol nil)
+  (add-to-list 'sp-ignore-modes-list 'js2-mode)
+  (sp-use-paredit-bindings)
+  (show-smartparens-global-mode +1)
+  (smartparens-global-mode +1))
 
 ;; Indicate empty lines at the end of a buffer in the fringe, but require a
 ;; final new line
