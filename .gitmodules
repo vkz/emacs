@@ -1,23 +1,24 @@
 [submodule "site-lisp/jslime"]
         path = site-lisp/jslime
         url = https://github.com/vkz/jslime.git
-
 [submodule "site-lisp/projectile"]
 	path = site-lisp/projectile
 	url = https://github.com/vkz/projectile.git
-
 [submodule "site-lisp/nodejs-repl.el"]
 	path = site-lisp/nodejs-repl.el
 	url = https://github.com/vkz/nodejs-repl.el.git
-
 [submodule "site-lisp/avy"]
 	path = site-lisp/avy
 	url = https://github.com/abo-abo/avy.git
-
 [submodule "site-lisp/js2-refactor.el"]
 	path = site-lisp/js2-refactor.el
 	url = https://github.com/magnars/js2-refactor.el.git
-
 [submodule "site-lisp/racket-mode"]
 	path = site-lisp/racket-mode
 	url = https://github.com/greghendershott/racket-mode.git
+[submodule "deps/ghci-ng"]
+	path = deps/ghci-ng
+	url = https://github.com/chrisdone/ghci-ng.git
+[submodule "deps/structured-haskell-mode"]
+	path = deps/structured-haskell-mode
+	url = https://github.com/chrisdone/structured-haskell-mode.git

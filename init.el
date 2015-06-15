@@ -33,6 +33,7 @@
 ;; TODO practice marking stuff
 
 ;; Navigate
+;; TODO try popwin
 ;; TODO practice avy (go-to-char and friends)
 ;; TODO practice buffer search: isearch + swiper
 ;; TODO practice inter-file search: ag, grep, wgrep, locate etc
@@ -228,6 +229,7 @@ Homebrew: brew install trash")))
 
 ;; Homerow prefix
 ;; (define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
+;; TODO "M-c" prefix, "C-. f" prefix
 ;; TODO better binding for "M-t" something to do with mark (exchange point and mark?)
 ;; TODO better binding for "M-u"
 ;; TODO better binding for "M-c"
@@ -289,6 +291,7 @@ Homebrew: brew install trash")))
                (file-name-as-directory
                 (expand-file-name "themes" user-emacs-directory))))
 
+;; TODO try `https://github.com/cpaulik/emacs-material-theme'
 (use-package sanityinc-tomorrow-night-theme                ; My color theme
   :load-path "themes/"
   :demand t
@@ -811,10 +814,9 @@ Disable the highlighting of overlong lines."
   :ensure t
   :bind (
          ;; Replace some standard bindings with Helm equivalents
-         ("M-s o"     . helm-occur)
          ("M-x"       . helm-M-x)
          ("C-x C-m"   . helm-M-x)
-         ("M-y"       . helm-show-kill-ring)
+         ("C-S-y"       . helm-show-kill-ring)
          ("C-x r i"   . helm-register)
          ("C-x b"     . helm-mini)
          ;; Special helm bindings
@@ -826,13 +828,8 @@ Disable the highlighting of overlong lines."
          ;; Helm features in other maps
          ("C-c i"     . helm-semantic-or-imenu)
          ("<f1> h" . helm-apropos)
-         ;; TODO really don't like these prefixes
-         ("C-c h e" . helm-apropos)
-         ("C-c h e"   . helm-info-emacs)
+         ;; TODO rebind these
          ("C-c h i"   . helm-info-at-point)
-         ("C-c h m"   . helm-man-woman)
-         ("C-c f r"   . helm-recentf)
-         ("C-c f f"   . helm-find-files)
          ("C-c f l"   . helm-locate-library)
          )
   :init (progn
@@ -1061,6 +1058,88 @@ Disable the highlighting of overlong lines."
 
 ;;; zeHaskell
 
+(use-package haskell-mode
+  :ensure t
+  :defer t
+  :config
+  (progn
+    (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+    (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+    (add-hook 'haskell-mode-hook #'subword-mode)           ; Subword navigation
+    (add-hook 'haskell-mode-hook #'haskell-decl-scan-mode) ; Scan and navigate
+                                        ; declarations
+    ;; Insert module templates into new buffers
+    (add-hook 'haskell-mode-hook #'haskell-auto-insert-module-template)
+
+    ;; Automatically run hasktags
+    (setq haskell-tags-on-save t
+          ;; Suggest adding/removing imports as by GHC warnings and Hoggle/GHCI
+          ;; loaded modules respectively
+          haskell-process-suggest-remove-import-lines t
+          haskell-process-auto-import-loaded-modules t
+          haskell-process-use-presentation-mode t ; Don't clutter the echo area
+          haskell-process-show-debug-tips nil     ; Disable tips
+          haskell-process-log t                   ; Log debugging information
+          ;; Suggest imports automatically with Hayoo.  Hayoo is slower because
+          ;; it's networked, but it covers all of hackage, which is really an
+          ;; advantage.
+          haskell-process-suggest-hoogle-imports nil
+          haskell-process-suggest-hayoo-imports t)
+
+    (-when-let (ghci-ng (executable-find "ghci-ng"))
+      ;; Use GHCI NG from https://github.com/chrisdone/ghci-ng
+      (setq haskell-process-path-ghci ghci-ng)
+      (add-to-list 'haskell-process-args-cabal-repl
+                   (concat "--with-ghc=" ghci-ng)))
+
+    (bind-key "C-c h d" #'haskell-describe haskell-mode-map)
+    (bind-key "C-c u i" #'haskell-navigate-imports haskell-mode-map)
+    (bind-key "C-c f c" #'haskell-cabal-visit-file haskell-mode-map)))
+
+(use-package haskell
+  :ensure haskell-mode
+  :defer t
+  :init (dolist (hook '(haskell-mode-hook haskell-cabal-mode-hook))
+          (add-hook hook #'interactive-haskell-mode))
+  :config
+  (progn
+    (bind-key "C-c C-t" #'haskell-mode-show-type-at
+              interactive-haskell-mode-map)
+    (bind-key "M-." #'haskell-mode-goto-loc
+              interactive-haskell-mode-map)
+    (bind-key "C-c u u" #'haskell-mode-find-uses
+              interactive-haskell-mode-map)))
+
+(use-package haskell-interactive-mode
+  :ensure haskell-mode
+  :config
+  (add-hook 'haskell-interactive-mode-hook 'structured-haskell-repl-mode)
+  (add-hook 'haskell-interactive-mode-hook #'subword-mode))
+
+(use-package haskell-indentation
+  :ensure haskell-mode
+  :disabled t
+  :init (add-hook 'haskell-mode-hook #'haskell-indentation-mode))
+
+(use-package hindent                    ; Automated Haskell indentation
+  :ensure t)
+
+(use-package helm-hayoo
+  :ensure t
+  :init (with-eval-after-load 'haskell-mode
+          (bind-key "C-c h h" #'helm-hayoo haskell-mode-map)))
+
+(use-package helm-hoogle
+  :ensure t
+  :init (with-eval-after-load 'haskell-mode
+          (bind-key "C-c h H" #'helm-hoogle haskell-mode-map)))
+
+(use-package shm
+  :ensure t
+  :config
+  (custom-set-faces
+   '(shm-quarantine-face ((t (:inherit font-lock-error))))
+   '(shm-current-face ((t (:background "#efefef"))))))
 
 ;;; zeOCaml
 
