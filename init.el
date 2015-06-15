@@ -619,6 +619,11 @@ Disable the highlighting of overlong lines."
   ;; TODO `M-x sp-cheat-sheet' is amazing to learn the mode
   :ensure t
   :config
+
+  ;; Racket is Lisp
+  (add-to-list 'sp--lisp-modes 'racket-mode)
+  (add-to-list 'sp--lisp-modes 'racket-repl-mode)
+
   (require 'smartparens-config)
   (setq sp-base-key-bindings 'paredit
         sp-autoskip-closing-pair 'always
@@ -1058,6 +1063,9 @@ Disable the highlighting of overlong lines."
 
 ;;; zeHaskell
 
+;; cabal install happy hasktags hindent hoogle
+;; cabal install /Users/kozin/.personal_configs/emacs.candidate3/deps/ghci-ng
+;; cabal install /Users/kozin/.personal_configs/emacs.candidate3/deps/structured-haskell-mode/
 (use-package haskell-mode
   :ensure t
   :defer t
@@ -1122,7 +1130,8 @@ Disable the highlighting of overlong lines."
   :init (add-hook 'haskell-mode-hook #'haskell-indentation-mode))
 
 (use-package hindent                    ; Automated Haskell indentation
-  :ensure t)
+  :ensure t
+  :init (add-hook 'haskell-mode-hook #'hindent-mode))
 
 (use-package helm-hayoo
   :ensure t
