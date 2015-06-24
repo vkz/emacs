@@ -22,3 +22,6 @@
 [submodule "deps/structured-haskell-mode"]
 	path = deps/structured-haskell-mode
 	url = https://github.com/chrisdone/structured-haskell-mode.git
+[submodule "site-lisp/purescript-mode"]
+	path = site-lisp/purescript-mode
+	url = https://github.com/dysinger/purescript-mode.git

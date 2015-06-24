@@ -2,27 +2,23 @@
 
 ;;; Commentary:
 
-;; Toggle stuff
-;; TODO bind prefix for toggling stuff
-;; ???
-
+;; Core
 ;; TODO setup projectile
-;; TODO try find-file-in-project (any other alts to projectile)
-;; TODO refine bindings
-;; TODO practice winner mode
-;; TODO setup smartparens
-;; TODO try lispy mode
-;; TODO setup j-pairs
-;; TODO setup shell
-;; TODO setup eshell
-;; TODO setup term
-;; TODO set :diminish in relevant use-packages
+;; TODO find-file-in-project (any other alts/additions to projectile)
+;; TODO winner mode
+;; TODO smartparens in non-lisp modes
+;; TODO jump-pairs
+;; TODO shell
+;; TODO eshell
+;; TODO term
+;; TODO lispy mode
 
 ;; Look
 ;; TODO fix helm-mini look
 ;; TODO fix helm-projectile look
 ;; TODO tune smartmodeline
 ;; TODO diminish uninformative modes
+;; TODO try popwin
 ;; TODO clean up my theme's code (see solarised/zenburn/eclipse themes)
 
 ;; Edit
@@ -30,26 +26,28 @@
 ;; TODO practice hippie-expand
 ;; TODO practice multiple-cursors
 ;; TODO practice easy-kill
-;; TODO practice marking stuff
 
 ;; Navigate
-;; TODO try popwin
 ;; TODO practice avy (go-to-char and friends)
-;; TODO practice buffer search: isearch + swiper
-;; TODO practice inter-file search: ag, grep, wgrep, locate etc
+;; TODO swiper with stuff at point (symbol, region)
+;; TODO highlight symbol and friends
+;; TODO file search: ag, grep, wgrep, locate etc - with/without projectile
 ;; TODO practice adding outlines and navigating them
 ;; TODO practice bookmarks and registers
 
 ;; Filesystem
-;; TODO practice dired
-;; TODO practice ibuffer
+;; TODO dired and dired+ - projectile spec
+;; TODO ibuffer - projectile spec
 
 ;; Proglangs
 ;; TODO Racket
-;; TODO JavaScript (browser and Node) / TypeScript
+;; TODO JavaScript
+;; TODO ES6 + Babel
 ;; TODO OCaml
 ;; TODO Haskell
 ;; TODO C
+;; TODO Python
+;; TODO R
 ;; TODO C# and F#
 
 ;; Optimize
@@ -238,10 +236,11 @@ Homebrew: brew install trash")))
 ;; TODO better binding for "M-,"
 (bind-keys* ("C-." . Control-X-prefix)  ;nice and symmetric to C-c
             ("<C-return>" . repeat)
-            ("<f1>" . help-command))
+            ("<f1>" . help-command)
+            ("C-t" . set-mark-command))
 
 (bind-keys
- ("C-t" . set-mark-command)  ;easy to press and follow with j* key-pairs
+   ;easy to press and follow with j* key-pairs
  ;; Don't kill Emacs that easily
  ("C-x r q" . save-buffers-kill-terminal)
  ("C-x C-c" . delete-frame)
@@ -999,8 +998,12 @@ Disable the highlighting of overlong lines."
             lisp-interaction-mode-hook)
     (add-hook it #'eldoc-mode)))
 
-;;; zeLisp
+;;; zeProgging
 
+(use-package repl-toggle
+  ;; TODO add Racket, shell, Elisp, Haskell, OCaml, etc
+  :ensure t
+  :defer f)
 
 ;; TODO try `Lispy' first
 
@@ -1057,9 +1060,6 @@ Disable the highlighting of overlong lines."
   :config
   (add-hook 'racket-mode-hook      #'racket-unicode-input-method-enable)
   (add-hook 'racket-repl-mode-hook #'racket-unicode-input-method-enable))
-
-;;; zeScala
-
 
 ;;; zeHaskell
 
@@ -1149,6 +1149,45 @@ Disable the highlighting of overlong lines."
   (custom-set-faces
    '(shm-quarantine-face ((t (:inherit font-lock-error))))
    '(shm-current-face ((t (:background "#efefef"))))))
+
+;;; zePureScript
+
+;; possible to install from Marmalade but rather install it manually from GitHub
+(use-package purescript-mode
+  :load-path "site-lisp/purescript-mode/"
+  :mode (("\\.purs$\\'" . purescript-mode)
+         ("\\.pursc$\\'" . purescript-mode)
+         ("\\.cpppurs$\\'" . purescript-mode)
+         ("\\.lpurs$\\'" . literate-purescript-mode))
+  :init (add-to-list 'Info-additional-directory-list
+                     (file-name-as-directory
+                      (expand-file-name "site-lisp/purescript-mode/" user-emacs-directory)))
+  :config
+  ;; TODO unicode support seems broken, compilation fails with unicode chars in file
+  ;; (add-hook 'purescript-mode-hook 'turn-on-purescript-unicode-input-method)
+  (add-hook 'purescript-mode-hook
+            #'(lambda ()
+                (turn-on-purescript-indentation)
+                (bind-keys :map purescript-indentation-mode-map
+                           ("<backspace>" . nil)
+                           ("DEL" . purescript-indentation-delete-backward-char))))
+  (add-hook 'purescript-mode-hook 'turn-on-purescript-decl-scan)
+  (bind-keys :map purescript-mode-map
+             ("C-<" . purescript-move-nested-left)
+             ("C->" . purescript-move-nested-right)
+             ;; TODO no purescript-compile anywhere even though Info mentions it
+             ;; ("C-c C-c" . purescript-compile)
+             )
+  (eval-after-load "which-func"
+       '(add-to-list 'which-func-modes 'purescript-mode)))
+
+(use-package psci
+  ;; TODO doesn't seem to work at all
+  :ensure t
+  :interpreter ("psci" . psci-mode)
+  :init
+  (with-eval-after-load 'purescript-mode
+    (add-hook 'purescript-mode-hook 'inferior-psci-mode)))
 
 ;;; zeOCaml
 
@@ -1369,7 +1408,6 @@ Disable the highlighting of overlong lines."
 
 (use-package helm-projectile
   :ensure t
-  :defer t
   :init (with-eval-after-load 'projectile (helm-projectile-on))
   :config (setq projectile-switch-project-action #'helm-projectile))
 
@@ -1500,7 +1538,8 @@ Disable the highlighting of overlong lines."
   :config
   ;; Standard channels on Freenode
   (setq erc-autojoin-channels-alist
-        '(("\\.freenode\\.net" . ("#racket" "#ocaml" "#haskell-beginners")))))
+        '(("\\.freenode\\.net" .
+           ("#racket" "#ocaml" "#haskell-beginners" "#purescript")))))
 
 (use-package erc-track                  ; Track status of ERC in mode line
   :defer t
