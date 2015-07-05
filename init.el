@@ -237,9 +237,10 @@ Homebrew: brew install trash")))
 (bind-keys* ("C-." . Control-X-prefix)  ;nice and symmetric to C-c
             ("<C-return>" . repeat)
             ("<f1>" . help-command)
-            ("C-t" . set-mark-command))
+            )
 
 (bind-keys
+ ("C-t" . set-mark-command)
    ;easy to press and follow with j* key-pairs
  ;; Don't kill Emacs that easily
  ("C-x r q" . save-buffers-kill-terminal)
@@ -549,7 +550,14 @@ Disable the highlighting of overlong lines."
       ;; sorts numbers in file names naturally, i.e. "image1" goes before
       ;; "image02"
       (setq dired-listing-switches
-            (concat dired-listing-switches " --group-directories-first -v")))))
+            (concat dired-listing-switches " --group-directories-first -v")))
+
+    ;; use `dired-find-alternate-file' to traverse directories without the trail
+    ;; of dired buffers. Initially bound to "a"
+    (put 'dired-find-alternate-file 'disabled nil)
+    (unbind-key "a" dired-mode-map)
+    (bind-keys :map dired-mode-map
+               ("<tab>" . dired-find-alternate-file))))
 
 (use-package dired-x                    ; Additional tools for Dired
   ;; TODO bind "C-x C-d" to something more useful than list-directory
@@ -844,8 +852,8 @@ Disable the highlighting of overlong lines."
           (helm-mode 1))
   :config
   (setq helm-quick-update                     t
-                helm-split-window-in-side-p           nil
-                helm-split-window-default-side        'other)
+        helm-split-window-in-side-p           nil
+        helm-split-window-default-side        'other)
   (bind-keys :map helm-map
              ("<tab>" . helm-execute-persistent-action)
              ("C-<tab>" . helm-select-action)
