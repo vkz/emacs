@@ -349,6 +349,7 @@ mouse-3: go to end"))))
     (setq
      dynamic-fonts-preferred-monospace-fonts
      '(
+       "Source Code Pro"
        "Monaco"
        "Menlo"
        "Fira Mono"
@@ -378,7 +379,8 @@ mouse-3: go to end"))))
      dynamic-fonts-preferred-proportional-point-size (pcase system-type
                                                        (`darwin 16)
                                                        (_ 10)))
-    (dynamic-fonts-setup)))
+    (dynamic-fonts-setup)
+    (set-face-attribute 'default nil :weight 'light)))
 
 ;; don't wrap lines ever
 (setq-default truncate-lines t)
