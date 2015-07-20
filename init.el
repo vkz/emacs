@@ -254,6 +254,12 @@ Homebrew: brew install trash")))
  ;; Switching frames, windows, buffers
  ("<backspace>" . other-window)
  ("M-<backspace>" . other-frame))
+;; Prefixes
+(bind-keys :prefix-map ze-resume-prefix-map
+           :prefix "C-r")
+
+(bind-keys :prefix-map ze-jump-prefix-map
+           :prefix "C-j")
 
 ;;; zeLook
 
@@ -274,7 +280,7 @@ Homebrew: brew install trash")))
       font-lock-maximum-decoration t
       truncate-partial-width-windows nil
       inhibit-startup-screen t
-      initial-scratch-message "Happy hacking!")
+      initial-scratch-message "")
 (fset 'yes-or-no-p #'y-or-n-p)
 ;; Opt out from the startup message in the echo area by simply disabling this
 ;; ridiculously bizarre thing entirely.
@@ -563,8 +569,8 @@ Disable the highlighting of overlong lines."
 
 (use-package dired-x                    ; Additional tools for Dired
   ;; TODO bind "C-x C-d" to something more useful than list-directory
-  :bind (("C-x D" . dired-jump)
-         ("C-x d" . dired-jump-other-window))
+  :bind (("C-j d" . dired-jump)
+         ("C-j D" . dired-jump-other-window))
   :config
   (progn
     (setq dired-omit-verbose nil)        ; Shut up, dired
@@ -760,10 +766,8 @@ Disable the highlighting of overlong lines."
               avy-background t
               avy-all-windows nil)
   ;; TODO need better bindings, better yet j- bi-sequences like jw, jl, jc
-  :bind (("M-'"   . avy-goto-char)
-         ("C-'"   . avy-goto-char-2)
-         ("M-g g" . avy-goto-line)
-         ("M-g w" . avy-goto-word-1))
+  :bind (("C-j w"   . avy-goto-word-or-subword-1)
+         ("C-j c"   . avy-goto-char-2)) ;TODO enable subword-mode
   :config (avy-setup-default))
 
 (use-package outline                    ; Navigate outlines in buffers
@@ -787,9 +791,7 @@ Disable the highlighting of overlong lines."
   :init (setq ivy-use-virtual-buffers t)
   :config (ivy-mode 1)
   :bind (("C-s"     . swiper)
-         ("C-r"     . swiper)
-         ("C-c C-r" . ivy-resume)
-         ("<f6>"    . ivy-resume)))
+         ("C-r s" . ivy-resume)))
 
 (use-package locate                     ; Search files on the system
   :defer t
@@ -834,7 +836,8 @@ Disable the highlighting of overlong lines."
          ("C-x r i"   . helm-register)
          ("C-x b"     . helm-mini)
          ;; Special helm bindings
-         ("C-c b b"   . helm-resume)
+         ("C-r h"   . helm-resume)
+         ("C-r H"   . ze-helm-resume-list)
          ("C-c b C"   . helm-colors)
          ("C-c b *"   . helm-calcul-expression)
          ("C-c b 8"   . helm-ucs)
@@ -852,6 +855,10 @@ Disable the highlighting of overlong lines."
           (setq helm-command-prefix-key nil)
 
           (helm-mode 1))
+  (defun ze-helm-resume-list ()
+    "Same as `helm-resume' with universal-argument: choose helm buffer to resume."
+    (interactive)
+    (helm-resume 1))
   :config
   (setq helm-quick-update                     t
         helm-split-window-in-side-p           nil
@@ -1609,7 +1616,7 @@ Disable the highlighting of overlong lines."
   :bind
   (("C-w" . kill-region)
    ("M-h" . kill-region-or-backward-word)
-   ("C-c j" . start-or-switch-to-shell)
+   ("C-j s" . start-or-switch-to-shell)
    ("C-x 3"                        . ze-split-window-right)
    ([remap move-beginning-of-line] . ze-bol)
    ("C-o"                          . ze-smart-open-line)
