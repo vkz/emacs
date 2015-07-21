@@ -785,13 +785,56 @@ Disable the highlighting of overlong lines."
   ;; TODO deserves better binding
   :bind (("C-c s s" . isearch-forward-symbol-at-point)))
 
-(use-package swiper
+;; TODO swiper/ivy have way more functionality esp in the counsel package
+;; (use-package swiper
+;;   ;; :load-path "site-lisp/swiper/"
+;;   :ensure t
+;;   :defer t
+;;   :init
+;;   (setq ivy-use-virtual-buffers t)
+;;   (defun ze-swiper-dwim ()
+;;     (interactive)
+;;     (let ((bounds (find-tag-default-bounds)))
+;;       (cond (bounds (when (< (car bounds) (point))
+;;                       (goto-char (car bounds)))
+;;                     (swiper
+;;                      (buffer-substring-no-properties (car bounds) (cdr bounds))))
+;;             (t (swiper)))))
+;;   :config
+;;   (ivy-mode 1)
+;;   (bind-keys :map swiper-map
+;;              ("C-j" . swiper-avy))
+;;   :bind (("C-s"     . swiper)
+;;          ("C-S-s"   . ze-swiper-dwim)
+;;          ("C-r s" . ivy-resume)))
+(use-package swiper-helm
+  ;; :load-path "site-lisp/swiper/"
   :ensure t
   :defer t
-  :init (setq ivy-use-virtual-buffers t)
-  :config (ivy-mode 1)
-  :bind (("C-s"     . swiper)
-         ("C-r s" . ivy-resume)))
+  :init
+  ;; (setq ivy-use-virtual-buffers t)
+  (defun ze-swiper-helm-dwim ()
+    (interactive)
+    (let ((bounds (find-tag-default-bounds)))
+      (cond (bounds (when (< (car bounds) (point))
+                      (goto-char (car bounds)))
+                    (swiper-helm
+                     (buffer-substring-no-properties (car bounds) (cdr bounds))))
+            (t (swiper-helm)))))
+  :config
+  (ivy-mode 1)
+  (unbind-key "C-r" swiper-helm-keymap)
+  (unbind-key "C-s" swiper-helm-keymap)
+  ;; (bind-keys :map swiper-helm-keymap
+  ;;           ("C-n" ))
+  :bind (("C-s"     . swiper-helm)
+         ("C-S-s"   . ze-swiper-helm-dwim)))
+
+;; TODO consider using counsel stuff like `coursel-get-grep'
+(use-package counsel
+  :disabled t
+  :load-path "site-lisp/swiper/"
+  )
 
 (use-package locate                     ; Search files on the system
   :defer t
