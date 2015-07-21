@@ -95,7 +95,12 @@
   (require 'use-package))
 
 (require 'bind-key)
+
 (require 'diminish)
+(defmacro rename-modeline (package-name mode new-name)
+  `(eval-after-load ,package-name
+     '(defadvice ,mode (after rename-modeline activate)
+        (setq mode-name ,new-name))))
 
 (require 'rx)
 
@@ -304,24 +309,20 @@ Homebrew: brew install trash")))
   :init (load-theme 'sanityinc-tomorrow-night 'no-confirm)
   :config nil)
 
-(use-package solarized
-  :ensure solarized-theme
-  :disabled t
-  :defer t
-  :init (load-theme 'solarized-dark 'no-confirm)
-  :config nil)
-
 ;; Modeline
 (use-package smart-mode-line-powerline-theme
+  :disabled t
   :ensure t)
 
 (use-package smart-mode-line
   :ensure t
   :init
   (setq sml/no-confirm-load-theme t)
+  ;; (add-hook 'after-init-hook #'sml/setup)
   (sml/setup)
   :config
-  (setq sml/theme 'powerline)
+  ;; TODO minimize major modes and hide useless minors
+  (setq sml/theme 'respectful)          ;or 'dark
   (setq-default header-line-format
                 '(which-func-mode ("" which-func-format " "))
 
@@ -1026,8 +1027,9 @@ Disable the highlighting of overlong lines."
 (use-package rainbow-mode               ; Fontify color values in code
   :ensure t
   :bind (("C-c t r" . rainbow-mode))
-  :config (dolist (hook '(css-mode-hook emacs-lisp-mode-hook))
-            (add-hook hook #'rainbow-mode)))
+  :config (dolist (hook '(css-mode-hook emacs-lisp-mode-hook racket-mode-hook))
+            (add-hook hook #'rainbow-mode))
+  :diminish rainbow-mode)
 
 (use-package highlight-symbol           ; Highlighting and commands for symbols
   ;; TODO practice that one, rebind it to M-s (which I think is the default)
@@ -1056,7 +1058,8 @@ Disable the highlighting of overlong lines."
             emacs-lisp-mode-hook
             ;; TODO fails to run eldoc-mode in the scratch buffer
             lisp-interaction-mode-hook)
-    (add-hook it #'eldoc-mode)))
+    (add-hook it #'eldoc-mode))
+  :diminish eldoc-mode)
 
 ;;; zeProgging
 
@@ -1096,7 +1099,8 @@ Disable the highlighting of overlong lines."
   :mode ("/Cask\\'" . emacs-lisp-mode)
   :config
   (progn
-    (require 'ert)))
+    (require 'ert)
+    (rename-modeline "lisp-mode" emacs-lisp-mode "el")))
 
 (use-package ze-lisp             ; Personal tools for Emacs Lisp
   :load-path "site-lisp/"
@@ -1313,7 +1317,9 @@ Disable the highlighting of overlong lines."
   :ensure t
   :mode "\\.js$"
   :init
-  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode)))
+  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
+  :config
+  (rename-modeline "js2-mode" js2-mode "js2"))
 
 (use-package js2-refactor
   :ensure t
@@ -1323,12 +1329,15 @@ Disable the highlighting of overlong lines."
             ;; TODO temp binding, js customizations and refactoring need
             ;; cleaning up
             (js2r-add-keybindings-with-prefix "C-c M-r")
-            (require 'ze-javascript)))
+            (require 'ze-javascript))
+  :diminish js2-refactor-mode)
 (add-hook 'js2-mode-hook #'js2-refactor-mode)
 
 (use-package jslime
   :load-path "site-lisp/jslime/"
-  :commands jslime-mode)
+  :commands jslime-mode
+  :diminish jslime-mode
+  )
 (add-hook 'js2-mode-hook #'jslime-mode)
 
 (use-package css-mode
