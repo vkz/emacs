@@ -27,15 +27,23 @@
     (add-to-list 'custom-theme-load-path path)))
 
 
-(setq my/default-font "-apple-Monaco-medium-*-regular-*-*-*-*-*-m-0-iso10646-1")
-(setq my/cyrillic-font "-apple-Monaco-medium-*-regular-*-*-*-*-*-m-0-iso10646-1")
-(set-fontset-font "fontset-default" 'cyrillic my/cyrillic-font)
+;; (setq my/default-font "-apple-Monaco-medium-*-regular-*-*-*-*-*-m-0-iso10646-1")
+;; (setq my/cyrillic-font "-apple-Monaco-medium-*-regular-*-*-*-*-*-m-0-iso10646-1")
+;; (set-fontset-font "fontset-default" 'cyrillic my/cyrillic-font)
+
 (set-face-attribute 'default nil
-                    :font my/default-font
+                    :family "Source Code Pro"
                     :height 160
-                    :weight 'normal
+                    :weight 'light
                     :foreground "#D7b78f"
                     :background "#161616")
+
+;; (set-face-attribute 'default nil
+;;                     :family "Monaco"
+;;                     :height 160
+;;                     :weight 'medium
+;;                     :foreground "#D7b78f"
+;;                     :background "#161616")
 
 ;; Always have two windows in a frame
 (add-hook 'after-make-frame-functions

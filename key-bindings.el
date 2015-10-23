@@ -205,7 +205,7 @@
 (global-set-key (kbd "C-M-u") 'undo-tree-visualize)
 (global-set-key (kbd "C-/") 'universal-argument)
 (global-set-key (kbd "C-?") 'negative-argument)
-(global-set-key (kbd "C--") 'set-mark-command)
+(global-set-key (kbd "C--") 'universal-argument)
 (global-set-key (kbd "M-m") 'set-mark-command)
 ;; (global-set-key (kbd "C-_") 'negative-argument)
 
@@ -214,12 +214,13 @@
 (global-set-key (kbd "C-c M-d") 'prelude-duplicate-and-comment-current-line-or-region)
 
 ;; TODO jump commands may deserve nice bigram combos like
-;; js - jump-shell (or maybe jt - jump terminal mnemonic)
+;; jt - jump-terminal (or maybe jt - jump terminal mnemonic)
 ;; jc - jump-cd to buffer's directory in shell
-;; jd - jump-dired
+;; jd - jump-dired (project root with current dir inserted)
 ;; jb - jump-buffer (helm-mini or helm-projectile)
-;; jn - jump-nodejs
+;; jr - jump-repl
 ;; jk - jump-kill - bury buffer (or jc)
+;; js - jump-scratch (in major-mode of the current buffer)
 
 ;; Jump to dired
 (autoload 'dired-jump "dired")
@@ -248,6 +249,8 @@
 
 ;; Projectile
 (global-set-key (kbd "C-c b") 'helm-projectile)
+
+(eval-after-load 'markdown-mode '(define-key markdown-mode-map (kbd "<backspace>") nil))
 
 ;; --------------------------------------------------------------
 

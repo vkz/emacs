@@ -295,3 +295,6 @@
 ;; (setq merlin-command 'opam)
 
 ;; Take a look at https://github.com/the-lambda-church/merlin for more information
+
+;; lispy.el
+(eval-after-load "lispy" '(require 'setup-lispy))
