@@ -25,3 +25,6 @@
 [submodule "site-lisp/purescript-mode"]
 	path = site-lisp/purescript-mode
 	url = https://github.com/dysinger/purescript-mode.git
+[submodule "site-lisp/swiper"]
+	path = site-lisp/swiper
+	url = https://github.com/abo-abo/swiper.git

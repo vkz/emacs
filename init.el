@@ -2,12 +2,14 @@
 
 ;;; Commentary:
 
+;; TODO bind `macrostep-expand' it is amazing!!!
+
 ;; Core
-;; TODO setup projectile
+;; TODO projectile
 ;; TODO find-file-in-project (any other alts/additions to projectile)
 ;; TODO winner mode
 ;; TODO smartparens in non-lisp modes
-;; TODO jump-pairs
+;; TODO jump-pairs (avy)
 ;; TODO shell
 ;; TODO eshell
 ;; TODO term
@@ -177,9 +179,13 @@
             (dolist (mode '(magit-mode git-commit-mode))
               (add-to-list 'desktop-modes-not-to-save mode))))
 
-(use-package winner                     ; Undo and redo window configurations
-  ;; TODO deserves a good binding and learn it
-  :init (winner-mode))
+(use-package winner
+  :if (not noninteractive)
+  :defer 5
+  :bind (("C-S-<tab>" . winner-redo)
+         ("C-<tab>" . winner-undo))
+  :config
+  (winner-mode 1))
 
 (use-package ns-win                     ; OS X window support
   :defer t
@@ -231,7 +237,7 @@ Homebrew: brew install trash")))
 (define-key key-translation-map [?\C-h] [?\C-?])
 
 ;; Homerow prefix
-;; (define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
+(define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
 ;; TODO "M-c" prefix, "C-. f" prefix
 ;; TODO better binding for "M-t" something to do with mark (exchange point and mark?)
 ;; TODO better binding for "M-u"
@@ -239,26 +245,28 @@ Homebrew: brew install trash")))
 ;; TODO better binding for "M-."
 ;; TODO better binding for "C-,"
 ;; TODO better binding for "M-,"
-(bind-keys* ("C-." . Control-X-prefix)  ;nice and symmetric to C-c
-            ("<C-return>" . repeat)
-            ("<f1>" . help-command)
-            )
+(bind-keys*
+ ;; ("C-t" . Control-X-prefix)
+ ("<C-return>" . repeat)
+ ("<f1>" . help-command))
 
 (bind-keys
- ("C-t" . set-mark-command)
-   ;easy to press and follow with j* key-pairs
+ ;; TODO unfortunately this is often and easily stolen by major modes. Take it
+ ;; back whenever this happens.
+ ("C-." . set-mark-command)
  ;; Don't kill Emacs that easily
  ("C-x r q" . save-buffers-kill-terminal)
  ("C-x C-c" . delete-frame)
 
  ;; Universal arg
  ;; TODO terrible binding?
- ("C-," . universal-argument)
+ ("C-_" . universal-argument)
  ("C-?" . negative-argument)
 
  ;; Switching frames, windows, buffers
  ("<backspace>" . other-window)
- ("M-<backspace>" . other-frame))
+ ("S-<backspace>" . other-frame))
+
 ;; Prefixes
 (bind-keys :prefix-map ze-resume-prefix-map
            :prefix "C-r")
@@ -302,12 +310,17 @@ Homebrew: brew install trash")))
                (file-name-as-directory
                 (expand-file-name "themes" user-emacs-directory))))
 
-;; TODO try `https://github.com/cpaulik/emacs-material-theme'
 (use-package sanityinc-tomorrow-night-theme                ; My color theme
   :load-path "themes/"
   :demand t
   :init (load-theme 'sanityinc-tomorrow-night 'no-confirm)
   :config nil)
+
+;; TODO add quick theme switcher (`counsel' has it)
+(use-package eclipse-theme
+  :ensure t
+  :demand t
+  )
 
 ;; Modeline
 (use-package smart-mode-line-powerline-theme
@@ -349,6 +362,15 @@ Homebrew: brew install trash")))
 mouse-2: toggle rest visibility\n\
 mouse-3: go to end"))))
 
+;; We use these fonts:
+;;
+;; - Source Code Pro (https://github.com/adobe-fonts/source-code-pro) as default
+;; - XITS Math (https://github.com/khaledhosny/xits-math) as fallback for math
+;;
+;; Currently this setup only works for OS X, as we rely on Apple's Emoji and
+;; Symbol fonts.
+;;
+;; TODO:  Find Emoji and symbol fonts for Linux and Windows
 (use-package dynamic-fonts              ; Select best available font
   :ensure t
   :config
@@ -366,7 +388,7 @@ mouse-3: go to end"))))
        "Bitstream Vera Mono"
        "Courier New")
      dynamic-fonts-preferred-monospace-point-size (pcase system-type
-                                                    (`darwin 16)
+                                                    (`darwin 15)
                                                     (_ 10))
      dynamic-fonts-preferred-proportional-fonts
      '(
@@ -384,10 +406,29 @@ mouse-3: go to end"))))
        "Arial Unicode MS"
        "Arial")
      dynamic-fonts-preferred-proportional-point-size (pcase system-type
-                                                       (`darwin 16)
+                                                       (`darwin 15)
                                                        (_ 10)))
     (dynamic-fonts-setup)
-    (set-face-attribute 'default nil :weight 'light)))
+    (set-face-attribute 'default nil :weight 'light)
+
+    ;; Additional fonts for special characters and fallbacks
+    ;; Test range: 🐷 ⊄ ∫ 𝛼 α 🜚
+    ;; TODO doesn't appear to pick up the right fonts on my mac
+    (when (eq system-type 'darwin)
+      ;; Colored Emoji on OS X
+      (set-fontset-font t 'symbol (font-spec :family "Apple Color Emoji")
+                        nil 'prepend))
+    (set-fontset-font t 'symbol (font-spec :family "Apple Symbols") nil 'append)
+    (set-fontset-font t 'mathematical (font-spec :family "XITS Math") nil 'append)
+    ;; Fallback for Greek characters which Source Code Pro doesn't provide.
+    (set-fontset-font t 'greek (pcase system-type
+                                 (`darwin (font-spec :family "Menlo"))
+                                 (_ (font-spec :family "DejaVu Sans Mono")))
+                      nil 'append)
+
+    ;; A general fallback for all kinds of unknown symbols
+    (set-fontset-font t nil (font-spec :family "Apple Symbols") nil 'append)
+    ))
 
 ;; don't wrap lines ever
 (setq-default truncate-lines t)
@@ -675,6 +716,7 @@ Disable the highlighting of overlong lines."
           (add-hook hook #'whitespace-cleanup-mode))
   :diminish whitespace-cleanup-mode)
 
+;; TODO enable for js, ocaml, haskell, ps
 (use-package subword                    ; Subword/superword editing
   :defer t
   :diminish subword-mode)
@@ -738,12 +780,14 @@ Disable the highlighting of overlong lines."
           (unbind-key "C-?" undo-tree-map)
           (unbind-key "C-_" undo-tree-map))
   :bind (("C-u"   . undo-tree-undo)
-         ("M-u"   . undo-tree-redo)
-         ("C-M-u" . undo-tree-visualize))
+         ("C-S-u"   . undo-tree-redo)
+         ;; TODO better use toggle prefix
+         ("M-u" . undo-tree-visualize))
   :diminish undo-tree-mode)
 
 (use-package nlinum                     ; Line numbers in display margin
   :ensure t
+  ;; TODO toggle prefix
   :bind (("C-c t l" . nlinum-mode)))
 
 ;; Give us narrowing back!
@@ -779,7 +823,7 @@ Disable the highlighting of overlong lines."
 
 (use-package imenu-anywhere             ; IDO-based imenu across open buffers
   :ensure t
-  :bind (("C-c i" . helm-imenu-anywhere)))
+  :bind (("C-j m" . helm-imenu-anywhere)))
 
 ;; Search
 (use-package isearch                    ; Search buffers
@@ -787,27 +831,29 @@ Disable the highlighting of overlong lines."
   :bind (("C-c s s" . isearch-forward-symbol-at-point)))
 
 ;; TODO swiper/ivy have way more functionality esp in the counsel package
-;; (use-package swiper
-;;   ;; :load-path "site-lisp/swiper/"
-;;   :ensure t
-;;   :defer t
-;;   :init
-;;   (setq ivy-use-virtual-buffers t)
-;;   (defun ze-swiper-dwim ()
-;;     (interactive)
-;;     (let ((bounds (find-tag-default-bounds)))
-;;       (cond (bounds (when (< (car bounds) (point))
-;;                       (goto-char (car bounds)))
-;;                     (swiper
-;;                      (buffer-substring-no-properties (car bounds) (cdr bounds))))
-;;             (t (swiper)))))
-;;   :config
-;;   (ivy-mode 1)
-;;   (bind-keys :map swiper-map
-;;              ("C-j" . swiper-avy))
-;;   :bind (("C-s"     . swiper)
-;;          ("C-S-s"   . ze-swiper-dwim)
-;;          ("C-r s" . ivy-resume)))
+(use-package swiper
+  ;; :load-path "site-lisp/swiper/"
+  :disabled t
+  :ensure t
+  :defer t
+  :init
+  (setq ivy-use-virtual-buffers t)
+  (defun ze-swiper-dwim ()
+    (interactive)
+    (let ((bounds (find-tag-default-bounds)))
+      (cond (bounds (when (< (car bounds) (point))
+                      (goto-char (car bounds)))
+                    (swiper
+                     (buffer-substring-no-properties (car bounds) (cdr bounds))))
+            (t (swiper)))))
+  :config
+  (ivy-mode 1)
+  (bind-keys :map swiper-map
+             ("C-j" . swiper-avy))
+  :bind (("C-s"     . swiper)
+         ("C-S-s"   . ze-swiper-dwim)
+         ("C-r s" . ivy-resume)))
+
 (use-package swiper-helm
   ;; :load-path "site-lisp/swiper/"
   :ensure t
@@ -828,10 +874,11 @@ Disable the highlighting of overlong lines."
   (unbind-key "C-s" swiper-helm-keymap)
   ;; (bind-keys :map swiper-helm-keymap
   ;;           ("C-n" ))
+  ;; TODO binding that resumes swiper specifically not just helm
   :bind (("C-s"     . swiper-helm)
          ("C-S-s"   . ze-swiper-helm-dwim)))
 
-;; TODO consider using counsel stuff like `coursel-get-grep'
+;; TODO consider using counsel stuff like `counsel-git-grep'
 (use-package counsel
   :disabled t
   :load-path "site-lisp/swiper/"
@@ -909,24 +956,29 @@ Disable the highlighting of overlong lines."
         helm-split-window-default-side        'other)
   (bind-keys :map helm-map
              ("<tab>" . helm-execute-persistent-action)
-             ("C-<tab>" . helm-select-action)
-             ("C-t" . helm-toggle-visible-mark)))
+             ("C-." . helm-toggle-visible-mark))
+  :diminish helm-mode
+  )
 
 (use-package helm-files
   :ensure helm
   :bind (([remap find-file] . helm-find-files))
-  :config (setq helm-recentf-fuzzy-match t
-                ;; Use recentf to find recent files
-                helm-ff-file-name-history-use-recentf t
-                ;; Find library from `require', `declare-function' and friends
-                helm-ff-search-library-in-sexp t))
+  :config
+  (setq helm-recentf-fuzzy-match t
+        ;; Use recentf to find recent files
+        helm-ff-file-name-history-use-recentf t
+        ;; Find library from `require', `declare-function' and friends
+        helm-ff-search-library-in-sexp t)
+  (bind-keys :map helm-find-files-map
+             ("C-." . helm-toggle-visible-mark)))
 
 (use-package helm-buffers
   ;; TODO fix how helm-buffers look! Smaller face, no stupid size column, fix path
   ;; column, or rid of it: make it freaking helpful.
   :ensure helm
   :defer t
-  :config (setq helm-buffers-fuzzy-matching t))
+  :config
+  (setq helm-buffers-fuzzy-matching t))
 
 (use-package helm-ag
   :ensure t
@@ -989,12 +1041,14 @@ Disable the highlighting of overlong lines."
   :init (with-eval-after-load 'company
           ;; Use Company for completion
           (bind-key [remap completion-at-point] #'helm-company company-mode-map)
+          ;; TODO bad idea, this prefix should be global
           (bind-key "C-:" #'helm-company company-mode-map)
           (bind-key "C-:" #'helm-company company-active-map)))
 
 ;;; zeProg
 
 (use-package compile                    ; Compile from Emacs
+  ;; TODO C-: prefix maybe
   :bind (("C-c c" . compile)
          ("C-c C" . recompile))
   :config (progn
@@ -1084,6 +1138,7 @@ Disable the highlighting of overlong lines."
   :init (rxt-global-mode))
 
 (use-package macrostep                  ; Interactively expand macros in code
+  ;; TODO C-: prefix maybe
   :ensure t
   :defer t
   :init (with-eval-after-load 'lisp-mode
@@ -1336,6 +1391,7 @@ Disable the highlighting of overlong lines."
 (use-package jslime
   :load-path "site-lisp/jslime/"
   :commands jslime-mode
+  ;; TODO doesn't seem to actually diminish this thing
   :diminish jslime-mode
   )
 (add-hook 'js2-mode-hook #'jslime-mode)
@@ -1688,10 +1744,72 @@ Disable the highlighting of overlong lines."
   :load-path "site-lisp/"
   :demand t)
 
+(use-package lispy
+  :defer t
+  :ensure t
+  :init
+  (progn
+
+    ;; TODO not all paren types allowed in any lispy-enabled mode, say elisp
+    ;; can't handle {}, so this function breaks as soon as I cycle to {}
+    (defun lispy-cycle-paren-shapes ()
+      "In an s-expression, move to the opening, and cycle the shape among () [] {}"
+      (interactive)
+      (save-excursion
+        (unless (looking-at-p (rx (any "([{")))
+          (backward-up-list))
+        (let ((pt (point))
+              (new (cond ((looking-at-p (rx "(")) 'lispy-brackets)
+                         ((looking-at-p (rx "[")) 'lispy-braces)
+                         ((looking-at-p (rx "{")) 'lispy-parens)
+                         (t (beep) nil))))
+          (when new
+            (lispy-backward 1)
+            (lispy-mark-list 1)
+            (funcall new 1)
+            (delete-char 1)
+            (lispy-splice 1))))))
+
+  :bind
+  (("C-t t (" . lispy-mode))
+
+  :config
+  (progn
+
+    (bind-keys :map lispy-mode-map
+               ("C" . special-lispy-clone)
+               ("c" . special-lispy-new-copy)
+               ("n" . special-lispy-down)
+               ("p" . special-lispy-up)
+               ("N" . special-lispy-move-down)
+               ("P" . special-lispy-move-up)
+               ("y" . special-lispy-paste)
+               ("C-w" . lispy-kill-at-point)
+               ("s" . special-lispy-ace-symbol)
+               ("S" . special-lispy-ace-symbol-replace)
+               ("a" . special-lispy-ace-paren)
+               ("w" . nil)
+               ("<C-i>" . lispy-mark-symbol)
+
+               ("C-(" . lispy-backward)
+               ("[" . lispy-brackets)
+               ("C-u" . undo-tree-undo)
+               ("i" . special-lispy-ace-symbol)
+
+               ("/" . special-lispy-splice)
+               ("M-(" . nil)
+               ("M-)" . nil)
+               ("{" . nil)
+               ("}" . nil)))
+  )
+
 ;;; zeBindings
 
 
-
+;; (use-package sourcegraph
+;;   :load-path "/Users/kozin/Documents/emacs-sourcegraph-mode/"
+;;   :demand t
+;;   )
 
 
 ;; Local Variables:
