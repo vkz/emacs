@@ -1,3 +1,42 @@
+
+(defun buffer-file-name-body ()
+  "Buffer file name stripped of directory and extension"
+  (if (buffer-file-name)
+      (file-name-nondirectory (file-name-sans-extension (buffer-file-name)))
+    (cadr (reverse (split-string (dired-current-directory) "/")))))
+
+;;; clojure
+
+(defun snippet--clojure-namespace-from-buffer-file-name ()
+  (replace-regexp-in-string "_" "-"
+   (replace-regexp-in-string "/" "."
+    (chop-prefix "test/"
+    (chop-prefix "src/"
+    (chop-suffix ".clj"
+     (substring (buffer-file-name) (length eproject-root))))))))
+
+(defun snippet--clojure-namespace-under-test ()
+  (replace-regexp-in-string "-test" "" (snippet--clojure-namespace-from-buffer-file-name)))
+
+;; snippet-helper-helpers
+
+(defun chop-suffix (suffix s)
+  "Remove string 'suffix' if it is at end of string 's'"
+  (let ((pos (- (length suffix))))
+    (if (and (>= (length s) (length suffix))
+             (string= suffix (substring s pos)))
+        (substring s 0 pos)
+      s)))
+
+(defun chop-prefix (prefix s)
+  "Remove string 'prefix' if it is at start of string 's'"
+  (let ((pos (length prefix)))
+    (if (and (>= (length s) (length prefix))
+             (string= prefix (substring s 0 pos)))
+        (substring s pos)
+      s)))
+
+
 ;;; javascript
 
 (defun js-method-p ()

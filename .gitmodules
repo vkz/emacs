@@ -14,3 +14,6 @@
 	path = site-lisp/hydra
 	url = https://github.com/abo-abo/hydra.git
 
+[submodule "site-lisp/pdf-mode.el"]
+	path = site-lisp/pdf-mode.el
+	url = git@github.com:mishoo/pdf-mode.el.git

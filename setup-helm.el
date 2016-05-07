@@ -28,12 +28,29 @@
 (setq helm-yas-space-match-any-greedy t)
 (global-set-key (kbd "C-c y") 'helm-yas-complete)
 
-;; helm-swoop
-(require 'helm-swoop)
-(setq helm-multi-swoop-edit-save t)
-(setq helm-swoop-split-with-multiple-windows nil)
-(setq helm-swoop-split-direction 'split-window-horizontally)
-(setq helm-swoop-move-to-line-cycle nil)
+(bind-keys :map helm-map
+           ("<tab>" . helm-execute-persistent-action)
+           ("TAB" . helm-execute-persistent-action)
+           ("C-<tab>" . helm-select-action)
+           ("C-z" . helm-select-action)
+           ("C-." . helm-toggle-visible-mark))
+
+(use-package helm-swoop
+  :ensure t
+  :after helm
+  :bind (("C-s" . helm-swoop)
+         :map helm-swoop-map
+         ("C-u" . kill-to-beginning-of-line))
+  :config
+  (setq helm-swoop-speed-or-color t     ; Colour over speed 8)
+        ;; Split window like Helm does
+        helm-swoop-split-window-function #'helm-default-display-buffer)
+
+  (setq helm-multi-swoop-edit-save t)
+  (setq helm-swoop-split-with-multiple-windows nil)
+  (setq helm-swoop-split-direction 'split-window-horizontally)
+  (setq helm-swoop-move-to-line-cycle nil))
+
 
 (require 'helm-descbinds)
 (require 'helm-eshell)

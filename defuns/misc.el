@@ -3,6 +3,16 @@
 
 (require 'dash)
 
+(defun ze-upcase-symbol-backwards ()
+  (interactive)
+  (save-excursion
+    (if (region-active-p)
+        (upcase-region (region-beginning) (region-end))
+      (upcase-region (point)
+                     (progn
+                       (sp-backward-symbol)
+                       (point))))))
+
 ;; shorthand for interactive lambdas
 (defmacro λ (&rest body)
   `(lambda ()

@@ -3,8 +3,9 @@
 ;; `http://goo.gl/7Xmfn8'
 ;; TODO bind (kbd "C-<[>")
 ;; TODO bind (kbd "<C-<i>")
-(define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
-(define-key input-decode-map [?\C-i] (kbd "<C-i>"))
+
+;; (define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
+;; (define-key input-decode-map [?\C-i] (kbd "<C-i>"))
 
 ;; Prefix should be central
 (define-key global-map (kbd "C-t") (lookup-key global-map (kbd "C-x")))
@@ -21,10 +22,14 @@
   (setq mac-option-modifier nil))
 
 ;; Completion
+(bind-keys ("C-." . set-mark-command)
+           ("C-:" . helm-M-x)
+           ("C-," . hippie-expand-no-case-fold)
+           ("C-/" . completion-at-point)
+           ;; :map iedit-mode-keymap
+           ;; ("C-;" . nil)
+           )
 
-(global-set-key (kbd "C-.") 'hippie-expand-no-case-fold)
-;; TODO not entirely happy with these two
-(global-set-key (kbd "C-,") 'completion-at-point)
 (global-set-key (kbd "C-'") 'hippie-expand-lines)
 
 ;; helm
@@ -40,7 +45,9 @@
   "Customize `helm-map', which all helm sessions inherit. Includes
 `helm-mini', `helm-projectile' and more."
   (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+  (define-key helm-map (kbd "TAB") 'helm-execute-persistent-action)
   (define-key helm-map (kbd "C-<tab>") 'helm-select-action)
+  (define-key helm-map (kbd "C-z") 'helm-select-action)
   (define-key helm-map (kbd "C-t") (lookup-key helm-map (kbd "C-x")))
   (define-key helm-map (kbd "M-b") 'helm-mini/projectile-switch)
   (define-key helm-map (kbd "C-c b") 'helm-mini/projectile-switch)
@@ -66,8 +73,8 @@
 (define-key helm-find-files-map (kbd "<RET>") 'maybe-helm-ff-run-switch-other-window)
 (define-key helm-find-files-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
 
-(define-key helm-projectile-find-file-map (kbd "<RET>") 'maybe-helm-ff-run-switch-other-window)
-(define-key helm-projectile-find-file-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
+;; (define-key helm-projectile-find-file-map (kbd "<RET>") 'maybe-helm-ff-run-switch-other-window)
+;; (define-key helm-projectile-find-file-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
 
 (define-key helm-generic-files-map (kbd "<RET>") 'maybe-helm-ff-run-switch-other-window)
 (define-key helm-generic-files-map (kbd "<C-return>") 'helm-maybe-exit-minibuffer)
@@ -98,13 +105,13 @@
 ;; Like isearch, but adds region (if any) to history and deactivates mark
 ;; (global-set-key (kbd "C-o") 'isearch-forward-use-region)
 (global-set-key (kbd "C-o") 'isearch-forward)
-(define-key dired-mode-map (kbd "C-o") nil)
+
 (global-set-key (kbd "C-S-o") 'isearch-forward-regexp)
 ;; (global-set-key (kbd "C-r") 'isearch-backward-use-region)
 (global-set-key (kbd "C-r") 'isearch-backward)
 (global-set-key (kbd "C-S-r") 'isearch-backward-regexp)
-(global-set-key (kbd "C-s") 'helm-swoop)
-(global-set-key (kbd "C-S-s") 'helm-multi-swoop-all)
+;; (global-set-key (kbd "C-s") 'helm-swoop)
+;; (global-set-key (kbd "C-S-s") 'helm-multi-swoop-all)
 (define-key isearch-mode-map (kbd "C-o") 'isearch-repeat-forward)
 (define-key isearch-mode-map (kbd "C-s") 'helm-swoop-from-isearch)
 (define-key helm-swoop-map (kbd "C-s") 'helm-multi-swoop-all-from-helm-swoop)
@@ -180,8 +187,8 @@
 (autoload 'magit-status "magit")
 
 ;; Expand region (increases selected region by semantic units)
-(global-set-key (kbd "C-=") 'er/expand-region)
-(global-set-key (kbd "M-=") (λ (mark-paragraph) (exchange-point-and-mark) (backward-char)))
+;; (global-set-key (kbd "C-=") 'er/expand-region)
+;; (global-set-key (kbd "M-=") (λ (mark-paragraph) (exchange-point-and-mark) (backward-char)))
 
 ;; TODO: bind query-replace and friends
 
@@ -203,29 +210,16 @@
 (global-set-key (kbd "C-u") 'undo-tree-undo)
 (global-set-key (kbd "C-S-u") 'undo-tree-redo)
 (global-set-key (kbd "C-M-u") 'undo-tree-visualize)
-(global-set-key (kbd "C-/") 'universal-argument)
-(global-set-key (kbd "C-?") 'negative-argument)
-(global-set-key (kbd "C--") 'universal-argument)
-(global-set-key (kbd "M-m") 'set-mark-command)
-;; (global-set-key (kbd "C-_") 'negative-argument)
+(global-set-key (kbd "C-t u") 'universal-argument)
+(global-set-key (kbd "C-t U") 'negative-argument)
+
 
 ;; Duplicate region
 (global-set-key (kbd "C-c d") 'prelude-duplicate-current-line-or-region)
 (global-set-key (kbd "C-c M-d") 'prelude-duplicate-and-comment-current-line-or-region)
 
-;; TODO jump commands may deserve nice bigram combos like
-;; jt - jump-terminal (or maybe jt - jump terminal mnemonic)
-;; jc - jump-cd to buffer's directory in shell
-;; jd - jump-dired (project root with current dir inserted)
-;; jb - jump-buffer (helm-mini or helm-projectile)
-;; jr - jump-repl
-;; jk - jump-kill - bury buffer (or jc)
-;; js - jump-scratch (in major-mode of the current buffer)
-
-;; Jump to dired
-(autoload 'dired-jump "dired")
-(global-set-key (kbd "C-x j") (λ (dired-jump-other-window)))
-(global-set-key (kbd "C-x J") 'dired-jump) ;here
+(bind-keys ("C-x k" . kill-this-buffer)
+           ("M-u" . ze-upcase-symbol-backwards))
 
 ;; Jump to shell
 (global-set-key (kbd "C-c j") 'start-or-switch-to-shell)
@@ -251,6 +245,7 @@
 (global-set-key (kbd "C-c b") 'helm-projectile)
 
 (eval-after-load 'markdown-mode '(define-key markdown-mode-map (kbd "<backspace>") nil))
+
 
 ;; --------------------------------------------------------------
 
