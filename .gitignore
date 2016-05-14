@@ -11,3 +11,7 @@
 /recentf
 /semanticdb/
 /#setup-helm.el#
+/url
+/var
+.DS_Store
+\#*\#

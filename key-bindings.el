@@ -108,8 +108,8 @@
 
 (global-set-key (kbd "C-S-o") 'isearch-forward-regexp)
 ;; (global-set-key (kbd "C-r") 'isearch-backward-use-region)
-(global-set-key (kbd "C-r") 'isearch-backward)
-(global-set-key (kbd "C-S-r") 'isearch-backward-regexp)
+;; (global-set-key (kbd "C-r") 'isearch-backward)
+;; (global-set-key (kbd "C-S-r") 'isearch-backward-regexp)
 ;; (global-set-key (kbd "C-s") 'helm-swoop)
 ;; (global-set-key (kbd "C-S-s") 'helm-multi-swoop-all)
 (define-key isearch-mode-map (kbd "C-o") 'isearch-repeat-forward)
@@ -246,6 +246,14 @@
 
 (eval-after-load 'markdown-mode '(define-key markdown-mode-map (kbd "<backspace>") nil))
 
+(global-set-key (kbd "<C-f8>") 'kmacro-start-macro-or-insert-counter)
+(global-set-key (kbd "<f8>") 'kmacro-end-or-call-macro)
+
+(bind-keys ("<C-f8>" . kmacro-start-macro-or-insert-counter)
+           ("<f8>" . kmacro-end-or-call-macro))
+
+(bind-keys :map emacs-lisp-mode-map
+           ("C-c C-c" . eval-defun))
 
 ;; --------------------------------------------------------------
 

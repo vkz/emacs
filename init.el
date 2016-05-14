@@ -59,7 +59,7 @@
       helm
       helm-descbinds
       ;; helm-c-yasnippet
-      expand-region
+      ;; expand-region
       ;; smart-forward
       js2-refactor
       js2-mode
@@ -97,9 +97,10 @@
 
 ;; Save point position between sessions
 ;; `saveplace' is part of Emacs
-(require 'saveplace)
-(setq-default save-place t)
-(setq save-place-file (expand-file-name ".places" user-emacs-directory))
+(use-package saveplace
+  :init
+  (setq save-place-file (expand-file-name ".places" user-emacs-directory))
+  (setq-default save-place t))
 
 (setq view-read-only t)
 
@@ -116,12 +117,13 @@
   :config
   (exec-path-from-shell-initialize))
 
-;; guide-key
-(require 'guide-key)
-(setq guide-key/guide-key-sequence '("C-t r" "C-t 4" "C-t v" "C-c h" "C-c p" "C-t p" "C-c C-r" "<f1>"))
-(guide-key-mode 1)
-(setq guide-key/recursive-key-sequence-flag t)
-(setq guide-key/popup-window-position 'right)
+;; TODO consider replacing it with `which-key' if I even need it
+;; ;; guide-key
+;; (require 'guide-key)
+;; (setq guide-key/guide-key-sequence '("C-t r" "C-t 4" "C-t v" "C-c h" "C-c p" "C-t p" "C-c C-r" "<f1>"))
+;; (guide-key-mode 1)
+;; (setq guide-key/recursive-key-sequence-flag t)
+;; (setq guide-key/popup-window-position 'right)
 
 ;; dired
 (use-package dired
@@ -129,7 +131,7 @@
   ;; brew install coreutils
   (when (and is-mac (executable-find "gls"))
     (setq insert-directory-program "gls"))
-  
+
   (setq dired-auto-revert-buffer t
         dired-listing-switches "-alhF"
         dired-ls-F-marks-symlinks t
@@ -211,7 +213,7 @@
     (setq yas-verbosity 1
           yas-snippet-dirs `(,(expand-file-name "snippets" user-emacs-directory))
           yas-wrap-around-region t)
-    
+
     (yas-global-mode 1))
   :config
   (progn
@@ -274,7 +276,7 @@
   (add-to-list 'projectile-globally-ignored-directories "elpa")
   (add-to-list 'projectile-globally-ignored-directories ".node_modules")
   (add-to-list 'projectile-globally-ignored-directories ".m2")
-  
+
   :diminish projectile-mode)
 
 ;; helm-projectile
@@ -293,7 +295,8 @@
 (use-package perspective
   :ensure t
   :bind (("<f4>" . persp-switch-last)
-         ("<f3>" . perspective-map))
+         ("<S-f4>" . perspective-map)
+         ("<f3>" . persp-switch))
   :init (persp-mode t)
   :config
   (add-hook 'persp-switch-hook
@@ -303,10 +306,10 @@
 
 (use-package persp-projectile
   :ensure t
-  :bind (("S-<f3>" . projectile-persp-switch-project)
+  :bind (("<S-f3>" . projectile-persp-switch-project)
          :map perspective-map
-         ("s" . projectile-persp-switch-project)
-         ("S" . persp-switch))) 
+         ("S" . projectile-persp-switch-project)
+         ("s" . persp-switch)))
 
 ;; TODO: make sense of Virtual Directories
 ;; see `http://tuhdo.github.io/helm-projectile.html'
@@ -328,8 +331,10 @@
 (require 'mode-mappings)
 
 ;; highlight escape sequences, works only in javascript
-(require 'highlight-escape-sequences)
-(hes-mode)
+(use-package highlight-escape-sequences
+  :ensure t
+  :init (hes-mode))
+
 (put 'font-lock-regexp-grouping-backslash 'face-alias 'js2-function-param)
 
 ;; Functions (load all files in defuns-dir)
@@ -418,6 +423,10 @@
     ;; File notifications aren't supported on OS X
     (setq auto-revert-use-notify nil))
   :diminish auto-revert-mode)
+
+(use-package re-builder
+  :defer t
+  :config (setq reb-re-syntax 'rx))
 
 ;; basic commands act on a whole line with no region marked
 (whole-line-or-region-mode +1)
@@ -544,7 +553,7 @@
         (forward-line 1)
         (move-to-column c)
         (= c (current-column))))
-    
+
     (defun sexy-find-lispy-left-down (arg)
       (interactive "p")
       (let ((p (point))
@@ -649,7 +658,7 @@
              (progn (lispy-beginning-of-defun)
                     (point)))
           (lispy-up 1)))
-    
+
     (defun sexy-next-paragraph ()
       ""
       (interactive)
@@ -670,6 +679,11 @@
                ("C-j" . nil)
                ("C-," . nil)
                ("<C-return>" . nil))
+
+    ;; make sexy-..-paragraph special
+    (lispy-define-key lispy-mode-map "j" 'sexy-next-paragraph)
+    (lispy-define-key lispy-mode-map "k" 'sexy-prev-paragraph)
+
     (bind-keys :map lispy-mode-map
                ("M-n" . sexy-next-paragraph)
                ("M-p" . sexy-prev-paragraph)
@@ -684,6 +698,9 @@
                ("n" . special-lispy-down)
                ("p" . special-lispy-up)
 
+               ;; ("j" . special-lispy-down)
+               ;; ("k" . special-lispy-up)
+
                ("C-c x" . lispy-x)
                ("x" . special-lispy-x)
 
@@ -695,7 +712,7 @@
 
                ("N" . special-lispy-move-down)
                ("P" . special-lispy-move-up)
-               
+
                ("C-c h i" . lispy-describe-inline)
                ("C-c h a" . lispy-arglist-inline)
 
@@ -705,8 +722,8 @@
 
                ("K" . nil)
                ("J" . nil)
-               ("k" . nil)
-               ("j" . nil)
+               ;; ("k" . nil)
+               ;; ("j" . nil)
                ("<C-i>" . nil)
 
 
@@ -820,9 +837,12 @@
 (use-package racket-mode
   :ensure t
   :mode (("\\.rkt\\'" . racket-mode))
-  :config (progn
-            (add-hook 'racket-mode-hook      #'racket-unicode-input-method-enable)
-            (add-hook 'racket-repl-mode-hook #'racket-unicode-input-method-enable)))
+  :config
+  (add-hook 'racket-mode-hook (lambda () (lispy-mode 1)))
+  ;; :config (progn
+  ;;           (add-hook 'racket-mode-hook      #'racket-unicode-input-method-enable)
+  ;;           (add-hook 'racket-repl-mode-hook #'racket-unicode-input-method-enable))
+  )
 
 ;; (use-package pdf-mode
 ;;   :load-path "site-lisp/pdf-mode.el/"
