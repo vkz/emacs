@@ -18,6 +18,8 @@
 
 (when is-mac
   (setq mac-command-modifier 'meta)
+  (setq mac-right-command-modifier 'super)
+  (setq mac-right-control-modifier 'hyper)
   ;; (setq mac-option-modifier 'super)
   (setq mac-option-modifier nil))
 
@@ -63,6 +65,9 @@
                         #',default-action
                       #',command)))
        (funcall action))))
+
+;; capitalize-subword is a stupid command
+(global-unset-key (kbd "M-c"))
 
 (maybe-helm-command-on-ret helm-buffer-switch-other-window helm-maybe-exit-minibuffer)
 (maybe-helm-command-on-ret helm-ff-run-switch-other-window helm-maybe-exit-minibuffer)
@@ -148,7 +153,7 @@
 
 ;; Windows, buffers, frames
 (global-set-key (kbd "<backspace>") 'other-window)
-(global-set-key (kbd "C-<tab>") 'other-window)
+;; (global-set-key (kbd "C-<tab>") 'other-window)
 ;; Toggle two most recent buffers
 (global-set-key (kbd "C-<backspace>") 'quick-switch-buffer)
 (global-set-key (kbd "S-<backspace>") 'other-frame)

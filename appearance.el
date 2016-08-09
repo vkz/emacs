@@ -37,7 +37,32 @@
                    (mode-line-unmodified-face :foreground "#969896")
                    (mode-line-folder-face :height 100)
                    (mode-line-position-face :foreground "#969896" :height 95)
-                   (mode-line-80col-face :foreground "black" :background "#eab700"))))
+                   (mode-line-80col-face :foreground "black" :background "#eab700"))
+        (leuven (default :inherit default :foreground "#555" :background "#fdf6e3")
+                (cursor :background "red")
+                (hl-line :background "#E4E4E3")
+                (avy-lead-face :weight light :foreground "white" :background "#e52b50")
+                (show-paren-match :background "tan1")
+                (font-lock-function-name-face :foreground "DodgerBlue3")
+                (font-lock-variable-name-face :foreground "RoyalBlue3")
+                (font-lock-keyword-face :foreground "DeepSkyBlue4")
+                (font-lock-builtin-face :foreground "DeepSkyBlue4")
+                (font-lock-constant-face :foreground "SeaGreen4")
+                (font-lock-string-face :foreground "SeaGreen4")
+                (font-lock-comment-face :foreground "tan3" :slant normal)
+                (font-lock-comment-delimiter-face :foreground "tan3" :slant normal)
+                (font-lock-type-face :foreground "Purple")
+                (mode-line :inherit mode-line :weight light :box (:line-width 1 :color "#969896") :height 100)
+                (mode-line-inactive :inherit mode-line-inactive :weight light :box (:line-width 1 :color "#373b41") :height 100)
+                (widget-button :inherit widget-button :weight light)
+                (mode-line-buffer-id :inherit mode-line-buffer-id :weight light)
+                ;; new
+                (mode-line-read-only-face :foreground "#4271ae")
+                (mode-line-modified-face :foreground "#c82829" :background "#ffffff")
+                (mode-line-unmodified-face :foreground "#969896")
+                (mode-line-folder-face :height 100)
+                (mode-line-position-face :foreground "#969896" :height 95)
+                (mode-line-80col-face :foreground "black" :background "#eab700"))))
 
 ;; (toggle-frame-maximized)
 
@@ -53,17 +78,50 @@
 ;;   (when (file-directory-p path)
 ;;     (add-to-list 'custom-theme-load-path path)))
 
-(set-face-attribute 'default nil
-                    :family "Source Code Pro"
-                    :height 130
-                    :weight 'light
-                    :foreground "#D7b78f"
-                    :background "#161616")
+;; (set-face-attribute 'default nil
+;;                     :family "Source Code Pro"
+;;                     :height 130
+;;                     :weight 'light
+;;                     :foreground "#D7b78f"
+;;                     :background "#161616")
 
 (use-package darktooth
   :ensure darktooth-theme
   :init
-  (load-theme 'darktooth 'no-confirm))
+  (defun ze-load-dark-theme ()
+    (mapcar #'disable-theme custom-enabled-themes)
+    (set-face-attribute 'default nil
+                        :family "Source Code Pro"
+                        :height 130
+                        :weight 'light
+                        :foreground "#D7b78f"
+                        :background "#161616")
+    (load-theme 'darktooth 'no-confirm))
+  (ze-load-dark-theme))
+
+(use-package leuven
+  :ensure leuven-theme
+  :init
+  (defun ze-load-light-theme ()
+    (mapcar #'disable-theme custom-enabled-themes)
+    (set-face-attribute 'default nil :family "Source Code Pro" :weight 'normal :height 130)
+    (load-theme 'leuven 'no-confirm)))
+
+(defun ze-toggle-theme ()
+  "Toggle between dark and light themes."
+  (interactive)
+  (let ((dark-theme-p (eq (car custom-enabled-themes)
+                          'darktooth)))
+    (if dark-theme-p
+        (ze-load-light-theme)
+      (ze-load-dark-theme))))
+
+(use-package color-theme-sanityinc-tomorrow
+  :disabled t
+  :ensure color-theme-sanityinc-tomorrow
+  :init
+  (set-face-attribute 'default nil :family "Source Code Pro" :weight 'normal :height 130)
+  (call-interactively 'color-theme-sanityinc-tomorrow-day))
 
 ;; (use-package which-func                 ; Current function name
 ;;   :init (which-function-mode)
@@ -103,7 +161,8 @@
             (when (= (length (window-list)) 1)
               (split-window-right))
             (setq cursor-type 'box)
-            (set-cursor-color "SkyBlue2")))
+            ;; (set-cursor-color "SkyBlue2")
+            ))
 
 ;; (set-background-color "#161616")
 
@@ -248,5 +307,5 @@
 ;; (load-theme 'sanityinc-tomorrow-night t)
 (toggle-frame-maximized)
 (setq cursor-type 'box)
-(set-cursor-color "SkyBlue2")
+;; (set-cursor-color "SkyBlue2")
 (provide 'appearance)

@@ -33,7 +33,8 @@
 
 ;; Keep emacs Custom-settings in separate file
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file)
+(when (file-exists-p custom-file)
+  (load custom-file))
 
 (defvar ze/required-packages
   '(dash)
@@ -58,7 +59,7 @@
       shell-command
       helm
       helm-descbinds
-      ;; helm-c-yasnippet
+      helm-c-yasnippet
       ;; expand-region
       ;; smart-forward
       js2-refactor
@@ -82,18 +83,27 @@
 (require 'bind-key)                ;; if you use any :bind variant
 (require 'dash)
 (require 'rx)
+
+;; TODO learn dash, f, s, etc
 (eval-after-load "dash" '(dash-enable-font-lock))
+
+(use-package f
+  :ensure t)
+
+(use-package s
+  :ensure t)
 
 ;; Set up appearance early
 (require 'appearance)
 
 ;; Write backup files to own directory
-(setq backup-directory-alist
-      `(("." . ,(expand-file-name
-                 (concat user-emacs-directory "backups")))))
-
-;; Make backups of files, even when they're in version control
-(setq vc-make-backup-files t)
+(setq backup-directory-alist `((".*" . ,(locate-user-emacs-file "backup")))
+      auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
+      ;; Make backups of files, even when they're in version control
+      vc-make-backup-files t)
+;; (setq backup-directory-alist
+;;       `(("." . ,(expand-file-name
+;;                  (concat user-emacs-directory "backups")))))
 
 ;; Save point position between sessions
 ;; `saveplace' is part of Emacs
@@ -117,16 +127,9 @@
   :config
   (exec-path-from-shell-initialize))
 
-;; TODO consider replacing it with `which-key' if I even need it
-;; ;; guide-key
-;; (require 'guide-key)
-;; (setq guide-key/guide-key-sequence '("C-t r" "C-t 4" "C-t v" "C-c h" "C-c p" "C-t p" "C-c C-r" "<f1>"))
-;; (guide-key-mode 1)
-;; (setq guide-key/recursive-key-sequence-flag t)
-;; (setq guide-key/popup-window-position 'right)
-
 ;; dired
 (use-package dired
+  ;; TODO: learn fucking dired
   :config
   ;; brew install coreutils
   (when (and is-mac (executable-find "gls"))
@@ -187,7 +190,6 @@
      (define-key wdired-mode-map (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
      (define-key wdired-mode-map (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)))
 
-;; TODO: learn the many features
 (use-package dired+
   :ensure t
   :after dired)
@@ -202,8 +204,8 @@
 
 ;; Setup extensions
 (require 'setup-magit)
-(eval-after-load 'shell '(require 'setup-shell)) ; TODO: helm support for completion
-(require 'setup-hippie)                          ;TODO: practice all expansion methods
+(eval-after-load 'shell '(require 'setup-shell))
+(require 'setup-hippie)
 
 (use-package yasnippet
   :ensure t
@@ -251,8 +253,10 @@
 (semantic-mode 1)
 
 ;; helm
+;; TODO ditch helm in favour of swiper?
 (require 'setup-helm)
 (use-package helm-ag
+  ;; TODO better search for fs and buffers (ag, etc) with sane bindings
   :ensure t
   :bind (("M-s" . helm-ag)
          ("M-S" . helm-do-ag))
@@ -293,6 +297,7 @@
   (setq projectile-switch-project-action #'helm-projectile))
 
 (use-package perspective
+  ;; TODO bindings
   :ensure t
   :bind (("<f4>" . persp-switch-last)
          ("<S-f4>" . perspective-map)
@@ -335,7 +340,7 @@
   :ensure t
   :init (hes-mode))
 
-(put 'font-lock-regexp-grouping-backslash 'face-alias 'js2-function-param)
+;; (put 'font-lock-regexp-grouping-backslash 'face-alias 'js2-function-param)
 
 ;; Functions (load all files in defuns-dir)
 (setq defuns-dir (expand-file-name "defuns" user-emacs-directory))
@@ -347,6 +352,7 @@
 (comment-annotations-in-modes programming-modes)
 
 (use-package expand-region
+  ;; TODO bindings
   :bind (("C-r" . er/expand-region)
          ("M-r" . ze-mark-paragraph))
   :ensure t
@@ -482,11 +488,23 @@
 ;; Elisp
 (use-package elisp-mode
   :interpreter ("emacs" . emacs-lisp-mode)
-  :bind ((:map emacs-lisp-mode-map
-               ("C-c C-c" . eval-defun))))
+  :bind (:map emacs-lisp-mode-map
+              ("C-c C-c" . eval-defun)
+              ("C-c C-e" . eval-last-sexp)
+              ("C-c C-k" . eval-buffer)))
+
+(use-package macrostep
+  :ensure t
+  :after elisp-mode
+  :bind (:map emacs-lisp-mode-map ("C-c m" . macrostep-expand)
+         :map lisp-interaction-mode-map ("C-c m" . macrostep-expand)))
 
 ;; lispy.el
 (use-package lispy
+  ;; TODO j & k should skip to next paragraphs
+  ;; TODO lispy-racket
+  ;; TODO lispy with cider-debug
+  ;; TODO better lispy bindings
   :ensure t
   :defer t
   :diminish
@@ -689,6 +707,7 @@
                ("M-p" . sexy-prev-paragraph)
                ("<C-return>" . nil)
                ("C-," . nil)
+               ("M-j" . nil)
                ("(" . sexy-parens)
                (")" . lispy-right)
 
@@ -730,7 +749,8 @@
                ("[" . lispy-brackets)
                ("C-u" . undo-tree-undo)
 
-               ("/" . special-lispy-splice)
+               ;; ("/" . special-lispy-splice)
+               ("/" . nil)
                ("M-(" . nil)
                ("M-)" . nil)
                ("{" . nil)
@@ -743,14 +763,12 @@
                ("M-<down>" . sp-backward-down-sexp)
                ("M-<up>" . sp-backward-up-sexp)
 
-               ("C-M-f" . sp-forward-sexp)
-               ("C-M-b" . sp-backward-sexp)
-
-               ("C-M-n" . sp-next-sexp)
-               ("C-M-p" . sp-previous-sexp)
-
-               ("C-S-f" . sp-forward-symbol)
-               ("C-S-b" . sp-backward-symbol)
+               ("C-M-f" . nil)
+               ("C-M-b" . nil)
+               ("C-S-n" . nil)
+               ("C-S-p" . nil)
+               ("C-S-f" . nil)
+               ("C-S-b" . nil)
 
                ("C-<right>" . sp-forward-slurp-sexp)
                ("M-<right>" . sp-forward-barf-sexp)
@@ -758,7 +776,7 @@
                ("M-<left>" . sp-backward-barf-sexp)
 
                ("C-M-t" . sp-transpose-sexp)
-               ("C-M-w" . sp-copy-sexp)
+               ("C-M-w" . nil)
 
                ("C-M-d" . delete-sexp)
 
@@ -775,8 +793,17 @@
                ("]" . sp-rewrap-sexp))))
 
 (use-package golden-ratio
+  ;; TODO fix golden-ratio for shell and dired
   :ensure t
   :init
+  (defun ze-toggle-golden-ratio ()
+    (interactive)
+    (if (bound-and-true-p golden-ratio-mode)
+        (progn
+          (golden-ratio-mode -1)
+          (balance-windows))
+      (golden-ratio-mode)
+      (golden-ratio)))
   :diminish golden-ratio-mode
   :config
   (progn
@@ -835,18 +862,62 @@
 (require 'setup-clj)
 
 (use-package racket-mode
-  :ensure t
+  ;; :ensure t
+  :load-path "site-lisp/racket-mode/"
   :mode (("\\.rkt\\'" . racket-mode))
   :config
   (add-hook 'racket-mode-hook (lambda () (lispy-mode 1)))
   ;; :config (progn
   ;;           (add-hook 'racket-mode-hook      #'racket-unicode-input-method-enable)
   ;;           (add-hook 'racket-repl-mode-hook #'racket-unicode-input-method-enable))
-  )
+
+  ;; (lookup-key racket-mode-map (kbd "C-c C-e"))
+  (bind-keys :map racket-mode-map
+             ;; ("C-c m" . racket-macro-expand-map)
+             ("C-c C-c" . racket-send-definition)
+             ("C-c C-e" . racket-send-last-sexp)))
+
+;; (use-package geiser
+;;   :ensure t
+;;   :bind (:map geiser-mode-map
+;;               ("C-." . nil))
+;;   :config
+;;   (setq geiser-racket-collects
+;;         '("/Users/zerusski/Library/Racket/6.4/collects"
+;;           "/opt/homebrew-cask/Caskroom/racket/6.4/Racket v6.4/collects"
+;;           "/Users/zerusski/Library/Racket/6.4/pkgs"
+;;           "/Users/zerusski/Library/Racket/planet/300/packages")))
 
 ;; (use-package pdf-mode
 ;;   :load-path "site-lisp/pdf-mode.el/"
 ;;   :mode (("\\.rkt\\'" . pdf-mode)))
+
+(use-package lua-mode
+  :ensure t
+  :mode (("\\.lua\\'" . lua-mode)
+         ("\\.t\\'" . lua-mode))
+  ;; TODO replace or rather add terra repl. lua-mode hardcodes most of the stuff
+  ;; including interpreter and mode alists which is annoying, but I think I
+  ;; should be able to extend functionality to terra pretty easily. E.g.
+  ;; (lua-start-process "terra" "terra") will happily start terra repl, of
+  ;; course sending stuff their doesn't seem to work out of the box.
+  :interpreter ("lua-5.3" . lua-mode)
+  :config
+  ;; TODO wait, I'm not running company-mode? How do i get my completions then?
+  ;; TODO there's some work for eldoc support in lua. I'd like to have that as
+  ;; well as terra. (add-hook 'lua-mode-hook 'company-mode)
+  (progn
+    (setq lua-indent-level 2
+          lua-indent-string-contents t)
+    ;; ('lua-search-documentation)
+    ;; ( 'lua-send-buffer)
+    ;; ( 'lua-send-defun)
+    ;; ( 'lua-send-current-line)
+    ;; ( 'lua-send-region)
+    ))
+
+;; (setq interpreter-mode-alist (rassq-delete-all 'lua-mode interpreter-mode-alist))
+
 
 (use-package launch
   :ensure t
@@ -857,5 +928,37 @@
   :ensure t
   :bind (("C-c f" . reveal-in-osx-finder)))
 
+(use-package avy-jump
+  :ensure avy
+  :bind (("C-M-w" . avy-goto-word-1)
+         ("C-S-j" . avy-pop-mark)))
+
+;; NOTE works nicely with C-w and M-w!
+;; TODO bindings
+(use-package iy-go-to-char
+  :ensure t
+  ;; With COMMAND keys translated by Karabiner these bindings work pretty nicely
+  :bind (("C-S-f" . iy-go-up-to-char)
+         ("C-S-b" . iy-go-to-char-backward)
+         ;; ("M-;" . iy-go-to-or-up-to-continue)
+         ))
+
+;; TODO iedit?
+;; TODO bindings
+(use-package multiple-cursors
+  :ensure t
+  :bind (("s-m" . mc/mark-more-like-this-extended)
+         ("s-M" . mc/mark-all-like-this-dwim)
+         ;; requires visual-regexp package
+         ;; ("r" . vr/mc-mark)
+         ("s-r" . mc/mark-all-in-region))
+  :config
+  (add-to-list 'mc/cursor-specific-vars 'iy-go-to-char-start-pos)
+  (setq mc/mode-line
+        ;; Simplify the MC mode line indicator
+        '(:propertize (:eval (concat " " (number-to-string (mc/num-cursors))))
+                      face font-lock-warning-face)))
+
 (require 'key-bindings)
 (split-window-right)
+(ze-toggle-golden-ratio)
