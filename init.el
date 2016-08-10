@@ -49,17 +49,12 @@
    '(use-package
       dash
       bash-completion
-      magit
       guide-key
       highlight-escape-sequences
       whitespace-cleanup-mode
       elisp-slime-nav
       smooth-scrolling
-      undo-tree
       shell-command
-      helm
-      helm-descbinds
-      helm-c-yasnippet
       ;; expand-region
       ;; smart-forward
       js2-refactor
@@ -67,7 +62,6 @@
       easy-kill
       rainbow-mode
       diminish
-      whole-line-or-region
       smartparens
       eval-sexp-fu)))
 
@@ -92,6 +86,18 @@
 
 (use-package s
   :ensure t)
+
+(use-package undo-tree
+  :ensure t
+  :init (global-undo-tree-mode)
+  :diminish undo-tree-mode
+  :bind (("C-u" . undo-tree-undo)
+         ("C-S-u" . undo-tree-redo)
+         ("M-u" . undo-tree-visualize))
+  :config (bind-keys :map undo-tree-map
+                     ("C-/" . nil)
+                     ("C-?" . nil)
+                     ("C-_" . nil)))
 
 ;; Set up appearance early
 (require 'appearance)
@@ -168,6 +174,46 @@
     (interactive)
     (end-of-buffer)
     (dired-next-line -1)))
+(use-package dired
+  ;; TODO: learn fucking dired
+  :config
+  ;; brew install coreutils
+  (when (and is-mac (executable-find "gls"))
+    (setq insert-directory-program "gls"))
+
+  (setq dired-auto-revert-buffer t
+        dired-listing-switches "-alhF"
+        dired-ls-F-marks-symlinks t
+        dired-recursive-copies 'always
+        dired-dwim-target t)
+  (when (or (memq system-type '(gnu gnu/linux))
+            (string= (file-name-nondirectory insert-directory-program) "gls"))
+    (setq dired-listing-switches
+          (concat dired-listing-switches " -G -1 --group-directories-first -v")))
+
+  (--each '(dired-do-rename
+            dired-do-copy
+            dired-create-directory
+            wdired-abort-changes)
+    (eval `(defadvice ,it (after revert-buffer activate)
+             (revert-buffer))))
+
+  ;; C-a is nicer in dired if it moves back to start of files
+  (defun dired-back-to-start-of-files ()
+    (interactive)
+    (backward-char (- (current-column) 2)))
+
+  ;; M-up is nicer in dired if it moves to the fourth line - the first file
+  (defun dired-back-to-top ()
+    (interactive)
+    (beginning-of-buffer)
+    (dired-next-line 4))
+
+  ;; M-down is nicer in dired if it moves to the last file
+  (defun dired-jump-to-bottom ()
+    (interactive)
+    (end-of-buffer)
+    (dired-next-line -1)))
 
 (use-package dired-x
   :defer nil
@@ -202,8 +248,24 @@
 ;; Delete files to trash
 (setq delete-by-moving-to-trash t)
 
-;; Setup extensions
-(require 'setup-magit)
+(use-package magit
+  :ensure t
+  :init (bind-keys :prefix-map ze-git-prefix-map
+                   :prefix "s-g")
+  :bind (("s-g c" . magit-clone)
+         ("s-g s" . magit-status)
+         ("s-g b" . magit-blame)
+         ("s-g l" . magit-log-buffer-file)
+         ("s-g p" . magit-pull))
+  :config
+  (set-default 'magit-stage-all-confirm nil)
+  (set-default 'magit-unstage-all-confirm nil))
+
+(use-package gist
+  :ensure t
+  :bind (("s-g g" . gist-region-or-buffer-private)
+         ("s-g G" . gist-region-or-buffer)))
+
 (eval-after-load 'shell '(require 'setup-shell))
 (require 'setup-hippie)
 
@@ -254,9 +316,106 @@
 
 ;; helm
 ;; TODO ditch helm in favour of swiper?
-(require 'setup-helm)
+;; https://github.com/emacs-helm/helm/issues/779
+;; doesn't help, but I'll leave it be
+(setq max-lisp-eval-depth 40000)
+(setq max-specpdl-size 100000)
+
+(use-package helm
+  :ensure t
+  :bind (("s-h" . helm-command-prefix)
+         :map helm-map
+         ("<tab>" . helm-execute-persistent-action)
+         ("TAB" . helm-execute-persistent-action)
+         ("C-<tab>" . helm-select-action)
+         ("C-." . helm-toggle-visible-mark))
+  :init
+  (helm-mode 1)
+  (with-eval-after-load 'helm-config
+    (warn "`helm-config' loaded! Get rid of it ASAP!"))
+  :config
+  (setq helm-quick-update t
+        helm-split-window-in-side-p nil
+        helm-split-window-default-side 'other
+        helm-move-to-line-cycle-in-source nil)
+  :diminish helm-mode)
+
+(use-package helm-ring
+  :ensure helm
+  :defer t
+  :bind (("H-y" . helm-show-kill-ring)
+         ;; ([remap insert-register] . helm-register)
+         ))
+
+(use-package helm-command
+  :ensure helm
+  :defer t
+  :bind (("C-:" . helm-M-x)))
+
+(use-package helm-buffers
+  :ensure helm
+  :defer t
+  :bind (("C-x b" . helm-mini))
+  :config
+  (setq helm-buffers-fuzzy-matching t))
+
+(use-package helm-files                 ; Manage files with Helm
+  :ensure helm
+  :defer t
+  :bind (([remap find-file] . helm-find-files)
+         ;; ("C-c f f" . helm-for-files)
+         ;; ("C-c f r" . helm-recentf)
+         )
+  :config
+  (setq helm-recentf-fuzzy-match t
+        ;; Use recentf to manage file name history
+        helm-ff-file-name-history-use-recentf t
+        ;; Find libraries from `require', etc.
+        helm-ff-search-library-in-sexp t)
+
+  ;; (when (eq system-type 'darwin)
+  ;;   ;; Replace locate with spotlight for `helm-for-files'
+  ;;   (setq helm-for-files-preferred-list
+  ;;         (append (delq 'helm-source-locate
+  ;;                       helm-for-files-preferred-list)
+  ;;                 '(helm-source-mac-spotlight))))
+  )
+
+(use-package helm-elisp
+  :ensure helm
+  :init (bind-keys ("<f1>" . help-command))
+  :bind (("<f1> h" . helm-apropos)))
+
+(use-package helm-descbinds
+  :ensure t
+  :init (helm-descbinds-mode))
+
+
+;; Use helm for completion please
+(use-package helm-c-yasnippet
+  :ensure t
+  :after helm
+  :bind (("C-c y" . helm-yas-complete))
+  :config
+  (setq helm-yas-space-match-any-greedy t))
+
+(use-package helm-swoop
+  :ensure t
+  :after helm
+  :bind (("s-s" . helm-swoop)
+         :map helm-swoop-map
+         ("C-u" . kill-to-beginning-of-line))
+  :config
+  (setq helm-swoop-speed-or-color t     ; Colour over speed 8)
+        ;; Split window like Helm does
+        helm-swoop-split-window-function #'helm-default-display-buffer)
+
+  (setq helm-multi-swoop-edit-save t)
+  (setq helm-swoop-split-with-multiple-windows nil)
+  (setq helm-swoop-split-direction 'split-window-horizontally)
+  (setq helm-swoop-move-to-line-cycle nil))
+
 (use-package helm-ag
-  ;; TODO better search for fs and buffers (ag, etc) with sane bindings
   :ensure t
   :bind (("M-s" . helm-ag)
          ("M-S" . helm-do-ag))
@@ -287,10 +446,7 @@
 (use-package helm-projectile
   :ensure t
   :after projectile
-  :bind (;; ("C-c s" . helm-projectile-ag)
-         :map helm-projectile-find-file-map
-         ("<RET>" . maybe-helm-ff-run-switch-other-window)
-         ("<C-return>" . helm-maybe-exit-minibuffer))
+  :bind (("C-c b" . helm-projectile))
   :init
   (helm-projectile-on)
   :config
@@ -433,11 +589,6 @@
 (use-package re-builder
   :defer t
   :config (setq reb-re-syntax 'rx))
-
-;; basic commands act on a whole line with no region marked
-(whole-line-or-region-mode +1)
-(eval-after-load "whole-line-or-region"
-  '(diminish 'whole-line-or-region-mode))
 
 ;; Does package really have anything to do with `require` though? I would've though that all it does having installed the package is add it's directory to the **load-path**. Having to `(require 'helm-config)` before installing the anything else seems really dissatisfying if only for the fact that Emacs doesn't make a good use of information that it already has. Also, having
 (put 'narrow-to-page 'disabled nil)
@@ -782,7 +933,7 @@
 
                ("M-<backspace>" . nil)
                ("C-<backspace>" . nil)
-               ("M-h" . sp-backward-kill-word)
+               ("M-h" . nil)
                ([remap sp-backward-kill-word] . backward-kill-word)
 
                ("M-[" . sp-backward-unwrap-sexp)
@@ -934,7 +1085,7 @@
          ("C-S-j" . avy-pop-mark)))
 
 ;; NOTE works nicely with C-w and M-w!
-;; TODO bindings
+;; TODO not so nice really, but works well with `copy-region-as-kill'
 (use-package iy-go-to-char
   :ensure t
   ;; With COMMAND keys translated by Karabiner these bindings work pretty nicely
@@ -959,6 +1110,55 @@
         '(:propertize (:eval (concat " " (number-to-string (mc/num-cursors))))
                       face font-lock-warning-face)))
 
-(require 'key-bindings)
+;; (define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
+;; (define-key input-decode-map [?\C-i] (kbd "<C-i>"))
+
+;; (λ (start-or-switch-to-shell t))
+;; (λ (bury-buffer))
+
+(when is-mac
+  (setq mac-command-modifier 'meta)
+  (setq mac-right-command-modifier 'super)
+  (setq mac-right-control-modifier 'hyper)
+  ;; (setq mac-option-modifier 'super)
+  (setq mac-option-modifier nil))
+
+(bind-keys
+ ("C-x r q" . save-buffers-kill-terminal)
+ ("C-x C-c" . delete-frame)
+ ("C-." . set-mark-command)
+ ("C-," . hippie-expand-no-case-fold)
+ ;; TODO gets overwritten by iedit mode
+ ("C-;" . completion-at-point)
+ ("<f1>" . help-command)
+ ("M-h" . kill-region-or-backward-word)
+ ("<C-return>" . repeat)
+ ("<backspace>" . other-window)
+ ("C-<backspace>" . quick-switch-buffer)
+ ("M-<backspace>" . other-frame)
+ ("<backtab>" . other-frame)
+ ("C-c <tab>" . prelude-swap-windows)
+ ("C-c <backspace>" . i-meant-other-window)
+ ("C-x 3" . split-window-right-and-move-there-dammit)
+ ("C-c C-e" . eval-and-replace)
+ ("M-p" . backward-paragraph)
+ ("M-n" . forward-paragraph)
+ ("C-c c" . comment-or-uncomment-region-or-line)
+ ("C-c d" . prelude-duplicate-current-line-or-region)
+ ("H-j" . pop-to-mark-command)
+ ("H-u" . universal-argument)
+ ("H-S-u" . negative-argument)
+ ("C-c M-d" . prelude-duplicate-and-comment-current-line-or-region)
+ ("C-c j" . start-or-switch-to-shell)
+ ("C-c s" . create-scratch-buffer)
+ ("M-c" . easy-kill)
+ ("C-a" . prelude-move-beginning-of-line)
+ ("C-x k" . kill-this-buffer)
+ ("<f8>" . kmacro-start-macro-or-insert-counter)
+ ("<f9>" . kmacro-end-or-call-macro))
+
+;; Move DEL to C-h
+(define-key key-translation-map [?\C-h] [?\C-?])
+
 (split-window-right)
 (ze-toggle-golden-ratio)
