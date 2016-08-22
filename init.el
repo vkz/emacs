@@ -127,7 +127,7 @@
 (require 'appearance)
 
 ;; Write backup files to own directory
-(setq backup-directory-alist `((".*" . ,(locate-user-emacs-file "backup")))
+(setq backup-directory-alist `((".*" . ,(locate-user-emacs-file ".backup")))
       auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
       ;; Make backups of files, even when they're in version control
       vc-make-backup-files t)
@@ -295,7 +295,7 @@
 
 (use-package yasnippet
   :ensure t
-  :bind (("C-x ," . yas-expand))
+  :bind (("C-x t" . yas-expand))
   :init
   (progn
     (setq yas-verbosity 1
@@ -797,15 +797,15 @@
       (lispy-tab)
       (indent-for-tab-command arg))
 
+    ;; TODO need to figure out this tabbing stuff
     ;; Experimental lispy bindings
-    (lispy-define-key lispy-mode-map-special "i" 'sexy-into-sexp)
-    (bind-keys :map lispy-mode-map
-               ("<tab>" . sexy-tab)
-               ;; ("<C-i>" . sexy-tab)
-               )
+    ;; (lispy-define-key lispy-mode-map-special "i" 'sexy-into-sexp)
+    ;; (bind-keys :map lispy-mode-map
+    ;;            ("<tab>" . sexy-tab)
+    ;;            ;; ("<C-i>" . sexy-tab)
+    ;;            )
     ;; (lispy-define-key lispy-mode-map "<C-i>" 'sexy-tab)
-
-    (lispy-define-key lispy-mode-map "<tab>" 'sexy-tab)
+    ;; (lispy-define-key lispy-mode-map "<tab>" 'sexy-tab)
 
     (defun sexy-next-thing (arg)
       ""
@@ -873,112 +873,37 @@
       (lispy-beginning-of-defun)
       (lispy-down 1))
 
+    (defun sexy-kill-region-or-backward-word (arg)
+      (interactive "p")
+      (if (region-active-p)
+          (lispy-kill-at-point)
+        (lispy-backward-kill-word arg)))
+
     (turn-on-smartparens-strict-mode)
     (setq lispy-visit-method 'projectile)
-    (bind-keys :map lispy-other-mode-map
-               ("j" . nil)
-               ("k" . nil)
-               ("p" . nil)
-               ("n" . nil)
-               ("(" . special-lispy-beginning-of-defun))
-    (bind-keys :map lispy-mode-map-lispy
-               ("C-j" . nil)
-               ("C-," . nil)
-               ("<C-return>" . nil))
-
-    ;; make sexy-..-paragraph special
-    (lispy-define-key lispy-mode-map "j" 'sexy-next-paragraph)
-    (lispy-define-key lispy-mode-map "k" 'sexy-prev-paragraph)
 
     (bind-keys :map lispy-mode-map
-               ("M-n" . sexy-next-paragraph)
-               ("M-p" . sexy-prev-paragraph)
-               ("<C-return>" . nil)
-               ("C-," . nil)
-               ("M-j" . nil)
-               ("(" . sexy-parens)
-               (")" . lispy-right)
-
-               ("C-(" . lispy-parens-down)
-               ("C-)" . lispy-out-forward-newline)
-
-               ("n" . special-lispy-down)
-               ("p" . special-lispy-up)
-
-               ;; ("j" . special-lispy-down)
-               ;; ("k" . special-lispy-up)
-
-               ("C-c x" . lispy-x)
-               ("x" . special-lispy-x)
-
-               ("C-k" . lispy-kill)
-               ("C-w" . lispy-kill-at-point)
-
-               ("C" . special-lispy-clone)
-               ("c" . special-lispy-new-copy)
-
-               ("N" . special-lispy-move-down)
-               ("P" . special-lispy-move-up)
-
-               ("C-c h i" . lispy-describe-inline)
-               ("C-c h a" . lispy-arglist-inline)
-
-               ("s" . special-lispy-ace-symbol)
-               ("S" . special-lispy-ace-symbol-replace)
-               ("a" . special-lispy-ace-paren)
-
-               ("K" . nil)
-               ("J" . nil)
-               ;; ("k" . nil)
-               ;; ("j" . nil)
-               ("<C-i>" . nil)
-
-
-               ("[" . lispy-brackets)
-               ("C-u" . undo-tree-undo)
-
-               ;; ("/" . special-lispy-splice)
-               ("/" . nil)
-               ("M-(" . nil)
-               ("M-)" . nil)
+               ;; was lispy-kill-at-point
                ("{" . nil)
                ("}" . nil)
-               ("C-M-a" . sp-beginning-of-sexp)
-               ("C-M-e" . sp-end-of-sexp)
-
-               ("C-<down>" . sp-down-sexp)
-               ("C-<up>" . sp-up-sexp)
-               ("M-<down>" . sp-backward-down-sexp)
-               ("M-<up>" . sp-backward-up-sexp)
-
-               ("C-M-f" . nil)
-               ("C-M-b" . nil)
-               ("C-S-n" . nil)
-               ("C-S-p" . nil)
+               ;; jump-char
                ("C-S-f" . nil)
                ("C-S-b" . nil)
-
-               ("C-<right>" . sp-forward-slurp-sexp)
-               ("M-<right>" . sp-forward-barf-sexp)
-               ("C-<left>" . sp-backward-slurp-sexp)
-               ("M-<left>" . sp-backward-barf-sexp)
-
-               ("C-M-t" . sp-transpose-sexp)
-               ("C-M-w" . nil)
-
-               ("C-M-d" . delete-sexp)
-
-               ("M-<backspace>" . nil)
-               ("C-<backspace>" . nil)
-               ("M-h" . nil)
-               ([remap sp-backward-kill-word] . backward-kill-word)
-
-               ("M-[" . sp-backward-unwrap-sexp)
-               ("M-]" . sp-unwrap-sexp)
-
-               ("C-x C-t" . sp-transpose-hybrid-sexp)
-
-               ("]" . sp-rewrap-sexp))))
+               ("(" . sexy-parens)
+               (")" . lispy-forward)
+               ("[" . lispy-brackets)
+               ("]" . lispy-right)
+               ("n" . special-lispy-down)
+               ("p" . special-lispy-up)
+               ;; was lispy-clone
+               ("c" . special-lispy-new-copy)
+               ;; was lispy-convolute
+               ("C" . special-lispy-clone)
+               ("C-u" . undo-tree-undo)
+               ("M-h" . sexy-kill-region-or-backward-word)
+               ([remap sp-backward-kill-word] . sexy-kill-region-or-backward-word)
+               ;; ("]" . sp-rewrap-sexp)
+               )))
 
 (use-package golden-ratio
   ;; TODO fix golden-ratio for shell and dired
@@ -1208,18 +1133,20 @@
  ("C-x r q" . save-buffers-kill-terminal)
  ("C-x C-c" . delete-frame)
  ("C-." . set-mark-command)
- ("C-," . hippie-expand-no-case-fold)
- ;; TODO gets overwritten by iedit mode
- ("C-;" . completion-at-point)
+ ("C-t" . hippie-expand-no-case-fold)
+ ("M-t" . completion-at-point)
  ("<f1>" . help-command)
  ("M-h" . kill-region-or-backward-word)
- ("<C-return>" . repeat)
- ("<backspace>" . other-window)
- ("C-<backspace>" . quick-switch-buffer)
- ("M-<backspace>" . other-frame)
- ("<backtab>" . other-frame)
- ("C-c <tab>" . prelude-swap-windows)
- ("C-c <backspace>" . i-meant-other-window)
+ ;; ("<C-return>" . repeat)
+ ("M-r" . repeat)
+ ("<C-tab>" . other-window)
+ ("<H-tab>" . other-frame)
+ ("C-x <C-tab>" . i-meant-other-window)
+ ;; ("<backspace>" . other-window)
+ ;; ("C-<backspace>" . quick-switch-buffer)
+ ;; ("M-<backspace>" . other-frame)
+ ;; ("<backtab>" . other-frame)
+ ;; ("C-c <tab>" . prelude-swap-windows)
  ("C-x 3" . split-window-right-and-move-there-dammit)
  ("C-c C-e" . eval-and-replace)
  ("M-p" . backward-paragraph)
@@ -1238,8 +1165,8 @@
  ("<f8>" . kmacro-start-macro-or-insert-counter)
  ("<f9>" . kmacro-end-or-call-macro))
 
-(bind-keys*
- ("C-;" . completion-at-point))
+;; (bind-keys*
+;;  ("C-;" . completion-at-point))
 
 ;; Move DEL to C-h
 ;; NOTE these remappings ought to occur in this order
