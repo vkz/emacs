@@ -41,7 +41,31 @@
   "Some packages are too good not to have.")
 
 ;; Setup packages
-(require 'setup-package)
+(require 'package)
+
+;; Add melpa to package repos
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
+(package-initialize)
+
+(unless (file-exists-p (concat user-emacs-directory "elpa/archives/melpa"))
+  (package-refresh-contents))
+
+;; install required packages
+(let ((install #'(lambda (package)
+                   (unless (package-installed-p package)
+                     (package-install package))
+                   (require package))))
+  (message "Installing required packages %s" ze/required-packages)
+  (mapc install ze/required-packages)
+  (delete-other-windows))
+
+(defun packages-install (packages)
+  (require 'dash)
+  (--each packages
+    (when (not (package-installed-p it))
+      (package-install it)))
+  (delete-other-windows))
 
 ;; Install extensions if they're missing
 (defun init--install-packages ()
@@ -323,7 +347,7 @@
 
 (use-package helm
   :ensure t
-  :bind (("s-h" . helm-command-prefix)
+  :bind (;; ("s-h" . helm-command-prefix-key)
          :map helm-map
          ("<tab>" . helm-execute-persistent-action)
          ("TAB" . helm-execute-persistent-action)
@@ -339,6 +363,11 @@
         helm-split-window-default-side 'other
         helm-move-to-line-cycle-in-source nil)
   :diminish helm-mode)
+
+(use-package helm-semantic
+  :ensure helm
+  :defer t
+  :bind ("C-c i" . helm-semantic-or-imenu))
 
 (use-package helm-ring
   :ensure helm
@@ -1081,18 +1110,60 @@
 
 (use-package avy-jump
   :ensure avy
-  :bind (("C-M-w" . avy-goto-word-1)
-         ("C-S-j" . avy-pop-mark)))
+  :init (eval-after-load "isearch"
+          '(define-key isearch-mode-map (kbd "M-g") 'avy-isearch))
+  :bind (("M-g c" . avy-goto-char-timer)
+         ("M-g M-c" . avy-goto-char-timer)
+         ("M-g w" . avy-goto-word-1)
+         ;; ("M-g j" . avy-pop-mark)
+         ("M-g j" . pop-to-mark-command)
+         ("M-g a" . beginning-of-buffer)
+         ("M-g e" . end-of-buffer))
+  :config
+  (setq avy-timeout-seconds 0.3))
 
-;; NOTE works nicely with C-w and M-w!
-;; TODO not so nice really, but works well with `copy-region-as-kill'
+(use-package jump-char
+  ;; TODO fix and use it's integration with isearch and ace-jump (replacing it
+  ;; with avy first)
+  :ensure t
+  :bind (("C-S-f" . jump-char-forward)
+         ;; right command
+         ("C-S-b" . jump-char-backward)
+         ;; left command
+         )
+  :config
+  ;; TODO I'd rather , and ; have vim liske meaning i.e. , continue in the
+  ;; direction of original jump-char command and ; take the opposite direction.
+  ;; Always forwand and always backward seems rigid. But it may just be a matter
+  ;; of getting used to.
+  (setq-default jump-char-forward-key ","
+                jump-char-backward-key ";"))
+
+;; TODO buggy due to use of overriding-local-map, after jumping due to the way
+;; the overriding-local-map works only it and global-key-map are availabel,
+;; therefore any bindings from minor mode u expect aren't available. Solution
+;; could be extending the the way the passthrough works i.e. for it to work for
+;; anything that's not iy specific binding. Even better solution is to avoid
+;; local map altogether.
 (use-package iy-go-to-char
+  :disabled t
   :ensure t
   ;; With COMMAND keys translated by Karabiner these bindings work pretty nicely
   :bind (("C-S-f" . iy-go-up-to-char)
+         ;; right command
          ("C-S-b" . iy-go-to-char-backward)
-         ;; ("M-;" . iy-go-to-or-up-to-continue)
-         ))
+         ;; left command
+         )
+  :config
+  (bind-keys :map iy-go-to-char-keymap
+             ("C-s" . iy-go-to-char-isearch)
+             ("C-r" . iy-go-to-char-isearch-backward)
+             ("M-w" . nil)
+             ("C-w" . iy-go-to-char-kill-region)
+             ("M-c" . iy-go-to-char-kill-ring-save)
+             ("C-g" . iy-go-to-char-quit))
+  (setq iy-go-to-char-key-forward (kbd ","))
+  (setq iy-go-to-char-key-backward (kbd ";")))
 
 ;; TODO iedit?
 ;; TODO bindings
@@ -1157,7 +1228,16 @@
  ("<f8>" . kmacro-start-macro-or-insert-counter)
  ("<f9>" . kmacro-end-or-call-macro))
 
+(bind-keys*
+ ("C-;" . completion-at-point))
+
 ;; Move DEL to C-h
+;; NOTE these remappings ought to occur in this order
+;; remap quoted-insert onto C-'
+(define-key key-translation-map (kbd "C-'") (kbd "C-q"))
+;; remap keyboard-quit onto C-q
+(define-key key-translation-map (kbd "C-q") (kbd "C-g"))
+;; remap backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
 
 (split-window-right)

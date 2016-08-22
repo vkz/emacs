@@ -425,6 +425,7 @@ If called with a prefix argument, uses the other-window instead."
 ;; I think Magnars clj-autotest could be better.
 
 (use-package symbol-focus
+  :disabled t
   :load-path "site-lisp/"
   :after clojure-mode
   :bind (:map clojure-mode-map ("C-S-f" . sf/focus-at-point)))
