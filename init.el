@@ -275,20 +275,20 @@
 (use-package magit
   :ensure t
   :init (bind-keys :prefix-map ze-git-prefix-map
-                   :prefix "s-g")
-  :bind (("s-g c" . magit-clone)
-         ("s-g s" . magit-status)
-         ("s-g b" . magit-blame)
-         ("s-g l" . magit-log-buffer-file)
-         ("s-g p" . magit-pull))
+                   :prefix "<f2>")
+  :bind (("<f2> c" . magit-clone)
+         ("<f2> s" . magit-status)
+         ("<f2> b" . magit-blame)
+         ("<f2> l" . magit-log-buffer-file)
+         ("<f2> p" . magit-pull))
   :config
   (set-default 'magit-stage-all-confirm nil)
   (set-default 'magit-unstage-all-confirm nil))
 
 (use-package gist
   :ensure t
-  :bind (("s-g g" . gist-region-or-buffer-private)
-         ("s-g G" . gist-region-or-buffer)))
+  :bind (("<f2> g" . gist-region-or-buffer-private)
+         ("<f2> G" . gist-region-or-buffer)))
 
 (eval-after-load 'shell '(require 'setup-shell))
 (require 'setup-hippie)
@@ -482,11 +482,11 @@
   (setq projectile-switch-project-action #'helm-projectile))
 
 (use-package perspective
-  ;; TODO bindings
   :ensure t
-  :bind (("<f4>" . persp-switch-last)
-         ("<S-f4>" . perspective-map)
-         ("<f3>" . persp-switch))
+  :bind (("<f4>" . perspective-map)
+         :map perspective-map
+         ("<f4>" . perspective-map)
+         ("SPC" . persp-switch-last))
   :init (persp-mode t)
   :config
   (add-hook 'persp-switch-hook
@@ -496,8 +496,7 @@
 
 (use-package persp-projectile
   :ensure t
-  :bind (("<S-f3>" . projectile-persp-switch-project)
-         :map perspective-map
+  :bind (:map perspective-map
          ("S" . projectile-persp-switch-project)
          ("s" . persp-switch)))
 
@@ -681,10 +680,6 @@
 
 ;; lispy.el
 (use-package lispy
-  ;; TODO j & k should skip to next paragraphs
-  ;; TODO lispy-racket
-  ;; TODO lispy with cider-debug
-  ;; TODO better lispy bindings
   :ensure t
   :defer t
   :diminish
