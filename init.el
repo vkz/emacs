@@ -428,6 +428,19 @@
   :config
   (setq helm-yas-space-match-any-greedy t))
 
+(use-package "isearch"                  ; Search buffers
+  ;; Defer because `isearch' is not a feature and we don't want to `require' it
+  :defer t
+  :init
+  ;; `:diminish' doesn't work for isearch, because it uses eval-after-load on
+  ;; the feature name, but isearch.el does not provide any feature.  For the
+  ;; same reason we have to use `:init', but isearch is always loaded anyways.
+  (diminish 'isearch-mode)
+  (setq isearch-allow-scroll t)
+  (bind-keys :map isearch-mode-map
+             ("<escape>" . isearch-abort)
+             ("C-q" . isearch-abort)))
+
 (use-package helm-swoop
   :ensure t
   :after helm
@@ -1190,6 +1203,7 @@
   (setq mac-option-modifier nil))
 
 (bind-keys
+ ("<escape>" . keyboard-quit)
  ("C-x r q" . save-buffers-kill-terminal)
  ("C-x C-c" . delete-frame)
  ("C-." . set-mark-command)
@@ -1229,9 +1243,9 @@
 ;; Move DEL to C-h
 ;; NOTE these remappings ought to occur in this order
 ;; remap quoted-insert onto C-'
-(define-key key-translation-map (kbd "C-'") (kbd "C-q"))
+;; (define-key key-translation-map (kbd "C-'") (kbd "C-q"))
 ;; remap keyboard-quit onto C-q
-(define-key key-translation-map (kbd "C-q") (kbd "C-g"))
+;; (define-key key-translation-map (kbd "C-q") (kbd "C-g"))
 ;; remap backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
 
