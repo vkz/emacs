@@ -2,7 +2,6 @@
 /.mc-lists.el
 /.places
 /auto-save-list/
-/backups/
 /eshell/
 /history
 /npm-debug.log
@@ -15,3 +14,4 @@
 /var
 .DS_Store
 \#*\#
+/.backup/
