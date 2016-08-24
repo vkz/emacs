@@ -283,7 +283,8 @@
          ("<f2> p" . magit-pull))
   :config
   (set-default 'magit-stage-all-confirm nil)
-  (set-default 'magit-unstage-all-confirm nil))
+  (set-default 'magit-unstage-all-confirm nil)
+  (setq magit-completing-read-function 'ivy-completing-read))
 
 (use-package gist
   :ensure t
@@ -344,6 +345,39 @@
 ;; doesn't help, but I'll leave it be
 (setq max-lisp-eval-depth 40000)
 (setq max-specpdl-size 100000)
+
+(use-package ivy
+  :ensure t
+  :init
+  (bind-keys :prefix-map ze-search
+             :prefix "M-s")
+  (ivy-mode 1)
+  :bind (("<f6>" . ivy-resume)
+         ("C-c r" . ivy-resume)
+         :map ivy-minibuffer-map
+         ("C-q" . abort-recursive-edit))
+  :config
+  (setq ivy-use-virtual-buffers t)
+  :diminish ivy-mode)
+
+(use-package ivy-hydra
+  ;; binds C-o to a helpful ivy-menu in minibuffer
+  :ensure t)
+
+(use-package swiper
+  :ensure t
+  :bind (("C-s" . swiper)))
+
+(use-package counsel
+  :ensure t
+  :bind (("C-s" . counsel-grep-or-swiper)
+         ("C-S-y" . counsel-yank-pop)
+         :map ze-search
+         ("g" . counsel-git-grep)
+         ("a" . counsel-ag)
+         ("l" . counsel-locate)
+         :map read-expression-map
+         ("C-r" . counsel-expression-history)))
 
 (use-package helm
   :ensure t
@@ -442,6 +476,7 @@
              ("C-q" . isearch-abort)))
 
 (use-package helm-swoop
+  :disabled t
   :ensure t
   :after helm
   :bind (("s-s" . helm-swoop)
@@ -458,6 +493,7 @@
   (setq helm-swoop-move-to-line-cycle nil))
 
 (use-package helm-ag
+  :disabled t
   :ensure t
   :bind (("M-s" . helm-ag)
          ("M-S" . helm-do-ag))
@@ -474,13 +510,16 @@
   ;; Remove dead projects when Emacs is idle
   (run-with-idle-timer 10 nil #'projectile-cleanup-known-projects)
 
-  (setq projectile-completion-system 'helm
+  (setq projectile-completion-system 'ivy
         projectile-find-dir-includes-top-level t
         projectile-indexing-method 'alien
         projectile-enable-caching nil)
   (add-to-list 'projectile-globally-ignored-directories "elpa")
   (add-to-list 'projectile-globally-ignored-directories ".node_modules")
   (add-to-list 'projectile-globally-ignored-directories ".m2")
+  (setq projectile-switch-project-action
+        (lambda ()
+          (dired (projectile-project-root))))
 
   :diminish projectile-mode)
 
@@ -488,11 +527,7 @@
 (use-package helm-projectile
   :ensure t
   :after projectile
-  :bind (("C-c b" . helm-projectile))
-  :init
-  (helm-projectile-on)
-  :config
-  (setq projectile-switch-project-action #'helm-projectile))
+  :bind (("C-c b" . helm-projectile)))
 
 (use-package perspective
   :ensure t
@@ -1164,6 +1199,9 @@
  ("C-x k" . kill-this-buffer)
  ("<f8>" . kmacro-start-macro-or-insert-counter)
  ("<f9>" . kmacro-end-or-call-macro))
+
+(bind-keys :map minibuffer-local-map
+           ("C-q" . abort-recursive-edit))
 
 ;; (bind-keys*
 ;;  ("C-;" . completion-at-point))
