@@ -740,6 +740,10 @@
     (add-hook 'emacs-lisp-mode-hook 'ze-emacs-lisp-hook))
   :config
   (progn
+    ;; lispy-safe are must have settings.
+    (setq lispy-safe-copy t
+          lispy-safe-delete t
+          lispy-safe-paste t)
     (defun sexy-form-state-p ()
       (or (region-active-p)
           (and (not (lispy--in-string-or-comment-p))
@@ -974,7 +978,7 @@
                                        ))
 
     (add-to-list 'golden-ratio-exclude-buffer-regexp "^\\*[hH]elm.*")
-
+    
     (setq golden-ratio-extra-commands
           (append golden-ratio-extra-commands
                   '(ace-window
@@ -1004,7 +1008,8 @@
                     ess-eval-buffer-and-go
                     ess-eval-function-and-go
                     ess-eval-line-and-go
-                    other-window)))))
+                    other-window
+                    quit-window)))))
 
 ;; clojure
 (require 'setup-clj)
@@ -1178,7 +1183,7 @@
  ("<H-tab>" . other-frame)
  ("C-x <C-tab>" . i-meant-other-window)
  ;; ("<backspace>" . other-window)
- ;; ("C-<backspace>" . quick-switch-buffer)
+ ("C-<backspace>" . quick-switch-buffer)
  ;; ("M-<backspace>" . other-frame)
  ;; ("<backtab>" . other-frame)
  ;; ("C-c <tab>" . prelude-swap-windows)
