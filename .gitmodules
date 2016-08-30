@@ -17,3 +17,9 @@
 [submodule "site-lisp/pdf-mode.el"]
 	path = site-lisp/pdf-mode.el
 	url = git@github.com:mishoo/pdf-mode.el.git
+[submodule "site-lisp/lispy"]
+	path = site-lisp/lispy
+	url = git@github.com:vkz/lispy.git
+[submodule "site-lisp/racket-mode"]
+	path = site-lisp/racket-mode
+	url = git@github.com:vkz/racket-mode.git
