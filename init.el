@@ -747,7 +747,7 @@
     (defun sexy-form-state-p ()
       (or (region-active-p)
           (and (not (lispy--in-string-or-comment-p))
-               (or (looking-back "['`~@#]")
+               (or (looking-back "['`~@#%]")
                    (and (looking-at "\\(?:[[:space:]]+\\)")
                         (or (looking-back lispy-left)
                             (looking-back "\\(?:^\\|[[:space:]]+\\)")))
@@ -824,11 +824,13 @@
       (interactive "p")
       (cond ((lispy-right-p)
              (backward-char 1)
-             (insert " "))
+             ;; (insert " ")
+             )
             ((lispy-left-p)
              (forward-char 1)
-             (insert " ")
-             (backward-char 1))))
+             ;; (insert " ")
+             ;; (backward-char 1)
+             )))
 
     (defun sexy-tab (arg)
       ""
@@ -1203,7 +1205,8 @@
  ("C-a" . prelude-move-beginning-of-line)
  ("C-x k" . kill-this-buffer)
  ("<f8>" . kmacro-start-macro-or-insert-counter)
- ("<f9>" . kmacro-end-or-call-macro))
+ ("<f9>" . kmacro-end-or-call-macro)
+ ("C-'" . quoted-insert))
 
 (bind-keys :map minibuffer-local-map
            ("C-q" . abort-recursive-edit))
