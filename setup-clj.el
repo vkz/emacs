@@ -385,8 +385,8 @@ If called with a prefix argument, uses the other-window instead."
              ;; NOTE to create a missing "other" file like _test.clj run these
              ;; with a prefix argument.
              ;; TODO seems silly, fix this!
-             ("C-<tab>" . clj-jump-to-other-file-other-window)
-             ("C-S-<tab>" . clj-jump-to-other-file))
+             ("C-c <tab>" . clj-jump-to-other-file-other-window)
+             ("C-c <S-tab>" . clj-jump-to-other-file))
   (require 'datomic-snippets)
   ;; TODO (define-clojure-indent &rest KVS) instead of put-clojure-indent
   ;; (define-clojure-indent
@@ -405,8 +405,7 @@ If called with a prefix argument, uses the other-window instead."
     (DELETE 2)
     (HEAD 2)
     (ANY 2)
-    (context 2))
-  )
+    (context 2)))
 
 ;; TODO steal clj-autotest from Magnars
 ;; https://github.com/magnars/.emacs.d/blob/master/site-lisp/clj-autotest.el
