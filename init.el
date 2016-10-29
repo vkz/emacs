@@ -371,10 +371,15 @@
   :bind (("<f4>" . persp-key-map)
          :map persp-key-map
          ("<f4>" . persp-key-map)
+         ;; TODO port persp-switch-last to persp-mode from perspective
          ;; ("SPC" . persp-switch-last)
          )
   :init (persp-mode t)
   :config
+  ;; Leave C-c p to projectile, use <f4> instead
+  (set-default 'persp-keymap-prefix (kbd "<f4>"))
+  (substitute-key-definition 'persp-key-map nil persp-mode-map)
+
   (add-hook 'persp-switch-hook
             (lambda ()
               (when (= (length (window-list)) 1)
