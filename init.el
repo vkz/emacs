@@ -72,15 +72,11 @@
   (packages-install
    '(use-package
       dash
-      bash-completion
-      guide-key
       highlight-escape-sequences
       whitespace-cleanup-mode
       elisp-slime-nav
       smooth-scrolling
       shell-command
-      ;; expand-region
-      ;; smart-forward
       js2-refactor
       js2-mode
       easy-kill
@@ -158,46 +154,6 @@
   (exec-path-from-shell-initialize))
 
 ;; dired
-(use-package dired
-  ;; TODO: learn fucking dired
-  :config
-  ;; brew install coreutils
-  (when (and is-mac (executable-find "gls"))
-    (setq insert-directory-program "gls"))
-
-  (setq dired-auto-revert-buffer t
-        dired-listing-switches "-alhF"
-        dired-ls-F-marks-symlinks t
-        dired-recursive-copies 'always
-        dired-dwim-target t)
-  (when (or (memq system-type '(gnu gnu/linux))
-            (string= (file-name-nondirectory insert-directory-program) "gls"))
-    (setq dired-listing-switches
-          (concat dired-listing-switches " -G -1 --group-directories-first -v")))
-
-  (--each '(dired-do-rename
-            dired-do-copy
-            dired-create-directory
-            wdired-abort-changes)
-    (eval `(defadvice ,it (after revert-buffer activate)
-             (revert-buffer))))
-
-  ;; C-a is nicer in dired if it moves back to start of files
-  (defun dired-back-to-start-of-files ()
-    (interactive)
-    (backward-char (- (current-column) 2)))
-
-  ;; M-up is nicer in dired if it moves to the fourth line - the first file
-  (defun dired-back-to-top ()
-    (interactive)
-    (beginning-of-buffer)
-    (dired-next-line 4))
-
-  ;; M-down is nicer in dired if it moves to the last file
-  (defun dired-jump-to-bottom ()
-    (interactive)
-    (end-of-buffer)
-    (dired-next-line -1)))
 (use-package dired
   ;; TODO: learn fucking dired
   :config
@@ -339,10 +295,6 @@
 ;; `elisp'. What major modes does it support? What features does it actually provide?
 (semantic-mode 1)
 
-;; helm
-;; TODO ditch helm in favour of swiper?
-;; https://github.com/emacs-helm/helm/issues/779
-;; doesn't help, but I'll leave it be
 (setq max-lisp-eval-depth 40000)
 (setq max-specpdl-size 100000)
 
@@ -372,95 +324,13 @@
   :ensure t
   :bind (("C-s" . counsel-grep-or-swiper)
          ("C-S-y" . counsel-yank-pop)
+         ("C-:" . counsel-M-x)
          :map ze-search
          ("g" . counsel-git-grep)
          ("a" . counsel-ag)
          ("l" . counsel-locate)
          :map read-expression-map
          ("C-r" . counsel-expression-history)))
-
-(use-package helm
-  :ensure t
-  :bind (;; ("s-h" . helm-command-prefix-key)
-         :map helm-map
-         ("<tab>" . helm-execute-persistent-action)
-         ("TAB" . helm-execute-persistent-action)
-         ("C-<tab>" . helm-select-action)
-         ("C-." . helm-toggle-visible-mark))
-  :init
-  (helm-mode 1)
-  (with-eval-after-load 'helm-config
-    (warn "`helm-config' loaded! Get rid of it ASAP!"))
-  :config
-  (setq helm-quick-update t
-        helm-split-window-in-side-p nil
-        helm-split-window-default-side 'other
-        helm-move-to-line-cycle-in-source nil)
-  :diminish helm-mode)
-
-(use-package helm-semantic
-  :ensure helm
-  :defer t
-  :bind ("C-c i" . helm-semantic-or-imenu))
-
-(use-package helm-ring
-  :ensure helm
-  :defer t
-  :bind (("H-y" . helm-show-kill-ring)
-         ;; ([remap insert-register] . helm-register)
-         ))
-
-(use-package helm-command
-  :ensure helm
-  :defer t
-  :bind (("C-:" . helm-M-x)))
-
-(use-package helm-buffers
-  :ensure helm
-  :defer t
-  :bind (("C-x b" . helm-mini))
-  :config
-  (setq helm-buffers-fuzzy-matching t))
-
-(use-package helm-files                 ; Manage files with Helm
-  :ensure helm
-  :defer t
-  :bind (([remap find-file] . helm-find-files)
-         ;; ("C-c f f" . helm-for-files)
-         ;; ("C-c f r" . helm-recentf)
-         )
-  :config
-  (setq helm-recentf-fuzzy-match t
-        ;; Use recentf to manage file name history
-        helm-ff-file-name-history-use-recentf t
-        ;; Find libraries from `require', etc.
-        helm-ff-search-library-in-sexp t)
-
-  ;; (when (eq system-type 'darwin)
-  ;;   ;; Replace locate with spotlight for `helm-for-files'
-  ;;   (setq helm-for-files-preferred-list
-  ;;         (append (delq 'helm-source-locate
-  ;;                       helm-for-files-preferred-list)
-  ;;                 '(helm-source-mac-spotlight))))
-  )
-
-(use-package helm-elisp
-  :ensure helm
-  :init (bind-keys ("<f1>" . help-command))
-  :bind (("<f1> h" . helm-apropos)))
-
-(use-package helm-descbinds
-  :ensure t
-  :init (helm-descbinds-mode))
-
-
-;; Use helm for completion please
-(use-package helm-c-yasnippet
-  :ensure t
-  :after helm
-  :bind (("C-c y" . helm-yas-complete))
-  :config
-  (setq helm-yas-space-match-any-greedy t))
 
 (use-package "isearch"                  ; Search buffers
   ;; Defer because `isearch' is not a feature and we don't want to `require' it
@@ -474,33 +344,6 @@
   (bind-keys :map isearch-mode-map
              ("<escape>" . isearch-abort)
              ("C-q" . isearch-abort)))
-
-(use-package helm-swoop
-  :disabled t
-  :ensure t
-  :after helm
-  :bind (("s-s" . helm-swoop)
-         :map helm-swoop-map
-         ("C-u" . kill-to-beginning-of-line))
-  :config
-  (setq helm-swoop-speed-or-color t     ; Colour over speed 8)
-        ;; Split window like Helm does
-        helm-swoop-split-window-function #'helm-default-display-buffer)
-
-  (setq helm-multi-swoop-edit-save t)
-  (setq helm-swoop-split-with-multiple-windows nil)
-  (setq helm-swoop-split-direction 'split-window-horizontally)
-  (setq helm-swoop-move-to-line-cycle nil))
-
-(use-package helm-ag
-  :disabled t
-  :ensure t
-  :bind (("M-s" . helm-ag)
-         ("M-S" . helm-do-ag))
-  :config
-  (setq helm-ag-fuzzy-match t
-        helm-ag-insert-at-point 'symbol
-        helm-ag-edit-save t))
 
 ;; projectile
 (use-package projectile                 ; Project management for Emacs
@@ -523,30 +366,57 @@
 
   :diminish projectile-mode)
 
-;; helm-projectile
-(use-package helm-projectile
+(use-package persp-mode
   :ensure t
-  :after projectile
-  :bind (("C-c b" . helm-projectile)))
-
-(use-package perspective
-  :ensure t
-  :bind (("<f4>" . perspective-map)
-         :map perspective-map
-         ("<f4>" . perspective-map)
-         ("SPC" . persp-switch-last))
+  :bind (("<f4>" . persp-key-map)
+         :map persp-key-map
+         ("<f4>" . persp-key-map)
+         ;; ("SPC" . persp-switch-last)
+         )
   :init (persp-mode t)
   :config
   (add-hook 'persp-switch-hook
             (lambda ()
               (when (= (length (window-list)) 1)
-                (with-selected-window (split-window-right))))))
+                (with-selected-window (split-window-right)))))
 
-(use-package persp-projectile
-  :ensure t
-  :bind (:map perspective-map
-         ("S" . projectile-persp-switch-project)
-         ("s" . persp-switch)))
+  ;; stolen from Spacemacs
+  (defun ivy-persp-switch-project (arg)
+    (interactive "P")
+    (ivy-read "Switch to Project Perspective: "
+              (if (projectile-project-p)
+                  (cons (abbreviate-file-name (projectile-project-root))
+                        (projectile-relevant-known-projects))
+                projectile-known-projects)
+              :action (lambda (project)
+                        (let ((persp-reset-windows-on-nil-window-conf t))
+                          (persp-switch project)
+                          (let ((projectile-completion-system 'ivy))
+                            (projectile-switch-project-by-name project))))))
+
+  (bind-keys :map persp-key-map
+             ("S" . ivy-persp-switch-project))
+
+  (with-eval-after-load "ivy"
+    (add-hook 'ivy-ignore-buffers
+              #'(lambda (b)
+                  (when persp-mode
+                    (let ((persp (get-current-persp)))
+                      (if persp
+                          (not (persp-contain-buffer-p b persp))
+                        nil)))))
+
+    (setq ivy-sort-functions-alist
+          (append ivy-sort-functions-alist
+                  '((persp-kill-buffer . nil)
+                    (persp-remove-buffer . nil)
+                    (persp-add-buffer . nil)
+                    (persp-switch . nil)
+                    (persp-window-switch . nil)
+                    (persp-frame-switch . nil)))))
+  ;; TODO ibuffer setup with persp
+  ;; https://gist.github.com/Bad-ptr/1aca1ec54c3bdb2ee80996eb2b68ad2d#file-persp-mode-ibuffer-groups-el
+  )
 
 ;; TODO: make sense of Virtual Directories
 ;; see `http://tuhdo.github.io/helm-projectile.html'
@@ -1056,7 +926,7 @@
   ;; should be able to extend functionality to terra pretty easily. E.g.
   ;; (lua-start-process "terra" "terra") will happily start terra repl, of
   ;; course sending stuff their doesn't seem to work out of the box.
-  :interpreter ("lua-5.3" . lua-mode)
+  :interpreter ("lua-5.1" . lua-mode)
   :config
   ;; TODO wait, I'm not running company-mode? How do i get my completions then?
   ;; TODO there's some work for eldoc support in lua. I'd like to have that as
@@ -1113,32 +983,6 @@
   ;; of getting used to.
   (setq-default jump-char-forward-key ","
                 jump-char-backward-key ";"))
-
-;; TODO buggy due to use of overriding-local-map, after jumping due to the way
-;; the overriding-local-map works only it and global-key-map are availabel,
-;; therefore any bindings from minor mode u expect aren't available. Solution
-;; could be extending the the way the passthrough works i.e. for it to work for
-;; anything that's not iy specific binding. Even better solution is to avoid
-;; local map altogether.
-(use-package iy-go-to-char
-  :disabled t
-  :ensure t
-  ;; With COMMAND keys translated by Karabiner these bindings work pretty nicely
-  :bind (("C-S-f" . iy-go-up-to-char)
-         ;; right command
-         ("C-S-b" . iy-go-to-char-backward)
-         ;; left command
-         )
-  :config
-  (bind-keys :map iy-go-to-char-keymap
-             ("C-s" . iy-go-to-char-isearch)
-             ("C-r" . iy-go-to-char-isearch-backward)
-             ("M-w" . nil)
-             ("C-w" . iy-go-to-char-kill-region)
-             ("M-c" . iy-go-to-char-kill-ring-save)
-             ("C-g" . iy-go-to-char-quit))
-  (setq iy-go-to-char-key-forward (kbd ","))
-  (setq iy-go-to-char-key-backward (kbd ";")))
 
 ;; TODO iedit?
 ;; TODO bindings
@@ -1225,3 +1069,178 @@
 
 (split-window-right)
 (ze-toggle-golden-ratio)
+
+;; disabled
+;; --------
+(use-package helm
+  :disabled t
+  :ensure t
+  :bind ( ;; ("s-h" . helm-command-prefix-key)
+         :map helm-map
+         ("<tab>" . helm-execute-persistent-action)
+         ("TAB" . helm-execute-persistent-action)
+         ("C-<tab>" . helm-select-action)
+         ("C-." . helm-toggle-visible-mark))
+  :init
+  (helm-mode 1)
+  (with-eval-after-load 'helm-config
+    (warn "`helm-config' loaded! Get rid of it ASAP!"))
+  :config
+  (setq helm-quick-update t
+        helm-split-window-in-side-p nil
+        helm-split-window-default-side 'other
+        helm-move-to-line-cycle-in-source nil)
+  :diminish helm-mode)
+
+(use-package helm-semantic
+  :disabled t
+  :ensure helm
+  :defer t
+  :bind ("C-c i" . helm-semantic-or-imenu))
+
+(use-package helm-ring
+  :disabled t
+  :ensure helm
+  :defer t
+  :bind (("H-y" . helm-show-kill-ring)
+         ;; ([remap insert-register] . helm-register)
+         ))
+
+(use-package helm-command
+  :disabled t
+  :ensure helm
+  :defer t
+  :bind (("C-:" . helm-M-x)))
+
+(use-package helm-buffers
+  :disabled t
+  :ensure helm
+  :defer t
+  :bind (("C-x b" . helm-mini))
+  :config
+  (setq helm-buffers-fuzzy-matching t))
+
+(use-package helm-files                 ; Manage files with Helm
+  :disabled t
+  :ensure helm
+  :defer t
+  :bind (([remap find-file] . helm-find-files)
+         ;; ("C-c f f" . helm-for-files)
+         ;; ("C-c f r" . helm-recentf)
+         )
+  :config
+  (setq helm-recentf-fuzzy-match t
+        ;; Use recentf to manage file name history
+        helm-ff-file-name-history-use-recentf t
+        ;; Find libraries from `require', etc.
+        helm-ff-search-library-in-sexp t)
+
+  ;; (when (eq system-type 'darwin)
+  ;;   ;; Replace locate with spotlight for `helm-for-files'
+  ;;   (setq helm-for-files-preferred-list
+  ;;         (append (delq 'helm-source-locate
+  ;;                       helm-for-files-preferred-list)
+  ;;                 '(helm-source-mac-spotlight))))
+  )
+
+(use-package helm-elisp
+  :disabled t
+  :ensure helm
+  :init (bind-keys ("<f1>" . help-command))
+  :bind (("<f1> h" . helm-apropos)))
+
+(use-package helm-descbinds
+  :disabled t
+  :ensure t
+  :init (helm-descbinds-mode))
+
+
+;; Use helm for completion please
+(use-package helm-c-yasnippet
+  :disabled t
+  :ensure t
+  :after helm
+  :bind (("C-c y" . helm-yas-complete))
+  :config
+  (setq helm-yas-space-match-any-greedy t))
+
+(use-package helm-swoop
+  :disabled t
+  :ensure t
+  :after helm
+  :bind (("s-s" . helm-swoop)
+         :map helm-swoop-map
+         ("C-u" . kill-to-beginning-of-line))
+  :config
+  (setq helm-swoop-speed-or-color t     ; Colour over speed 8)
+        ;; Split window like Helm does
+        helm-swoop-split-window-function #'helm-default-display-buffer)
+
+  (setq helm-multi-swoop-edit-save t)
+  (setq helm-swoop-split-with-multiple-windows nil)
+  (setq helm-swoop-split-direction 'split-window-horizontally)
+  (setq helm-swoop-move-to-line-cycle nil))
+
+(use-package helm-ag
+  :disabled t
+  :ensure t
+  :bind (("M-s" . helm-ag)
+         ("M-S" . helm-do-ag))
+  :config
+  (setq helm-ag-fuzzy-match t
+        helm-ag-insert-at-point 'symbol
+        helm-ag-edit-save t))
+
+;; helm-projectile
+(use-package helm-projectile
+  :disabled t
+  :ensure t
+  :after projectile
+  :bind (("C-c b" . helm-projectile)))
+
+(use-package perspective
+  :ensure t
+  :disabled t
+  :bind (("<f4>" . perspective-map)
+         :map perspective-map
+         ("<f4>" . perspective-map)
+         ("SPC" . persp-switch-last))
+  :init (persp-mode t)
+  :config
+  (add-hook 'persp-switch-hook
+            (lambda ()
+              (when (= (length (window-list)) 1)
+                (with-selected-window (split-window-right))))))
+
+(use-package persp-projectile
+  :ensure t
+  :disabled t
+  :bind (:map perspective-map
+              ("S" . projectile-persp-switch-project)
+              ("s" . persp-switch)))
+
+;; TODO buggy due to use of overriding-local-map, after jumping due to the way
+;; the overriding-local-map works only it and global-key-map are availabel,
+;; therefore any bindings from minor mode u expect aren't available. Solution
+;; could be extending the the way the passthrough works i.e. for it to work for
+;; anything that's not iy specific binding. Even better solution is to avoid
+;; local map altogether.
+(use-package iy-go-to-char
+  :disabled t
+  :ensure t
+  ;; With COMMAND keys translated by Karabiner these bindings work pretty nicely
+  :bind (("C-S-f" . iy-go-up-to-char)
+         ;; right command
+         ("C-S-b" . iy-go-to-char-backward)
+         ;; left command
+         )
+  :config
+  (bind-keys :map iy-go-to-char-keymap
+             ("C-s" . iy-go-to-char-isearch)
+             ("C-r" . iy-go-to-char-isearch-backward)
+             ("M-w" . nil)
+             ("C-w" . iy-go-to-char-kill-region)
+             ("M-c" . iy-go-to-char-kill-ring-save)
+             ("C-g" . iy-go-to-char-quit))
+  (setq iy-go-to-char-key-forward (kbd ","))
+  (setq iy-go-to-char-key-backward (kbd ";")))
