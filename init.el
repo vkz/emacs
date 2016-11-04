@@ -107,6 +107,17 @@
 (use-package s
   :ensure t)
 
+;; TODO use-package this shit
+(defvar outline-minor-mode-prefix "\M-;")
+;; (require 'outline)
+;; (bind-keys ("M-;" . outline-mode-prefix-map))
+(require 'outshine)
+(progn
+  (add-hook 'outline-minor-mode-hook #'outshine-hook-function)
+  (add-hook 'emacs-lisp-mode-hook 'outline-minor-mode)
+  (setq outshine-use-speed-commands t
+        outshine-preserve-delimiter-whitespace t))
+
 (use-package undo-tree
   :ensure t
   :init (global-undo-tree-mode)
@@ -152,6 +163,11 @@
   :if (and (eq system-type 'darwin) (display-graphic-p))
   :config
   (exec-path-from-shell-initialize))
+
+(bind-keys :prefix-map ze-prefix
+           :prefix "<f3>"
+           :prefix-docstring
+           "Prefix for counsel / buffers / filesystem / windows-layout commands")
 
 ;; dired
 (use-package dired
@@ -230,13 +246,18 @@
 
 (use-package magit
   :ensure t
-  :init (bind-keys :prefix-map ze-git-prefix-map
+  :init (bind-keys :prefix-map ze-vc-prefix
                    :prefix "<f2>")
   :bind (("<f2> c" . magit-clone)
          ("<f2> s" . magit-status)
          ("<f2> b" . magit-blame)
          ("<f2> l" . magit-log-buffer-file)
-         ("<f2> p" . magit-pull))
+         ("<f2> p" . magit-pull)
+         :map magit-mode-map
+         ("<C-tab>" . nil)
+         ("<M-tab>" . nil)
+         ;; ("<s-tab>" . nil)
+         )
   :config
   (set-default 'magit-stage-all-confirm nil)
   (set-default 'magit-unstage-all-confirm nil)
@@ -304,17 +325,25 @@
   (bind-keys :prefix-map ze-search
              :prefix "M-s")
   (ivy-mode 1)
-  :bind (("<f6>" . ivy-resume)
-         ("C-c r" . ivy-resume)
+  :bind (
+         :map ze-prefix
+         ("r" . ivy-resume)
+         ("b" . ivy-switch-buffer)
+         ;; TODO this one doesn't appear to respect persp
+         ("B" . ivy-switch-buffer-other-window)
          :map ivy-minibuffer-map
-         ("C-q" . abort-recursive-edit))
+         ("C-q" . abort-recursive-edit)
+         ("C-o" . ivy-dispatching-done))
   :config
   (setq ivy-use-virtual-buffers t)
   :diminish ivy-mode)
 
 (use-package ivy-hydra
-  ;; binds C-o to a helpful ivy-menu in minibuffer
-  :ensure t)
+  :ensure t
+  :after ivy
+  :bind (
+         :map ivy-minibuffer-map
+         ("C-S-o" . hydra-ivy/body)))
 
 (use-package swiper
   :ensure t
@@ -325,6 +354,23 @@
   :bind (("C-s" . counsel-grep-or-swiper)
          ("C-S-y" . counsel-yank-pop)
          ("C-:" . counsel-M-x)
+         ([remap execute-extended-command] . counsel-M-x)
+         ([remap find-file] . counsel-find-file)
+         ([remap describe-function] . counsel-describe-function)
+         ([remap describe-variable] . counsel-describe-variable)
+         ([remap info-lookup-symbol] . counsel-info-lookup-symbol)
+         ([remap describe-bindings] . counsel-descbinds)
+         ("<f1> s" . counsel-info-lookup-symbol)
+         :map ze-prefix
+         ("f" . counsel-git)
+         ("F" . counsel-find-file)
+         ("g" . counsel-git-grep)
+         ;; "g" is bound to projectile-find-dir
+         ("G" . counsel-ag)
+         ("D" . counsel-dired-jump)
+         ("L" . counsel-load-library)
+         ("u" . counsel-unicode-char)
+         ("m" . counsel-imenu)
          :map ze-search
          ("g" . counsel-git-grep)
          ("a" . counsel-ag)
@@ -349,6 +395,9 @@
 (use-package projectile                 ; Project management for Emacs
   :ensure t
   :init (projectile-global-mode)
+  :bind (
+         :map ze-prefix
+         ("d" . projectile-find-dir))
   :config
   ;; Remove dead projects when Emacs is idle
   (run-with-idle-timer 10 nil #'projectile-cleanup-known-projects)
@@ -855,7 +904,7 @@
                                        ))
 
     (add-to-list 'golden-ratio-exclude-buffer-regexp "^\\*[hH]elm.*")
-    
+
     (setq golden-ratio-extra-commands
           (append golden-ratio-extra-commands
                   '(ace-window
@@ -1072,9 +1121,6 @@
 ;; remap backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
 
-(split-window-right)
-(ze-toggle-golden-ratio)
-
 ;; disabled
 ;; --------
 (use-package helm
@@ -1249,3 +1295,19 @@
              ("C-g" . iy-go-to-char-quit))
   (setq iy-go-to-char-key-forward (kbd ","))
   (setq iy-go-to-char-key-backward (kbd ";")))
+
+;; TODO looks like persp-mode restore collides with ranger somehow
+;; (use-package ranger
+;;   :disabled t
+;;   :ensure t
+;;   :bind ("C-x d" . deer)
+;;   :config
+;;   (ranger-override-dired-mode t))
+
+(use-package page-break-lines           ; Turn page breaks into lines
+  :ensure t
+  :init (global-page-break-lines-mode)
+  :diminish page-break-lines-mode)
+
+(split-window-right)
+(ze-toggle-golden-ratio)
