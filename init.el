@@ -938,6 +938,7 @@
                     ess-eval-function-and-go
                     ess-eval-line-and-go
                     other-window
+                    ze-other-window
                     quit-window)))))
 
 ;; clojure
