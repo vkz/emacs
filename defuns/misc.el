@@ -163,6 +163,12 @@ Passes ARG to command `kill-whole-line' when provided."
   (split-window-right)
   (windmove-right))
 
+(defun ze-other-window ()
+  (interactive)
+  (if (= (length (window-list)) 1)
+      (split-window-right-and-move-there-dammit)
+    (other-window 1)))
+
 (defun eval-and-replace ()
   "Replace the preceding sexp with its value."
   (interactive)

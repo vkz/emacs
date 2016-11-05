@@ -323,7 +323,7 @@
   :ensure t
   :init
   (bind-keys :prefix-map ze-search
-             :prefix "M-s")
+             :prefix "M-S-s")
   (ivy-mode 1)
   :bind (
          :map ze-prefix
@@ -347,11 +347,11 @@
 
 (use-package swiper
   :ensure t
-  :bind (("C-s" . swiper)))
+  :bind ())
 
 (use-package counsel
   :ensure t
-  :bind (("C-s" . counsel-grep-or-swiper)
+  :bind (("M-s" . counsel-grep-or-swiper)
          ("C-S-y" . counsel-yank-pop)
          ("C-:" . counsel-M-x)
          ([remap execute-extended-command] . counsel-M-x)
@@ -848,7 +848,6 @@
     (setq lispy-visit-method 'projectile)
 
     (bind-keys :map lispy-mode-map
-               ;; was lispy-kill-at-point
                ("{" . nil)
                ("}" . nil)
                ;; jump-char
@@ -865,10 +864,14 @@
                ;; was lispy-convolute
                ("C" . special-lispy-clone)
                ("C-u" . undo-tree-undo)
-               ("M-h" . sexy-kill-region-or-backward-word)
                ([remap sp-backward-kill-word] . sexy-kill-region-or-backward-word)
                ;; ("]" . sp-rewrap-sexp)
-               )))
+               :map lispy-mode-map-lispy
+               ;; "C-," was lispy-kill-at-point
+               ("C-," . nil)
+               ("M-r" . lispy-kill-at-point)
+               ("C-w" . lispy-kill-at-point)
+               ("M-h" . sexy-kill-region-or-backward-word))))
 
 (use-package golden-ratio
   ;; TODO fix golden-ratio for shell and dired
@@ -1009,15 +1012,18 @@
 
 (use-package avy-jump
   :ensure avy
-  :init (eval-after-load "isearch"
-          '(define-key isearch-mode-map (kbd "M-g") 'avy-isearch))
   :bind (("M-g c" . avy-goto-char-timer)
          ("M-g M-c" . avy-goto-char-timer)
          ("M-g w" . avy-goto-word-1)
          ;; ("M-g j" . avy-pop-mark)
          ("M-g j" . pop-to-mark-command)
          ("M-g a" . beginning-of-buffer)
-         ("M-g e" . end-of-buffer))
+         ("M-g e" . end-of-buffer)
+         ;; experimental
+         ;; RCommand
+         ("C-S-f" . avy-goto-char-timer)
+         ;; LCommand
+         ("C-S-b" . avy-goto-word-1))
   :config
   (setq avy-timeout-seconds 0.3))
 
@@ -1025,18 +1031,15 @@
   ;; TODO fix and use it's integration with isearch and ace-jump (replacing it
   ;; with avy first)
   :ensure t
-  :bind (("C-S-f" . jump-char-forward)
-         ;; right command
-         ("C-S-b" . jump-char-backward)
-         ;; left command
-         )
+  :bind (("C-." . jump-char-forward)
+         ("C-," . jump-char-backward))
   :config
   ;; TODO I'd rather , and ; have vim liske meaning i.e. , continue in the
   ;; direction of original jump-char command and ; take the opposite direction.
   ;; Always forwand and always backward seems rigid. But it may just be a matter
   ;; of getting used to.
-  (setq-default jump-char-forward-key ","
-                jump-char-backward-key ";"))
+  (setq-default jump-char-forward-key "."
+                jump-char-backward-key ","))
 
 ;; TODO iedit?
 ;; TODO bindings
@@ -1068,18 +1071,18 @@
   (setq mac-option-modifier nil))
 
 (bind-keys
- ("<escape>" . keyboard-quit)
+ ("<escape>" . bury-buffer)
  ("C-q" . keyboard-quit)
  ("C-x r q" . save-buffers-kill-terminal)
  ("C-x C-c" . delete-frame)
- ("C-." . set-mark-command)
+ ;; ("C-." . set-mark-command)
  ("C-t" . hippie-expand-no-case-fold)
  ("M-t" . completion-at-point)
  ("<f1>" . help-command)
  ("M-h" . kill-region-or-backward-word)
  ;; ("<C-return>" . repeat)
- ("M-r" . repeat)
- ("<C-tab>" . other-window)
+ ;; ("M-r" . repeat)
+ ("<C-tab>" . ze-other-window)
  ("<H-tab>" . other-frame)
  ("C-x <C-tab>" . i-meant-other-window)
  ;; ("<backspace>" . other-window)
