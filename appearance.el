@@ -70,9 +70,6 @@
 ;; (setq custom-theme-directory
 ;;       (expand-file-name "themes" user-emacs-directory))
 
-;; TODO: customize theme, particularly color-faces in various helper
-;; modes like helm-buffers. Use `helm-color' for such customizations.
-
 ;; (dolist
 ;;     (path (directory-files custom-theme-directory t "\\w+"))
 ;;   (when (file-directory-p path)
@@ -198,7 +195,6 @@
 
 ;; don't wrap lines ever
 (setq-default truncate-lines t)
-(setq-default helm-truncate-lines t)
 
 ;; make the fringe (gutter) smaller
 (if (fboundp 'fringe-mode)
@@ -208,7 +204,6 @@
 (require 'diminish)
 
 (eval-after-load "rainbow-mode" '(diminish 'rainbow-mode))
-(eval-after-load "helm-mode" '(diminish 'helm-mode))
 (eval-after-load "yasnippet" '(diminish 'yas-minor-mode))
 (eval-after-load "eldoc" '(diminish 'eldoc-mode))
 (eval-after-load "paredit" '(diminish 'paredit-mode))

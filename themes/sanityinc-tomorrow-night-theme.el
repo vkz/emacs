@@ -1,9 +1,6 @@
 (deftheme sanityinc-tomorrow-night
   "Created 2014-09-03.")
 
-;; use 'helm-colors to find out faces available for say 'dired 'helm etc
-;; I think faces defined in `dired+' start with 'diredp-
-
 (custom-theme-set-variables
  'sanityinc-tomorrow-night
  '(ansi-color-names-vector ["#c5c8c6" "#cc6666" "SeaGreen" "#f0c674" "#81a2be" "#b294bb" "#8abeb7" "#1d1f21"])
@@ -193,24 +190,6 @@
  '(regex-tool-matched-face ((((class color) (min-colors 89)) (:foreground nil :background nil :inherit match))))
  '(mm/master-face ((((class color) (min-colors 89)) (:inherit region :foreground nil :background nil))))
  '(mm/mirror-face ((((class color) (min-colors 89)) (:inherit region :foreground nil :background nil))))
- '(helm-buffer-saved-out ((((class color) (min-colors 89)) (:inherit warning))))
- '(helm-buffer-size ((((class color) (min-colors 89)) (:foreground "#f0c674"))))
- '(helm-buffer-not-saved ((((class color) (min-colors 89)) (:foreground "#de935f"))))
- '(helm-buffer-process ((((class color) (min-colors 89)) (:foreground "#8abeb7"))))
- '(helm-ff-directory ((((class color) (min-colors 89)) (:inherit diredp-dir-priv))))
- '(helm-ff-file ((((class color) (min-colors 89)) (:inherit diredp-file-name))))
- '(helm-ff-symlink ((((class color) (min-colors 89)) (:inherit diredp-symlink))))
- '(helm-ff-executable ((((class color) (min-colors 89)) (:inherit diredp-executable-tag))))
- '(helm-buffer-directory ((((class color) (min-colors 89)) (:foreground "SkyBlue" :background nil))))
- '(helm-helper ((((class color) (min-colors 89)) (:background "#151515"))))
- '(helm-header ((((class color) (min-colors 89)) (:background "#151515"))))
- '(helm-candidate-number ((((class color) (min-colors 89)) (:foreground "#cc6666"))))
- ;; '(helm-selection ((((class color) (min-colors 89)) (:inherit highlight))))
- '(helm-selection ((((class color) (min-colors 89))
-                    (:inherit highlight :background "#373b41" :underline nil))))
- '(helm-separator ((((class color) (min-colors 89)) (:foreground "#b294bb"))))
- '(helm-source-header ((((class color) (min-colors 89)) (:inherit org-document-title))))
-
  '(org-agenda-structure ((((class color) (min-colors 89)) (:foreground "#b294bb"))))
  '(org-agenda-date ((((class color) (min-colors 89)) (:foreground "#81a2be" :underline nil))))
  '(org-agenda-done ((((class color) (min-colors 89)) (:foreground "#b5bd68"))))

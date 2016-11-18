@@ -472,13 +472,8 @@
   ;; https://gist.github.com/Bad-ptr/1aca1ec54c3bdb2ee80996eb2b68ad2d#file-persp-mode-ibuffer-groups-el
   )
 
-;; TODO: make sense of Virtual Directories
-;; see `http://tuhdo.github.io/helm-projectile.html'
-
 ;; TODO: set these `grep-find-ignored-files' `grep-find-ignored-directories'
 ;; `projectile-globally-ignored-files' `projectile-globally-ignored-directories'
-;; NOTE the need to do this to force `helm-projectile-grep' behave properly is
-;; disconcerting see `https://github.com/bbatsov/projectile/issues/628'
 (add-to-list 'grep-find-ignored-directories "elpa")
 (add-to-list 'grep-find-ignored-directories "node_modules")
 
@@ -590,7 +585,6 @@
   :defer t
   :config (setq reb-re-syntax 'rx))
 
-;; Does package really have anything to do with `require` though? I would've though that all it does having installed the package is add it's directory to the **load-path**. Having to `(require 'helm-config)` before installing the anything else seems really dissatisfying if only for the fact that Emacs doesn't make a good use of information that it already has. Also, having
 (put 'narrow-to-page 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 
@@ -1127,132 +1121,6 @@
 
 ;; disabled
 ;; --------
-(use-package helm
-  :disabled t
-  :ensure t
-  :bind ( ;; ("s-h" . helm-command-prefix-key)
-         :map helm-map
-         ("<tab>" . helm-execute-persistent-action)
-         ("TAB" . helm-execute-persistent-action)
-         ("C-<tab>" . helm-select-action)
-         ("C-." . helm-toggle-visible-mark))
-  :init
-  (helm-mode 1)
-  (with-eval-after-load 'helm-config
-    (warn "`helm-config' loaded! Get rid of it ASAP!"))
-  :config
-  (setq helm-quick-update t
-        helm-split-window-in-side-p nil
-        helm-split-window-default-side 'other
-        helm-move-to-line-cycle-in-source nil)
-  :diminish helm-mode)
-
-(use-package helm-semantic
-  :disabled t
-  :ensure helm
-  :defer t
-  :bind ("C-c i" . helm-semantic-or-imenu))
-
-(use-package helm-ring
-  :disabled t
-  :ensure helm
-  :defer t
-  :bind (("H-y" . helm-show-kill-ring)
-         ;; ([remap insert-register] . helm-register)
-         ))
-
-(use-package helm-command
-  :disabled t
-  :ensure helm
-  :defer t
-  :bind (("C-:" . helm-M-x)))
-
-(use-package helm-buffers
-  :disabled t
-  :ensure helm
-  :defer t
-  :bind (("C-x b" . helm-mini))
-  :config
-  (setq helm-buffers-fuzzy-matching t))
-
-(use-package helm-files                 ; Manage files with Helm
-  :disabled t
-  :ensure helm
-  :defer t
-  :bind (([remap find-file] . helm-find-files)
-         ;; ("C-c f f" . helm-for-files)
-         ;; ("C-c f r" . helm-recentf)
-         )
-  :config
-  (setq helm-recentf-fuzzy-match t
-        ;; Use recentf to manage file name history
-        helm-ff-file-name-history-use-recentf t
-        ;; Find libraries from `require', etc.
-        helm-ff-search-library-in-sexp t)
-
-  ;; (when (eq system-type 'darwin)
-  ;;   ;; Replace locate with spotlight for `helm-for-files'
-  ;;   (setq helm-for-files-preferred-list
-  ;;         (append (delq 'helm-source-locate
-  ;;                       helm-for-files-preferred-list)
-  ;;                 '(helm-source-mac-spotlight))))
-  )
-
-(use-package helm-elisp
-  :disabled t
-  :ensure helm
-  :init (bind-keys ("<f1>" . help-command))
-  :bind (("<f1> h" . helm-apropos)))
-
-(use-package helm-descbinds
-  :disabled t
-  :ensure t
-  :init (helm-descbinds-mode))
-
-
-;; Use helm for completion please
-(use-package helm-c-yasnippet
-  :disabled t
-  :ensure t
-  :after helm
-  :bind (("C-c y" . helm-yas-complete))
-  :config
-  (setq helm-yas-space-match-any-greedy t))
-
-(use-package helm-swoop
-  :disabled t
-  :ensure t
-  :after helm
-  :bind (("s-s" . helm-swoop)
-         :map helm-swoop-map
-         ("C-u" . kill-to-beginning-of-line))
-  :config
-  (setq helm-swoop-speed-or-color t     ; Colour over speed 8)
-        ;; Split window like Helm does
-        helm-swoop-split-window-function #'helm-default-display-buffer)
-
-  (setq helm-multi-swoop-edit-save t)
-  (setq helm-swoop-split-with-multiple-windows nil)
-  (setq helm-swoop-split-direction 'split-window-horizontally)
-  (setq helm-swoop-move-to-line-cycle nil))
-
-(use-package helm-ag
-  :disabled t
-  :ensure t
-  :bind (("M-s" . helm-ag)
-         ("M-S" . helm-do-ag))
-  :config
-  (setq helm-ag-fuzzy-match t
-        helm-ag-insert-at-point 'symbol
-        helm-ag-edit-save t))
-
-;; helm-projectile
-(use-package helm-projectile
-  :disabled t
-  :ensure t
-  :after projectile
-  :bind (("C-c b" . helm-projectile)))
-
 (use-package perspective
   :ensure t
   :disabled t

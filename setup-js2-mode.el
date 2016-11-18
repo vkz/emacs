@@ -129,11 +129,6 @@
 (js2r--setup-wrapping-pair "\"" "\"")
 (js2r--setup-wrapping-pair "'" "'")
 
-;; TODO: Replacement for `Tern' which I don't really use. Its
-;; inference capabilities are rudimentary and work as often as
-;; don't. For jumping consider a combination of TAGs, imenu and helm
-;; interface to grep.
-
 ;; prevent js2-mode from stealing keyes
 (define-key js2-mode-map (kbd "TAB") nil)
 (define-key js2-mode-map (kbd "C-c C-e") nil)

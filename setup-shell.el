@@ -1,5 +1,4 @@
 ;; bash completion
-;; TODO: is there a helm interface for shell-completion?
 (require 'bash-completion)
 (bash-completion-setup)
 
@@ -61,23 +60,5 @@ the other window."
          (dir (if file (file-name-directory file) default-directory)))
     (unless here (other-window 1))
     (shell-format-send-cd-string dir)))
-
-(defun helm-ff-switch-to-shell (_candidate)
-  "Switch to shell and cd to `helm-ff-default-directory'."
-  (let ((cd-shell #'(lambda ()
-                      (shell-format-send-cd-string helm-ff-default-directory))))
-    (unless (eq major-mode 'shell-mode)
-      (if (get-buffer "*shell*")
-          (switch-to-buffer-other-window "*shell*")
-      (other-window 1)
-      (call-interactively 'shell)
-      (sleep-for 0.2)))
-    (funcall cd-shell)))
-
-(defun helm-ff-shell-jump ()
-  "Run switch to shell action from `helm-source-find-files'."
-  (interactive)
-  (with-helm-alive-p
-    (helm-quit-and-execute-action 'helm-ff-switch-to-shell)))
 
 (provide 'setup-shell)
