@@ -588,48 +588,6 @@
 (put 'narrow-to-page 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 
-;;; OCaml
-;; `https://github.com/realworldocaml/book/wiki/Installation-Instructions'
-;; brew install opam
-;; opam install core utop merlin ocp-indent
-(use-package opam                       ; Initialize Emacs with OPAM env
-  :ensure t
-  :init (opam-init))
-
-(use-package tuareg                     ; OCaml editing
-  :ensure t
-  :defer t
-  :config
-  (progn
-    ;; Disable SMIE indentation in Tuareg.  It's just broken currently…
-    (setq tuareg-use-smie nil)
-
-    ;; Please, Tuareg, don't kill my imenu
-    (define-key tuareg-mode-map [?\C-c ?i] nil)
-
-    ;; Also BACKSPACE, geeez
-    (define-key tuareg-mode-map (kbd "<backspace>") nil)
-    (define-key tuareg-mode-map (kbd "C-<backspace>") nil)
-
-    ;; Gimme better indentation experience
-    (use-package ocp-indent
-      :ensure t)))
-
-(use-package merlin                     ; Powerful Emacs backend for OCaml
-  :ensure t
-  :defer t
-  :init (add-hook 'tuareg-mode-hook #'merlin-mode)
-  :config
-  ;; Use Merlin from current OPAM env
-  (setq merlin-command 'opam
-        ;; Disable Merlin's own error checking in favour of Flycheck
-        merlin-error-after-save nil))
-
-(use-package utop
-  :ensure t
-  :defer t
-  :init (add-hook 'tuareg-mode-hook #'utop-minor-mode))
-
 ;; Elisp
 (use-package elisp-mode
   :interpreter ("emacs" . emacs-lisp-mode)
