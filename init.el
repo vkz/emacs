@@ -912,17 +912,6 @@
              ("C-c C-c" . racket-send-definition)
              ("C-c C-e" . racket-send-last-sexp)))
 
-;; (use-package geiser
-;;   :ensure t
-;;   :bind (:map geiser-mode-map
-;;               ("C-." . nil))
-;;   :config
-;;   (setq geiser-racket-collects
-;;         '("/Users/zerusski/Library/Racket/6.4/collects"
-;;           "/opt/homebrew-cask/Caskroom/racket/6.4/Racket v6.4/collects"
-;;           "/Users/zerusski/Library/Racket/6.4/pkgs"
-;;           "/Users/zerusski/Library/Racket/planet/300/packages")))
-
 ;; (use-package pdf-mode
 ;;   :load-path "site-lisp/pdf-mode.el/"
 ;;   :mode (("\\.rkt\\'" . pdf-mode)))
