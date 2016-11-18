@@ -9,12 +9,9 @@
 (setq user-emacs-directory (file-name-directory (file-truename (ze/this-file))))
 (add-to-list 'load-path user-emacs-directory)
 
-;; Turn off mouse interface early in startup to avoid momentary display
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-
-;; No splash screen please ... jeez
 (setq inhibit-startup-message t)
 
 ;; Add external projects to load path. Note that anything installed
@@ -42,16 +39,11 @@
 
 ;; Setup packages
 (require 'package)
-
-;; Add melpa to package repos
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-
 (package-initialize)
-
 (unless (file-exists-p (concat user-emacs-directory "elpa/archives/melpa"))
   (package-refresh-contents))
 
-;; install required packages
 (let ((install #'(lambda (package)
                    (unless (package-installed-p package)
                      (package-install package))
@@ -109,8 +101,6 @@
 
 ;; TODO use-package this shit
 (defvar outline-minor-mode-prefix "\M-;")
-;; (require 'outline)
-;; (bind-keys ("M-;" . outline-mode-prefix-map))
 (require 'outshine)
 (progn
   (add-hook 'outline-minor-mode-hook #'outshine-hook-function)
@@ -130,7 +120,6 @@
                      ("C-?" . nil)
                      ("C-_" . nil)))
 
-;; Set up appearance early
 (require 'appearance)
 
 ;; Write backup files to own directory
@@ -154,7 +143,6 @@
 ;; Are we on a mac?
 (setq is-mac (equal system-type 'darwin))
 
-;; Lets start with a smattering of sanity
 (require 'sane-defaults)
 
 ;; Setup environment variables from the user's shell.
@@ -209,7 +197,12 @@
   (defun dired-jump-to-bottom ()
     (interactive)
     (end-of-buffer)
-    (dired-next-line -1)))
+    (dired-next-line -1))
+
+  (bind-keys :map dired-mode-map
+             ("C-a" . dired-back-to-start-of-files)
+             ([remap beginning-of-buffer] . dired-back-to-top)
+             ([remap end-of-buffer] . dired-jump-to-bottom)))
 
 (use-package dired-x
   :defer nil
@@ -217,31 +210,24 @@
   :bind (("C-x j" . dired-jump-other-window)
          ("C-x J" . dired-jump)))
 
-(progn
-  (define-key dired-mode-map (kbd "C-a") 'dired-back-to-start-of-files)
-  (define-key dired-mode-map (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
-  (define-key dired-mode-map (vector 'remap 'smart-up) 'dired-back-to-top)
-  (define-key dired-mode-map (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
-  (define-key dired-mode-map (vector 'remap 'smart-down) 'dired-jump-to-bottom))
-
 (use-package wdired
   :after dired
   :config
-  (progn
-     (define-key wdired-mode-map (kbd "C-a") 'dired-back-to-start-of-files)
-     (define-key wdired-mode-map (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
-     (define-key wdired-mode-map (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)))
+  (bind-keys :map wdired-mode-map
+             ("C-a" . dired-back-to-start-of-files)
+             ([remap beginning-of-buffer] . dired-back-to-top)
+             ([remap end-of-buffer] . dired-jump-to-bottom)))
 
 (use-package dired+
   :ensure t
   :after dired)
 
+;; Delete files to trash
 (use-package osx-trash
   :if (eq system-type 'darwin)
   :ensure t
   :init (osx-trash-setup))
 
-;; Delete files to trash
 (setq delete-by-moving-to-trash t)
 
 (use-package magit
@@ -518,17 +504,6 @@
   (setq expand-region-contract-fast-key "R"
         expand-region-reset-fast-key "=")
   (er/line-wise-select-advice))
-;; (require 'expand-region)
-;; (er/line-wise-select-advice)
-
-;; (require 'smart-forward)
-
-;; (use-package eldoc
-;;   :defer t
-;;   :init (add-hook 'eval-expression-minibuffer-setup-hook #'eldoc-mode)
-;;   :config
-;;   (setq-default eldoc-documentation-function #'describe-char-eldoc)
-;;   :diminish eldoc-mode)
 
 ;; Elisp go-to-definition with M-. and back again with M-,
 (autoload 'elisp-slime-nav-mode "elisp-slime-nav")
@@ -940,15 +915,13 @@
     ;; ( 'lua-send-region)
     ))
 
-;; (setq interpreter-mode-alist (rassq-delete-all 'lua-mode interpreter-mode-alist))
-
-
 (use-package launch
   :ensure t
   :init
   (global-launch-mode +1))
 
 (use-package reveal-in-osx-finder
+  ;; TODO binding
   :ensure t
   :bind (("C-c f" . reveal-in-osx-finder)))
 
@@ -1002,9 +975,6 @@
 ;; (define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
 ;; (define-key input-decode-map [?\C-i] (kbd "<C-i>"))
 
-;; (λ (start-or-switch-to-shell t))
-;; (λ (bury-buffer))
-
 (when is-mac
   (setq mac-command-modifier 'meta)
   (setq mac-right-command-modifier 'super)
@@ -1017,21 +987,14 @@
  ("C-q" . keyboard-quit)
  ("C-x r q" . save-buffers-kill-terminal)
  ("C-x C-c" . delete-frame)
- ;; ("C-." . set-mark-command)
  ("C-t" . hippie-expand-no-case-fold)
  ("M-t" . completion-at-point)
  ("<f1>" . help-command)
  ("M-h" . kill-region-or-backward-word)
- ;; ("<C-return>" . repeat)
- ;; ("M-r" . repeat)
  ("<C-tab>" . ze-other-window)
  ("<H-tab>" . other-frame)
  ("C-x <C-tab>" . i-meant-other-window)
- ;; ("<backspace>" . other-window)
  ("C-<backspace>" . quick-switch-buffer)
- ;; ("M-<backspace>" . other-frame)
- ;; ("<backtab>" . other-frame)
- ;; ("C-c <tab>" . prelude-swap-windows)
  ("C-x 3" . split-window-right-and-move-there-dammit)
  ("C-c C-e" . eval-and-replace)
  ("M-p" . backward-paragraph)
@@ -1075,7 +1038,8 @@
 ;;   :config
 ;;   (ranger-override-dired-mode t))
 
-(use-package page-break-lines           ; Turn page breaks into lines
+;; Turn page breaks into lines
+(use-package page-break-lines
   :ensure t
   :init (global-page-break-lines-mode)
   :diminish page-break-lines-mode)
