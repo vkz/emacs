@@ -1119,54 +1119,6 @@
 ;; remap backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
 
-;; disabled
-;; --------
-(use-package perspective
-  :ensure t
-  :disabled t
-  :bind (("<f4>" . perspective-map)
-         :map perspective-map
-         ("<f4>" . perspective-map)
-         ("SPC" . persp-switch-last))
-  :init (persp-mode t)
-  :config
-  (add-hook 'persp-switch-hook
-            (lambda ()
-              (when (= (length (window-list)) 1)
-                (with-selected-window (split-window-right))))))
-
-(use-package persp-projectile
-  :ensure t
-  :disabled t
-  :bind (:map perspective-map
-              ("S" . projectile-persp-switch-project)
-              ("s" . persp-switch)))
-
-;; TODO buggy due to use of overriding-local-map, after jumping due to the way
-;; the overriding-local-map works only it and global-key-map are availabel,
-;; therefore any bindings from minor mode u expect aren't available. Solution
-;; could be extending the the way the passthrough works i.e. for it to work for
-;; anything that's not iy specific binding. Even better solution is to avoid
-;; local map altogether.
-(use-package iy-go-to-char
-  :disabled t
-  :ensure t
-  ;; With COMMAND keys translated by Karabiner these bindings work pretty nicely
-  :bind (("C-S-f" . iy-go-up-to-char)
-         ;; right command
-         ("C-S-b" . iy-go-to-char-backward)
-         ;; left command
-         )
-  :config
-  (bind-keys :map iy-go-to-char-keymap
-             ("C-s" . iy-go-to-char-isearch)
-             ("C-r" . iy-go-to-char-isearch-backward)
-             ("M-w" . nil)
-             ("C-w" . iy-go-to-char-kill-region)
-             ("M-c" . iy-go-to-char-kill-ring-save)
-             ("C-g" . iy-go-to-char-quit))
-  (setq iy-go-to-char-key-forward (kbd ","))
-  (setq iy-go-to-char-key-backward (kbd ";")))
 
 ;; TODO looks like persp-mode restore collides with ranger somehow
 ;; (use-package ranger
