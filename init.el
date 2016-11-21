@@ -774,7 +774,15 @@
     (turn-on-smartparens-strict-mode)
     (setq lispy-visit-method 'projectile)
 
+    (defun sexy-move-beginning-of-line (arg)
+      "Back to indentation, else fwd to `move-beginning-of-line'.
+Reveal outlines."
+      (interactive "^p")
+      (lispy--ensure-visible)
+      (prelude-move-beginning-of-line arg))
+
     (bind-keys :map lispy-mode-map
+               ("C-a" . sexy-move-beginning-of-line)
                ("{" . nil)
                ("}" . nil)
                ;; jump-char

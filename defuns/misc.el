@@ -109,6 +109,14 @@ there's a region, all lines that region covers will be duplicated."
   (let ((leftmost (or (windmove-find-other-window 'left) (selected-window))))
     (select-window leftmost)))
 
+(defun at-indentation-p ()
+  "Point if at the beginning of indentation."
+  (and (equal (save-excursion
+                (back-to-indentation)
+                (point))
+              (point))
+       (point)))
+
 (defun prelude-move-beginning-of-line (arg)
   "Move point back to indentation of beginning of line.
 
