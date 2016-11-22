@@ -804,7 +804,6 @@ Reveal outlines."
                :map lispy-mode-map-lispy
                ;; "C-," was lispy-kill-at-point
                ("C-," . nil)
-               ("M-r" . lispy-kill-at-point)
                ("C-w" . lispy-kill-at-point)
                ("M-h" . sexy-kill-region-or-backward-word))))
 
@@ -1030,13 +1029,12 @@ Reveal outlines."
 ;;  ("C-;" . completion-at-point))
 
 ;; Move DEL to C-h
-;; NOTE these remappings ought to occur in this order
-;; remap quoted-insert onto C-'
-;; (define-key key-translation-map (kbd "C-'") (kbd "C-q"))
-;; remap keyboard-quit onto C-q
-;; (define-key key-translation-map (kbd "C-q") (kbd "C-g"))
 ;; remap backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
+;; remap kill-region
+(define-key key-translation-map [?\M-w] [?\C-w])
+;; remap RET
+;; (define-key key-translation-map [?\M-m] [?\C-m])
 
 
 ;; TODO looks like persp-mode restore collides with ranger somehow
