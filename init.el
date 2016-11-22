@@ -152,6 +152,12 @@
   :config
   (exec-path-from-shell-initialize))
 
+(define-minor-mode ze-mode
+  "Ze mode to override other bindings."
+  :init-value nil
+  :lighter " ze"
+  :keymap (make-sparse-keymap "ze"))
+
 (bind-keys :prefix-map ze-prefix
            :prefix "<f3>"
            :prefix-docstring
