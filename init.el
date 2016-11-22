@@ -338,7 +338,7 @@
 (use-package counsel
   :ensure t
   :bind (("M-s" . counsel-grep-or-swiper)
-         ("C-S-y" . counsel-yank-pop)
+         ("M-v" . counsel-yank-pop)
          ("C-:" . counsel-M-x)
          ([remap execute-extended-command] . counsel-M-x)
          ([remap find-file] . counsel-find-file)
