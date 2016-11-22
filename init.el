@@ -1029,8 +1029,11 @@ Reveal outlines."
 (bind-keys :map minibuffer-local-map
            ("C-q" . abort-recursive-edit))
 
-;; (bind-keys*
-;;  ("C-;" . completion-at-point))
+(bind-keys*
+ ("C-<" . scroll-down-command)
+ ("C->" . scroll-up-command)
+ ("C-j" . next-line)
+ ("C-k" . previous-line))
 
 ;; Move DEL to C-h
 ;; remap backward-delete onto C-h
