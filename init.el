@@ -782,10 +782,12 @@ Reveal outlines."
       (prelude-move-beginning-of-line arg))
 
     (bind-keys :map lispy-mode-map
+               ;; was lispy-left
+               ("M-n" . nil)
                ("C-a" . sexy-move-beginning-of-line)
                ("{" . nil)
                ("}" . nil)
-               ;; jump-char
+               ;; Don't mess with Command keys
                ("C-S-f" . nil)
                ("C-S-b" . nil)
                ("(" . sexy-parens)
@@ -934,13 +936,15 @@ Reveal outlines."
 
 (use-package avy-jump
   :ensure avy
-  :bind (("M-g c" . avy-goto-char-timer)
-         ("M-g M-c" . avy-goto-char-timer)
-         ("M-g w" . avy-goto-word-1)
-         ;; ("M-g j" . avy-pop-mark)
-         ("M-g j" . pop-to-mark-command)
-         ("M-g a" . beginning-of-buffer)
-         ("M-g e" . end-of-buffer)
+  :init (bind-keys :prefix-map ze-nav-prefix
+                   :prefix "M-n")
+  :bind (("M-n c" . avy-goto-char-timer)
+         ("M-n M-c" . avy-goto-char-timer)
+         ("M-n w" . avy-goto-word-1)
+         ;; ("M-n j" . avy-pop-mark)
+         ("M-n j" . pop-to-mark-command)
+         ("M-n a" . beginning-of-buffer)
+         ("M-n e" . end-of-buffer)
          ;; experimental
          ;; LCommand
          ("C-S-b" . avy-goto-char-timer)
@@ -1005,8 +1009,8 @@ Reveal outlines."
  ("C-<backspace>" . quick-switch-buffer)
  ("C-x 3" . split-window-right-and-move-there-dammit)
  ("C-c C-e" . eval-and-replace)
- ("M-p" . backward-paragraph)
- ("M-n" . forward-paragraph)
+ ;; ("M-p" . backward-paragraph)
+ ;; ("M-n" . forward-paragraph)
  ("C-c c" . comment-or-uncomment-region-or-line)
  ("C-c d" . prelude-duplicate-current-line-or-region)
  ("H-j" . pop-to-mark-command)
@@ -1031,6 +1035,8 @@ Reveal outlines."
 ;; Move DEL to C-h
 ;; remap backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
+;; remap keyboard-quit
+(define-key key-translation-map [?\M-g] [?\C-g])
 ;; remap kill-region
 (define-key key-translation-map [?\M-w] [?\C-w])
 ;; remap RET
