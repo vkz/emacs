@@ -943,10 +943,10 @@ Reveal outlines."
          ("M-g a" . beginning-of-buffer)
          ("M-g e" . end-of-buffer)
          ;; experimental
-         ;; RCommand
-         ("C-S-f" . avy-goto-char-timer)
          ;; LCommand
-         ("C-S-b" . avy-goto-word-1))
+         ("C-S-b" . avy-goto-char-timer)
+         ;; LCommand-Space
+         ("M-SPC" . avy-goto-word-1))
   :config
   (setq avy-timeout-seconds 0.3))
 
@@ -954,7 +954,8 @@ Reveal outlines."
   ;; TODO fix and use it's integration with isearch and ace-jump (replacing it
   ;; with avy first)
   :ensure t
-  :bind (("C-." . jump-char-forward)
+  :init (bind-keys*
+         ("C-." . jump-char-forward)
          ("C-," . jump-char-backward))
   :config
   ;; TODO I'd rather , and ; have vim liske meaning i.e. , continue in the
