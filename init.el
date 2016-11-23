@@ -486,21 +486,11 @@
 (comment-annotations-in-modes programming-modes)
 
 (use-package expand-region
-  ;; TODO bindings
-  :bind (("C-r" . er/expand-region)
-         ("M-r" . ze-mark-paragraph))
+  :bind (("M-SPC" . er/expand-region))
   :ensure t
-  :init
-  (defun ze-mark-paragraph ()
-    (interactive)
-    (progn
-      (mark-paragraph)
-      (exchange-point-and-mark)
-      (backward-char)))
   :config
-  (setq expand-region-contract-fast-key "R"
-        expand-region-reset-fast-key "=")
-  (er/line-wise-select-advice))
+  (setq expand-region-contract-fast-key "-"
+        expand-region-reset-fast-key "="))
 
 ;; Elisp go-to-definition with M-. and back again with M-,
 (autoload 'elisp-slime-nav-mode "elisp-slime-nav")
@@ -938,15 +928,11 @@ Reveal outlines."
   :bind (("M-n c" . avy-goto-char-timer)
          ("M-n M-c" . avy-goto-char-timer)
          ("M-n w" . avy-goto-word-1)
+         ("M-n SPC" . avy-goto-word-1)
          ;; ("M-n j" . avy-pop-mark)
          ("M-n j" . pop-to-mark-command)
          ("M-n a" . beginning-of-buffer)
-         ("M-n e" . end-of-buffer)
-         ;; experimental
-         ;; LCommand
-         ("C-S-b" . avy-goto-char-timer)
-         ;; LCommand-Space
-         ("M-SPC" . avy-goto-word-1))
+         ("M-n e" . end-of-buffer))
   :config
   (setq avy-timeout-seconds 0.3))
 
