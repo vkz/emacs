@@ -1051,5 +1051,14 @@ Reveal outlines."
   :init (global-page-break-lines-mode)
   :diminish page-break-lines-mode)
 
+(use-package zop-to-char
+  :ensure t
+  :bind (("M-z" . zop-to-char)
+         ("M-Z" . zop-up-to-char))
+  :config
+  (setq zop-to-char-copy-keys '(?\M-c nil)
+        zop-to-char-next-keys '(?\C-n nil)
+        zop-to-char-prec-keys '(?\C-p nil)))
+
 (split-window-right)
 (ze-toggle-golden-ratio)
