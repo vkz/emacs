@@ -300,7 +300,6 @@
          :map ze-prefix
          ("r" . ivy-resume)
          ("b" . ivy-switch-buffer)
-         ;; TODO this one doesn't appear to respect persp
          ("B" . ivy-switch-buffer-other-window)
          :map ivy-minibuffer-map
          ("M-c" . ivy-kill-ring-save))
@@ -345,14 +344,8 @@
   ;; Defer because `isearch' is not a feature and we don't want to `require' it
   :defer t
   :init
-  ;; `:diminish' doesn't work for isearch, because it uses eval-after-load on
-  ;; the feature name, but isearch.el does not provide any feature.  For the
-  ;; same reason we have to use `:init', but isearch is always loaded anyways.
   (diminish 'isearch-mode)
-  (setq isearch-allow-scroll t)
-  (bind-keys :map isearch-mode-map
-             ("<escape>" . isearch-abort)
-             ("C-q" . isearch-abort)))
+  (setq isearch-allow-scroll t))
 
 (use-package projectile
   :ensure t
@@ -753,7 +746,6 @@ Reveal outlines."
  ("C-<" . scroll-down-command)
  ("C->" . scroll-up-command)
  ("<escape>" . bury-buffer)
- ("C-q" . keyboard-quit)
  ("C-x r q" . save-buffers-kill-terminal)
  ("C-x C-c" . delete-frame)
  ("C-t" . hippie-expand-no-case-fold)
@@ -780,9 +772,6 @@ Reveal outlines."
  ("<f8>" . kmacro-start-macro-or-insert-counter)
  ("<f9>" . kmacro-end-or-call-macro)
  ("C-'" . quoted-insert))
-
-(bind-keys :map minibuffer-local-map
-           ("C-q" . abort-recursive-edit))
 
 ;; Translate backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
