@@ -954,6 +954,8 @@ Reveal outlines."
   (setq mac-option-modifier nil))
 
 (bind-keys
+ ("C-<" . scroll-down-command)
+ ("C->" . scroll-up-command)
  ("<escape>" . bury-buffer)
  ("C-q" . keyboard-quit)
  ("C-x r q" . save-buffers-kill-terminal)
