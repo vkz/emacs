@@ -90,7 +90,6 @@
 (require 'dash)
 (require 'rx)
 
-;; TODO learn dash, f, s, etc
 (eval-after-load "dash" '(dash-enable-font-lock))
 
 (use-package f
@@ -118,12 +117,8 @@
       auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
       ;; Make backups of files, even when they're in version control
       vc-make-backup-files t)
-;; (setq backup-directory-alist
-;;       `(("." . ,(expand-file-name
-;;                  (concat user-emacs-directory "backups")))))
 
 ;; Save point position between sessions
-;; `saveplace' is part of Emacs
 (use-package saveplace
   :init
   (setq save-place-file (expand-file-name ".places" user-emacs-directory))
@@ -238,9 +233,7 @@
          ("<f2> p" . magit-pull)
          :map magit-mode-map
          ("<C-tab>" . nil)
-         ("<M-tab>" . nil)
-         ;; ("<s-tab>" . nil)
-         )
+         ("<M-tab>" . nil))
   :config
   (set-default 'magit-stage-all-confirm nil)
   (set-default 'magit-unstage-all-confirm nil)
@@ -295,8 +288,6 @@
 (use-package datomic-snippets
   :ensure t)
 
-;; TODO: `semantic-mode' appears to work with `c' `cpp' `js' but not
-;; `elisp'. What major modes does it support? What features does it actually provide?
 (semantic-mode 1)
 
 (setq max-lisp-eval-depth 40000)
@@ -361,7 +352,7 @@
          :map read-expression-map
          ("C-r" . counsel-expression-history)))
 
-(use-package "isearch"                  ; Search buffers
+(use-package "isearch"
   ;; Defer because `isearch' is not a feature and we don't want to `require' it
   :defer t
   :init
@@ -374,8 +365,7 @@
              ("<escape>" . isearch-abort)
              ("C-q" . isearch-abort)))
 
-;; projectile
-(use-package projectile                 ; Project management for Emacs
+(use-package projectile
   :ensure t
   :init (projectile-global-mode)
   :bind (
@@ -460,7 +450,6 @@
 (add-to-list 'grep-find-ignored-directories "elpa")
 (add-to-list 'grep-find-ignored-directories "node_modules")
 
-
 (eval-after-load 'js2-mode '(require 'setup-js2-mode))
 (add-hook 'js-mode-hook (lambda () (custom-set-default 'js-indent-level 2)))
 (setq programming-modes
@@ -473,8 +462,6 @@
 (use-package highlight-escape-sequences
   :ensure t
   :init (hes-mode))
-
-;; (put 'font-lock-regexp-grouping-backslash 'face-alias 'js2-function-param)
 
 ;; Functions (load all files in defuns-dir)
 (setq defuns-dir (expand-file-name "defuns" user-emacs-directory))
@@ -503,8 +490,6 @@
 (require 'whitespace)
 (setq whitespace-line-column 80) ;; limit line length
 (setq whitespace-style '(face tabs empty trailing lines-tail))
-;; (global-whitespace-mode +1)
-;; (global-whitespace-mode -1)
 
 (require 'smartparens-config)
 (add-hook 'js-mode-hook 'turn-on-smartparens-mode)
@@ -789,15 +774,13 @@ Reveal outlines."
                ("C" . special-lispy-clone)
                ("C-u" . undo-tree-undo)
                ([remap sp-backward-kill-word] . sexy-kill-region-or-backward-word)
-               ;; ("]" . sp-rewrap-sexp)
                :map lispy-mode-map-lispy
-               ;; "C-," was lispy-kill-at-point
+               ;; was lispy-kill-at-point
                ("C-," . nil)
                ("C-w" . lispy-kill-at-point)
                ("M-h" . sexy-kill-region-or-backward-word))))
 
 (use-package golden-ratio
-  ;; TODO fix golden-ratio for shell and dired
   :ensure t
   :init
   (defun ze-toggle-golden-ratio ()
@@ -937,21 +920,14 @@ Reveal outlines."
   (setq avy-timeout-seconds 0.3))
 
 (use-package jump-char
-  ;; TODO fix and use it's integration with isearch and ace-jump (replacing it
-  ;; with avy first)
   :ensure t
   :init (bind-keys*
          ("C-." . jump-char-forward)
          ("C-," . jump-char-backward))
   :config
-  ;; TODO I'd rather , and ; have vim liske meaning i.e. , continue in the
-  ;; direction of original jump-char command and ; take the opposite direction.
-  ;; Always forwand and always backward seems rigid. But it may just be a matter
-  ;; of getting used to.
   (setq-default jump-char-forward-key "."
                 jump-char-backward-key ","))
 
-;; TODO iedit?
 ;; TODO bindings
 (use-package multiple-cursors
   :ensure t
@@ -989,11 +965,8 @@ Reveal outlines."
  ("<C-tab>" . ze-other-window)
  ("<H-tab>" . other-frame)
  ("C-x <C-tab>" . i-meant-other-window)
- ("C-<backspace>" . quick-switch-buffer)
  ("C-x 3" . split-window-right-and-move-there-dammit)
  ("C-c C-e" . eval-and-replace)
- ;; ("M-p" . backward-paragraph)
- ;; ("M-n" . forward-paragraph)
  ("C-c c" . comment-or-uncomment-region-or-line)
  ("C-c d" . prelude-duplicate-current-line-or-region)
  ("H-j" . pop-to-mark-command)
@@ -1012,24 +985,12 @@ Reveal outlines."
 (bind-keys :map minibuffer-local-map
            ("C-q" . abort-recursive-edit))
 
-;; Move DEL to C-h
-;; remap backward-delete onto C-h
+;; Translate backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
-;; remap keyboard-quit
+;; Translate keyboard-quit
 (define-key key-translation-map [?\M-g] [?\C-g])
-;; remap kill-region
+;; Translate kill-region
 (define-key key-translation-map [?\M-w] [?\C-w])
-;; remap RET
-;; (define-key key-translation-map [?\M-m] [?\C-m])
-
-
-;; TODO looks like persp-mode restore collides with ranger somehow
-;; (use-package ranger
-;;   :disabled t
-;;   :ensure t
-;;   :bind ("C-x d" . deer)
-;;   :config
-;;   (ranger-override-dired-mode t))
 
 ;; Turn page breaks into lines
 (use-package page-break-lines
