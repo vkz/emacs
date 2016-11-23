@@ -99,15 +99,6 @@
 (use-package s
   :ensure t)
 
-;; TODO use-package this shit
-(defvar outline-minor-mode-prefix "\M-;")
-(require 'outshine)
-(progn
-  (add-hook 'outline-minor-mode-hook #'outshine-hook-function)
-  (add-hook 'emacs-lisp-mode-hook 'outline-minor-mode)
-  (setq outshine-use-speed-commands t
-        outshine-preserve-delimiter-whitespace t))
-
 (use-package undo-tree
   :ensure t
   :init (global-undo-tree-mode)
