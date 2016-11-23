@@ -545,20 +545,14 @@
   :diminish
   (lispy-mode . "(λ)")
   :init
-  (progn
-    (defun ze-emacs-lisp-hook ()
-      (lispy-mode 1))
-
-    (add-hook 'emacs-lisp-mode-hook 'ze-emacs-lisp-hook))
+  (add-hook 'emacs-lisp-mode-hook 'lispy-mode)
   :config
   (progn
-    ;; lispy-safe are must have settings.
     (setq lispy-safe-copy t
           lispy-safe-delete t
-          lispy-safe-paste t)
-
+          lispy-safe-paste t
+          lispy-visit-method 'projectile)
     (turn-on-smartparens-strict-mode)
-    (setq lispy-visit-method 'projectile)
 
     (defun sexy-kill-region-or-backward-word (arg)
       (interactive "p")
