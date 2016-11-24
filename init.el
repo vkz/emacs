@@ -295,10 +295,7 @@
 
 (use-package ivy
   :ensure t
-  :init
-  (bind-keys :prefix-map ze-search
-             :prefix "M-S-s")
-  (ivy-mode 1)
+  :init (ivy-mode 1)
   :bind (
          :map ze-prefix
          ("r" . ivy-resume)
@@ -306,18 +303,14 @@
          ;; TODO this one doesn't appear to respect persp
          ("B" . ivy-switch-buffer-other-window)
          :map ivy-minibuffer-map
-         ("C-q" . abort-recursive-edit)
-         ("C-o" . ivy-dispatching-done))
+         ("M-c" . ivy-kill-ring-save))
   :config
   (setq ivy-use-virtual-buffers t)
   :diminish ivy-mode)
 
 (use-package ivy-hydra
   :ensure t
-  :after ivy
-  :bind (
-         :map ivy-minibuffer-map
-         ("C-S-o" . hydra-ivy/body)))
+  :after ivy)
 
 (use-package swiper
   :ensure t
@@ -339,15 +332,11 @@
          ("f" . counsel-git)
          ("F" . counsel-find-file)
          ("g" . counsel-git-grep)
-         ;; "g" is bound to projectile-find-dir
          ("G" . counsel-ag)
          ("D" . counsel-dired-jump)
          ("L" . counsel-load-library)
          ("u" . counsel-unicode-char)
          ("m" . counsel-imenu)
-         :map ze-search
-         ("g" . counsel-git-grep)
-         ("a" . counsel-ag)
          ("l" . counsel-locate)
          :map read-expression-map
          ("C-r" . counsel-expression-history)))
