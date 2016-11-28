@@ -795,5 +795,32 @@ Reveal outlines."
         zop-to-char-next-keys '(?\C-n nil)
         zop-to-char-prec-keys '(?\C-p nil)))
 
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :config
+  (setq markdown-command
+        (mapconcat #'shell-quote-argument
+                   `("pandoc" "--toc" "--section-divs"
+                     "--standalone" "-f" "markdown" "-t" "html5")
+                   " "))
+  (defun ze-gfm-set-command ()
+    (setq markdown-command
+          (mapconcat #'shell-quote-argument
+                     `("pandoc" "--toc" "--section-divs"
+                       "--standalone" "-f" "markdown_github" "-t" "html5")
+                     " ")))
+  ;; No filling in GFM, because line breaks are significant.
+  (add-hook 'gfm-mode-hook #'turn-off-auto-fill)
+  ;; Use visual lines instead
+  (add-hook 'gfm-mode-hook #'visual-line-mode)
+  ;; set markdown-command to github flavor
+  (add-hook 'gfm-mode-hook #'ze-gfm-set-command)
+  ;; do not fill in gfm-mode
+  (bind-key "M-q" #'ignore gfm-mode-map))
+
 (split-window-right)
 (ze-toggle-golden-ratio)
