@@ -813,10 +813,6 @@ Reveal outlines."
                      `("pandoc" "--toc" "--section-divs"
                        "--standalone" "-f" "markdown_github" "-t" "html5")
                      " ")))
-  ;; No filling in GFM, because line breaks are significant.
-  (add-hook 'gfm-mode-hook #'turn-off-auto-fill)
-  ;; Use visual lines instead
-  (add-hook 'gfm-mode-hook #'visual-line-mode)
   ;; set markdown-command to github flavor
   (add-hook 'gfm-mode-hook #'ze-gfm-set-command)
   ;; do not fill in gfm-mode
