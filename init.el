@@ -567,9 +567,11 @@ Reveal outlines."
 
     (bind-keys :map lispy-mode-map
                ("C-a" . sexy-move-beginning-of-line)
+               ("M-)" . lispy-parens-down)
                :map lispy-mode-map-lispy
                ;; was lispy-kill-at-point
                ("C-," . nil)
+               ("<S-backspace>" . lispy-delete)
                ("C-w" . lispy-kill-at-point)
                ("M-h" . sexy-kill-region-or-backward-word))))
 
