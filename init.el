@@ -823,5 +823,26 @@ Reveal outlines."
   ;; do not fill in gfm-mode
   (bind-key "M-q" #'ignore gfm-mode-map))
 
+;;* org
+(use-package org
+  :bind (("C-c l" . org-store-link)
+         ("C-c a" . org-agenda)
+         ("C-c b" . org-iswitchb)
+         ("C-c c" . org-capture)
+         :map org-mode-map
+         ("M-h" . nil)
+         ("M-m" . org-mark-element))
+  :config
+  (setq org-directory "~/Documents/org"
+        org-default-notes-file (concat org-directory "/notes.org")
+        org-agenda-files (list org-directory)
+        org-archive-location "~/Documents/org/archive.org::* From %s")
+  (setq org-log-done t
+        ;; display UTF-8 chars instead of escaped entities
+        ;; e.g. \vert will show up as pipe (|)
+        org-pretty-entities t
+        ;; make headline indentation less noisy
+        org-startup-indented t))
+
 (split-window-right)
 (ze-toggle-golden-ratio)
