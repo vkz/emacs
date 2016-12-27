@@ -148,6 +148,8 @@
            :prefix "<f3>"
            :prefix-docstring
            "Prefix for counsel / buffers / filesystem / windows-layout commands")
+(bind-keys :prefix-map ze-nav-prefix
+           :prefix "M-t")
 
 ;; dired
 (use-package dired
@@ -337,8 +339,11 @@
          ("u" . counsel-unicode-char)
          ("m" . counsel-imenu)
          ("l" . counsel-locate)
+         ("h" . counsel-outline)
          :map read-expression-map
-         ("C-r" . counsel-expression-history)))
+         ("C-r" . counsel-expression-history)
+         :map ze-nav-prefix
+         ("h" . counsel-outline)))
 
 (use-package "isearch"
   ;; Defer because `isearch' is not a feature and we don't want to `require' it
@@ -694,8 +699,6 @@ Reveal outlines."
 
 (use-package avy-jump
   :ensure avy
-  :init (bind-keys :prefix-map ze-nav-prefix
-                   :prefix "M-t")
   :bind (("M-t c" . avy-goto-char-timer)
          ("M-t M-c" . avy-goto-char-timer)
          ("M-t w" . avy-goto-word-1)
