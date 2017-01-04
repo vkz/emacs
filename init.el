@@ -332,6 +332,7 @@
          :map ze-prefix
          ("f" . counsel-git)
          ("F" . counsel-find-file)
+         ("R" . counsel-recentf)
          ("g" . counsel-git-grep)
          ("G" . counsel-ag)
          ("D" . counsel-dired-jump)
