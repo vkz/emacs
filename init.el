@@ -830,19 +830,20 @@ Reveal outlines."
          ("C-c b" . org-iswitchb)
          ("C-c c" . org-capture)
          :map org-mode-map
+         ("<C-tab>" . nil)
          ("M-h" . nil)
          ("M-m" . org-mark-element))
   :config
-  (setq org-directory "~/Documents/org"
+  (setq org-directory "~/Dropbox/org"
         org-default-notes-file (concat org-directory "/notes.org")
         org-agenda-files (list org-directory)
-        org-archive-location "~/Documents/org/archive.org::* From %s")
+        org-archive-location (concat org-directory "/archive.org::* From %s"))
   (setq org-log-done t
         ;; display UTF-8 chars instead of escaped entities
         ;; e.g. \vert will show up as pipe (|)
         org-pretty-entities t
         ;; make headline indentation less noisy
-        org-startup-indented t))
+        org-startup-indented t)
 
 (split-window-right)
 (ze-toggle-golden-ratio)
