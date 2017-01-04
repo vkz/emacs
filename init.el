@@ -846,5 +846,49 @@ Reveal outlines."
         ;; make headline indentation less noisy
         org-startup-indented t)
 
+  ;; Add preview:path.pdf::NNN hyperlink to org. Now `org-insert-link' lets you
+  ;; choose `preview:' hyperlink type that takes a path to PDF file followed by
+  ;; `::NNN' page number. `org-open-at-point' will then start Preview.app on
+  ;; that page.
+  (org-add-link-type "preview" #'org-preview-open)
+
+  (defun org-preview-open (path)
+    "Given path-to-pdf::PAGE split into path and PAGE number. Use
+AppleScript to open this pdf file in Preview.app at PAGE."
+    (interactive)
+    (let* ((path-page (split-string path "::"))
+           (path (car path-page))
+           (page (cadr path-page))
+           ;; ensure absolute path
+           (path (expand-file-name path))
+           (script "osascript <<EOF
+
+set posixFile to POSIX file \"%s\"
+set pageNumber to %s
+
+tell application \"Finder\"
+	activate
+	open posixFile
+end tell
+
+delay 1
+
+tell application \"Preview\" to activate
+delay 1
+tell application \"System Events\"
+	keystroke \"g\" using {option down, command down}
+	keystroke pageNumber
+	delay 1
+	keystroke return
+end tell
+
+EOF
+"))
+      (save-window-excursion
+        (async-shell-command
+         (format script path page)))))
+  ;; end
+  )
+
 (split-window-right)
 (ze-toggle-golden-ratio)
