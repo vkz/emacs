@@ -890,5 +890,19 @@ EOF
   ;; end
   )
 
+(use-package ggtags
+  ;; > brew install homebrew/emacs/ggtags
+  ;; cd some-project/dir; gtags
+  :ensure t
+  :diminish ggtags-mode
+  :init (progn
+          (add-hook 'c-mode-common-hook
+                    (lambda ()
+                      (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
+                        (ggtags-mode 1)))))
+  :config
+  (bind-keys :map ggtags-mode-map
+             ("M-s" . nil)))
+
 (split-window-right)
 (ze-toggle-golden-ratio)
