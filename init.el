@@ -779,6 +779,19 @@ Reveal outlines."
  ("<f9>" . kmacro-end-or-call-macro)
  ("C-'" . quoted-insert))
 
+;; NOTE recover navigate to definition for major programming modes
+(defun ze-navigate-to-definition ()
+  (interactive)
+  (case major-mode
+    (emacs-lisp-mode (call-interactively #'elisp-slime-nav-find-elisp-thing-at-point))
+    (racket-mode (call-interactively #'racket-visit-definition))
+    ;; add cases for missing programming modes here
+    ;; TODO clojure-mode
+    (t (message (format "Navigate to definition missing for %s" major-mode)))))
+
+(bind-keys ("M-t ." . ze-navigate-to-definition)
+           ("M-t ," . pop-tag-mark))
+
 ;; Translate backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
 ;; Translate keyboard-quit
