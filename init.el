@@ -717,8 +717,10 @@ Reveal outlines."
 (use-package jump-char
   :ensure t
   :init (bind-keys*
-         ("C-." . jump-char-forward)
-         ("C-," . jump-char-backward))
+         ;; note we are overriding widely used binding here. Will need to
+         ;; carefully rebind it for modes that I use e.g. elisp-slime-nave etc.
+         ("M-." . jump-char-forward)
+         ("M-," . jump-char-backward))
   :config
   (setq-default jump-char-forward-key "."
                 jump-char-backward-key ","))
