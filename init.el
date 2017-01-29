@@ -216,6 +216,28 @@
   :ensure t
   :after dired)
 
+(use-package neotree
+  :ensure t
+  :bind (:map ze-prefix
+         ("t" . neotree-toggle))
+  :config
+  (setq neo-theme 'ascii
+        neo-window-width 24
+        neo-create-file-auto-open t
+        neo-banner-message nil
+        neo-show-updir-line t
+        neo-mode-line-type 'neotree
+        neo-smart-open t
+        neo-dont-be-alone t
+        neo-persist-show nil
+        neo-show-hidden-files t
+        neo-auto-indent-point t)
+  (apply
+   #'custom-set-faces
+   `((neo-file-link-face ((((background dark)) (:foreground "#839496"))
+                          (((background light)) (:foreground "#555"))))
+     (neo-dir-link-face ((t (:foreground "DodgerBlue1")))))))
+
 ;; Delete files to trash
 (use-package osx-trash
   :if (eq system-type 'darwin)
@@ -356,9 +378,9 @@
 (use-package projectile
   :ensure t
   :init (projectile-global-mode)
-  :bind (
-         :map ze-prefix
-         ("d" . projectile-find-dir))
+  :bind (:map ze-prefix
+              ("d" . projectile-find-dir)
+              ("T" . gh/neotree-project-root))
   :config
   ;; Remove dead projects when Emacs is idle
   (run-with-idle-timer 10 nil #'projectile-cleanup-known-projects)
@@ -373,6 +395,24 @@
   (setq projectile-switch-project-action
         (lambda ()
           (dired (projectile-project-root))))
+
+  (defun gh/neotree-project-root (&optional directory)
+    "Open a NeoTree browser for a project DIRECTORY."
+    (interactive)
+    (let ((default-directory (or directory default-directory)))
+      (if (and (fboundp 'neo-global--window-exists-p)
+               (neo-global--window-exists-p))
+          (neotree-hide)
+        (neotree-find (projectile-project-root)))))
+
+  :diminish projectile-mode)
+
+(use-package projectile
+  :ensure t
+  :init (projectile-global-mode)
+  :bind
+  :config
+
 
   :diminish projectile-mode)
 
@@ -918,6 +958,8 @@ EOF
   :config
   (bind-keys :map ggtags-mode-map
              ("M-s" . nil)))
+
+(add-hook 'scheme-mode-hook (lambda () (lispy-mode 1)))
 
 (split-window-right)
 (ze-toggle-golden-ratio)
