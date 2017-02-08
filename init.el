@@ -7,7 +7,6 @@
    (:else (buffer-file-name))))
 
 (setq user-emacs-directory (file-name-directory (file-truename (ze/this-file))))
-(add-to-list 'load-path user-emacs-directory)
 
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
