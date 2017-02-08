@@ -217,9 +217,11 @@
   :after dired)
 
 (use-package neotree
+  ;; Some useful features
+  ;; https://www.emacswiki.org/emacs/NeoTree
   :ensure t
   :bind (:map ze-prefix
-         ("t" . neotree-toggle))
+              ("t" . neotree-toggle))
   :config
   (setq neo-theme 'ascii
         neo-window-width 24
@@ -231,7 +233,8 @@
         neo-dont-be-alone t
         neo-persist-show nil
         neo-show-hidden-files t
-        neo-auto-indent-point t)
+        neo-auto-indent-point t
+        neo-smart-open t)
   (apply
    #'custom-set-faces
    `((neo-file-link-face ((((background dark)) (:foreground "#839496"))
@@ -268,7 +271,7 @@
   :bind (("<f2> g" . gist-region-or-buffer-private)
          ("<f2> G" . gist-region-or-buffer)))
 
-(eval-after-load 'shell '(require 'setup-shell))
+;; (eval-after-load 'shell '(require 'setup-shell))
 (require 'setup-hippie)
 
 (use-package yasnippet
@@ -418,57 +421,59 @@
 
 (use-package persp-mode
   :ensure t
-  :bind (("<f4>" . persp-key-map)
-         :map persp-key-map
-         ("<f4>" . persp-key-map)
-         ;; TODO port persp-switch-last to persp-mode from perspective
-         ;; ("SPC" . persp-switch-last)
-         )
+  :bind (("<f3> SPC" . persp-key-map)
+         ("<f3> <f3>" . persp-key-map))
   :init (persp-mode t)
   :config
-  ;; Leave C-c p to projectile, use <f4> instead
-  (set-default 'persp-keymap-prefix (kbd "<f4>"))
-  (substitute-key-definition 'persp-key-map nil persp-mode-map)
+  ;; (setq persp-common-buffer-filter-functions nil)
 
-  (add-hook 'persp-switch-hook
-            (lambda ()
-              (when (= (length (window-list)) 1)
-                (with-selected-window (split-window-right)))))
+  ;; Leave C-c p to projectile, use <f4> instead
+  (set-default 'persp-keymap-prefix (kbd "<f3> SPC"))
+  ;; (substitute-key-definition 'persp-key-map nil persp-mode-map)
+
+  ;; (add-hook 'persp-switch-hook
+  ;;           (lambda ()
+  ;;             (when (= (length (window-list)) 1)
+  ;;               (with-selected-window (split-window-right)))))
 
   ;; stolen from Spacemacs
-  (defun ivy-persp-switch-project (arg)
-    (interactive "P")
-    (ivy-read "Switch to Project Perspective: "
-              (if (projectile-project-p)
-                  (cons (abbreviate-file-name (projectile-project-root))
-                        (projectile-relevant-known-projects))
-                projectile-known-projects)
-              :action (lambda (project)
-                        (let ((persp-reset-windows-on-nil-window-conf t))
-                          (persp-switch project)
-                          (let ((projectile-completion-system 'ivy))
-                            (projectile-switch-project-by-name project))))))
+  ;; (defun ivy-persp-switch-project (arg)
+  ;;   (interactive "P")
+  ;;   (ivy-read "Switch to Project Perspective: "
+  ;;             (if (projectile-project-p)
+  ;;                 (cons (abbreviate-file-name (projectile-project-root))
+  ;;                       (projectile-relevant-known-projects))
+  ;;               projectile-known-projects)
+  ;;             :action (lambda (project)
+  ;;                       (let ((persp-reset-windows-on-nil-window-conf t))
+  ;;                         (persp-switch project)
+  ;;                         (let ((projectile-completion-system 'ivy))
+  ;;                           (projectile-switch-project-by-name project))))))
 
-  (bind-keys :map persp-key-map
-             ("S" . ivy-persp-switch-project))
+  ;; (bind-keys :map persp-key-map
+  ;;            ("S" . ivy-persp-switch-project))
 
-  (with-eval-after-load "ivy"
-    (add-hook 'ivy-ignore-buffers
-              #'(lambda (b)
-                  (when persp-mode
-                    (let ((persp (get-current-persp)))
-                      (if persp
-                          (not (persp-contain-buffer-p b persp))
-                        nil)))))
+  ;; (with-eval-after-load "ivy"
+  ;;   (add-hook 'ivy-ignore-buffers
+  ;;             #'(lambda (b)
+  ;;                 (when persp-mode
+  ;;                   (let ((persp (get-current-persp)))
+  ;;                     (if persp
+  ;;                         (not (persp-contain-buffer-p b persp))
+  ;;                       nil)))))
 
-    (setq ivy-sort-functions-alist
-          (append ivy-sort-functions-alist
-                  '((persp-kill-buffer . nil)
-                    (persp-remove-buffer . nil)
-                    (persp-add-buffer . nil)
-                    (persp-switch . nil)
-                    (persp-window-switch . nil)
-                    (persp-frame-switch . nil)))))
+  ;;   ;; (persp-contain-buffer-p (get-buffer ".emacs.d") (get-current-persp))
+  ;;   ;; => nil
+  ;;   ;; even though I have that dired buffer open
+
+  ;;   (setq ivy-sort-functions-alist
+  ;;         (append ivy-sort-functions-alist
+  ;;                 '((persp-kill-buffer . nil)
+  ;;                   (persp-remove-buffer . nil)
+  ;;                   (persp-add-buffer . nil)
+  ;;                   (persp-switch . nil)
+  ;;                   (persp-window-switch . nil)
+  ;;                   (persp-frame-switch . nil)))))
   ;; TODO ibuffer setup with persp
   ;; https://gist.github.com/Bad-ptr/1aca1ec54c3bdb2ee80996eb2b68ad2d#file-persp-mode-ibuffer-groups-el
   )
@@ -962,4 +967,4 @@ EOF
 (add-hook 'scheme-mode-hook (lambda () (lispy-mode 1)))
 
 (split-window-right)
-(ze-toggle-golden-ratio)
+;; (ze-toggle-golden-ratio)
