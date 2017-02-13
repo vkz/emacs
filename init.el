@@ -63,7 +63,6 @@
   (packages-install
    '(use-package
       dash
-      highlight-escape-sequences
       whitespace-cleanup-mode
       elisp-slime-nav
       smooth-scrolling
@@ -220,7 +219,7 @@
   ;; https://www.emacswiki.org/emacs/NeoTree
   :ensure t
   :bind (:map ze-prefix
-              ("t" . neotree-toggle))
+              ("T" . neotree-toggle))
   :config
   (setq neo-theme 'ascii
         neo-window-width 24
@@ -315,7 +314,7 @@
 (use-package datomic-snippets
   :ensure t)
 
-(semantic-mode 1)
+;; (semantic-mode 1)
 
 (setq max-lisp-eval-depth 40000)
 (setq max-specpdl-size 100000)
@@ -383,7 +382,7 @@
   :init (projectile-global-mode)
   :bind (:map ze-prefix
               ("d" . projectile-find-dir)
-              ("T" . gh/neotree-project-root))
+              ("t" . gh/neotree-project-root))
   :config
   ;; Remove dead projects when Emacs is idle
   (run-with-idle-timer 10 nil #'projectile-cleanup-known-projects)
@@ -407,15 +406,6 @@
                (neo-global--window-exists-p))
           (neotree-hide)
         (neotree-find (projectile-project-root)))))
-
-  :diminish projectile-mode)
-
-(use-package projectile
-  :ensure t
-  :init (projectile-global-mode)
-  :bind
-  :config
-
 
   :diminish projectile-mode)
 
