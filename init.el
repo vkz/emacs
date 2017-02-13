@@ -836,12 +836,21 @@ Reveal outlines."
   (case major-mode
     (emacs-lisp-mode (call-interactively #'elisp-slime-nav-find-elisp-thing-at-point))
     (racket-mode (call-interactively #'racket-visit-definition))
+    (clojure-mode (call-interactively #'cider-find-var))
+    (cider-mode (call-interactively #'cider-find-var))
     ;; add cases for missing programming modes here
     ;; TODO clojure-mode
     (t (message (format "Navigate to definition missing for %s" major-mode)))))
 
+(defun ze-pop-back ()
+  (interactive)
+  (case major-mode
+    (clojure-mode (call-interactively #'cider-pop-back))
+    (cider-mode (call-interactively #'cider-pop-back))
+    (t (call-interactively #'pop-tag-mark))))
+
 (bind-keys ("M-t ." . ze-navigate-to-definition)
-           ("M-t ," . pop-tag-mark))
+           ("M-t ," . ze-pop-back))
 
 ;; Translate backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
