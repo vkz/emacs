@@ -271,6 +271,14 @@
          ("<f2> G" . gist-region-or-buffer)))
 
 ;; (eval-after-load 'shell '(require 'setup-shell))
+
+;; TODO with oh-my-zsh setup this doesn't filter out all of terminal garbage
+(setq explicit-shell-file-name (getenv "SHELL"))
+(setq shell-file-name "zsh")
+(setq explicit-zsh-args '())
+(add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+
 (require 'setup-hippie)
 
 (use-package yasnippet
