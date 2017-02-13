@@ -263,6 +263,7 @@
   :config
   (set-default 'magit-stage-all-confirm nil)
   (set-default 'magit-unstage-all-confirm nil)
+  (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
   (setq magit-completing-read-function 'ivy-completing-read))
 
 (use-package gist

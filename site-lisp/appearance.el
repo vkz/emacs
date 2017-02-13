@@ -300,7 +300,7 @@
 
 ;; TODO: should porbably move into a defun
 ;; (load-theme 'sanityinc-tomorrow-night t)
-(toggle-frame-maximized)
+(toggle-frame-fullscreen)
 (setq cursor-type 'box)
 ;; (set-cursor-color "SkyBlue2")
 (provide 'appearance)
