@@ -510,7 +510,7 @@
 (comment-annotations-in-modes programming-modes)
 
 (use-package expand-region
-  :bind (("M-SPC" . er/expand-region))
+  :bind (("C-r" . er/expand-region))
   :ensure t
   :config
   (setq expand-region-contract-fast-key "-"
