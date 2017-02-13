@@ -418,13 +418,19 @@
   :diminish projectile-mode)
 
 (use-package persp-mode
-  :ensure t
+  :load-path "site-lisp/persp-mode/"
+  :commands persp-mode
+  ;; :ensure t
   :bind (("<f3> SPC" . persp-key-map)
          ("<f3> <f3>" . persp-key-map))
   :init (persp-mode t)
   :config
   ;; (setq persp-common-buffer-filter-functions nil)
-
+  ;; Since *dired* buffers and the like aren't created with find-file we can't
+  ;; rely on the find-file-hook firing, leaving this the only way to reliably
+  ;; add non-file buffers to current perspective. See
+  ;; https://github.com/Bad-ptr/persp-mode.el/issues/67
+  (setq persp-add-buffer-on-after-change-major-mode t)
   ;; Leave C-c p to projectile, use <f4> instead
   (set-default 'persp-keymap-prefix (kbd "<f3> SPC"))
   ;; (substitute-key-definition 'persp-key-map nil persp-mode-map)
@@ -451,27 +457,27 @@
   ;; (bind-keys :map persp-key-map
   ;;            ("S" . ivy-persp-switch-project))
 
-  ;; (with-eval-after-load "ivy"
-  ;;   (add-hook 'ivy-ignore-buffers
-  ;;             #'(lambda (b)
-  ;;                 (when persp-mode
-  ;;                   (let ((persp (get-current-persp)))
-  ;;                     (if persp
-  ;;                         (not (persp-contain-buffer-p b persp))
-  ;;                       nil)))))
+  (with-eval-after-load "ivy"
+    (setq ivy-sort-functions-alist
+          (append ivy-sort-functions-alist
+                  '((persp-kill-buffer . nil)
+                    (persp-remove-buffer . nil)
+                    (persp-add-buffer . nil)
+                    (persp-switch . nil)
+                    (persp-window-switch . nil)
+                    (persp-frame-switch . nil))))
 
-  ;;   ;; (persp-contain-buffer-p (get-buffer ".emacs.d") (get-current-persp))
-  ;;   ;; => nil
-  ;;   ;; even though I have that dired buffer open
+    ;;   ;; (persp-contain-buffer-p (get-buffer ".emacs.d") (get-current-persp))
+    ;;   ;; => nil
+    ;;   ;; even though I have that dired buffer open
 
-  ;;   (setq ivy-sort-functions-alist
-  ;;         (append ivy-sort-functions-alist
-  ;;                 '((persp-kill-buffer . nil)
-  ;;                   (persp-remove-buffer . nil)
-  ;;                   (persp-add-buffer . nil)
-  ;;                   (persp-switch . nil)
-  ;;                   (persp-window-switch . nil)
-  ;;                   (persp-frame-switch . nil)))))
+    (add-hook 'ivy-ignore-buffers
+              #'(lambda (b)
+                  (when persp-mode
+                    (let ((persp (get-current-persp)))
+                      (if persp
+                          (not (persp-contain-buffer-p b persp))
+                        nil))))))
   ;; TODO ibuffer setup with persp
   ;; https://gist.github.com/Bad-ptr/1aca1ec54c3bdb2ee80996eb2b68ad2d#file-persp-mode-ibuffer-groups-el
   )
