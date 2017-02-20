@@ -459,7 +459,7 @@
   ;; Leave C-c p to projectile, use <f4> instead
 
   (set-default 'persp-keymap-prefix (kbd "<f3>"))
-  
+
   ;; (substitute-key-definition 'persp-key-map nil persp-mode-map)
 
   ;; (add-hook 'persp-switch-hook
@@ -737,6 +737,15 @@ Reveal outlines."
              ;; ("C-c m" . racket-macro-expand-map)
              ("C-c C-c" . racket-send-definition)
              ("C-c C-e" . racket-send-last-sexp)))
+
+(use-package geiser
+  :ensure t
+  :init
+  (setq geiser-active-implementations '(chez))
+  ;; :config
+  ;; (add-hook 'scheme-mode-hook 'geiser-mode)
+  :config
+  (setq geiser-chez-binary "chez"))
 
 ;; (use-package pdf-mode
 ;;   :load-path "site-lisp/pdf-mode.el/"
