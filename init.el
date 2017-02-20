@@ -218,11 +218,27 @@
   :after dired)
 
 (use-package neotree
-  ;; Some useful features
-  ;; https://www.emacswiki.org/emacs/NeoTree
   :ensure t
-  :bind (:map ze-prefix
-         ("T" . neotree-toggle))
+  :bind (("<f8>" . gh/neotree-project-root)
+         ("<f9>" . neotree-toggle)
+         :map ze-prefix
+         ("t" . neotree-dir)
+         :map neotree-mode-map
+         ("s" . neotree-stretch-toggle)
+         ("l" . neotree-select-down-node)
+         ("h" . neotree-select-up-node)
+         ("j" . neotree-next-line)
+         ("k" . neotree-previous-line)
+         ("J" . neotree-select-next-sibling-node)
+         ("K" . neotree-select-previous-sibling-node)
+         (">" . scroll-down-command)
+         ("<" . scroll-up-command)
+         ("f" . find-file-other-window)
+         ("+" . neotree-create-node)
+         ("C" . neotree-copy-node)
+         ("D" . neotree-delete-node)
+         ("R" . neotree-rename-node)
+         ("t" . neotree-change-root))
   :config
   (setq neo-theme 'ascii
         neo-window-width 24
@@ -231,34 +247,14 @@
         neo-show-updir-line t
         neo-mode-line-type 'neotree
         neo-smart-open t
-        ;; neo-dont-be-alone t
-        ;; neo-persist-show nil
         neo-show-hidden-files t
         neo-auto-indent-point t
         neo-smart-open t)
-  (apply
-   #'custom-set-faces
-   `((neo-file-link-face ((((background dark)) (:foreground "#839496"))
-                          (((background light)) (:foreground "#555"))))
-     (neo-dir-link-face ((t (:foreground "DodgerBlue1"))))))
 
-  (bind-keys :map neotree-mode-map
-             ("s" . neotree-stretch-toggle)
-             ("l" . neotree-select-down-node)
-             ("h" . neotree-select-up-node)
-             ("j" . neotree-next-line)
-             ("k" . neotree-previous-line)
-             ("J" . neotree-select-next-sibling-node)
-             ("K" . neotree-select-previous-sibling-node)
-             (">" . scroll-down-command)
-             ("<" . scroll-up-command)
-             ("f" . find-file-other-window)
-             ("+" . neotree-create-node)
-             ("C" . neotree-copy-node)
-             ("D" . neotree-delete-node)
-             ("R" . neotree-rename-node)
-             ("c" . neotree-dir)
-             ("C-c c" . neotree-change-root)))
+  (defun gh/neotree-project-root (&optional directory)
+    "Open a NeoTree browser for a project DIRECTORY."
+    (interactive)
+    (neotree-find (projectile-project-root))))
 
 ;; Delete files to trash
 (use-package osx-trash
@@ -407,9 +403,9 @@
 (use-package projectile
   :ensure t
   :init (projectile-global-mode)
-  :bind (:map ze-prefix
-         ("d" . projectile-find-dir)
-         ("t" . gh/neotree-project-root))
+  :bind (
+         :map ze-prefix
+         ("d" . projectile-find-dir))
   :config
   ;; Remove dead projects when Emacs is idle
   (run-with-idle-timer 10 nil #'projectile-cleanup-known-projects)
@@ -424,21 +420,6 @@
   (setq projectile-switch-project-action
         (lambda ()
           (dired (projectile-project-root))))
-
-  (defun gh/neotree-project-root (&optional directory)
-    "Open a NeoTree browser for a project DIRECTORY."
-    (interactive)
-    (let ((default-directory (or directory default-directory)))
-      (neotree-find (projectile-project-root))))
-
-  ;; (defun gh/neotree-project-root (&optional directory)
-  ;;   "Open a NeoTree browser for a project DIRECTORY."
-  ;;   (interactive)
-  ;;   (let ((default-directory (or directory default-directory)))
-  ;;     (if (and (fboundp 'neo-global--window-exists-p)
-  ;;              (neo-global--window-exists-p))
-  ;;         (neotree-hide)
-  ;;       (neotree-find (projectile-project-root)))))
 
   :diminish projectile-mode)
 
@@ -864,8 +845,8 @@ Reveal outlines."
  ("M-c" . easy-kill)
  ("C-a" . prelude-move-beginning-of-line)
  ("C-x k" . kill-this-buffer)
- ("<f8>" . kmacro-start-macro-or-insert-counter)
- ("<f9>" . kmacro-end-or-call-macro)
+ ("C-x (" . kmacro-start-macro-or-insert-counter)
+ ("C-x )" . kmacro-end-or-call-macro)
  ("C-'" . quoted-insert))
 
 ;; NOTE recover navigate to definition for major programming modes
