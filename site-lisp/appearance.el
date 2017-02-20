@@ -3,12 +3,6 @@
       color-theme-is-global t           ;???
       truncate-partial-width-windows nil)
 
-;; Highlight current line
-;; (global-hl-line-mode 1)
-
-;; Highlight matching parentheses when the point is on them.
-;; (show-paren-mode 1)
-
 (when window-system
   (tooltip-mode -1))
 
@@ -64,24 +58,6 @@
                 (mode-line-position-face :foreground "#969896" :height 95)
                 (mode-line-80col-face :foreground "black" :background "#eab700"))))
 
-;; (toggle-frame-maximized)
-
-;; Set custom theme path
-;; (setq custom-theme-directory
-;;       (expand-file-name "themes" user-emacs-directory))
-
-;; (dolist
-;;     (path (directory-files custom-theme-directory t "\\w+"))
-;;   (when (file-directory-p path)
-;;     (add-to-list 'custom-theme-load-path path)))
-
-;; (set-face-attribute 'default nil
-;;                     :family "Source Code Pro"
-;;                     :height 130
-;;                     :weight 'light
-;;                     :foreground "#D7b78f"
-;;                     :background "#161616")
-
 (use-package darktooth
   :ensure darktooth-theme
   :init
@@ -119,49 +95,6 @@
   :init
   (set-face-attribute 'default nil :family "Source Code Pro" :weight 'normal :height 130)
   (call-interactively 'color-theme-sanityinc-tomorrow-day))
-
-;; (use-package which-func                 ; Current function name
-;;   :init (which-function-mode)
-;;   :config
-;;   (setq which-func-unknown "⊥" ; The default is really boring…
-;;         which-func-format
-;;         `((:propertize (" ➤ " which-func-current)
-;;                        local-map ,which-func-keymap
-;;                        face which-func
-;;                        mouse-face mode-line-highlight
-;;                        help-echo "mouse-1: go to beginning\n\
-;; mouse-2: toggle rest visibility\n\
-;; mouse-3: go to end"))))
-
-;; (setq my/default-font "-apple-Monaco-medium-*-regular-*-*-*-*-*-m-0-iso10646-1")
-;; (setq my/cyrillic-font "-apple-Monaco-medium-*-regular-*-*-*-*-*-m-0-iso10646-1")
-;; (set-fontset-font "fontset-default" 'cyrillic my/cyrillic-font)
-
-;; (set-face-attribute 'default nil
-;;                     :family "Source Code Pro"
-;;                     :height 120
-;;                     :weight 'light
-;;                     :foreground "#D7b78f"
-;;                     :background "#161616")
-
-;; (set-face-attribute 'default nil
-;;                     :family "Monaco"
-;;                     :height 160
-;;                     :weight 'medium
-;;                     :foreground "#D7b78f"
-;;                     :background "#161616")
-
-;; Always have two windows in a frame
-(add-hook 'after-make-frame-functions
-          (lambda (frame)
-            (select-frame frame)
-            (when (= (length (window-list)) 1)
-              (split-window-right))
-            (setq cursor-type 'box)
-            ;; (set-cursor-color "SkyBlue2")
-            ))
-
-;; (set-background-color "#161616")
 
 (defface font-lock-note-annotation
   '((t (:foreground "green")))
@@ -227,38 +160,6 @@
 (rename-modeline "lisp-mode" emacs-lisp-mode "El")
 (rename-modeline "clojure-mode" clojure-mode "Clj")
 
-;; TODO use `projectile-selected-face' to propertize that
-;; TODO colors don't show up in the mode-line
-
-(defface projectile-selected-face
-  '((t (:inherit default)))
-  "The face used to highlight the current projectile on the modeline.")
-
-(eval-after-load "projectile"
-  '(setq projectile-mode-line
-         '(:eval (list " [Pj:"
-                       (propertize (projectile-project-name)
-                                   'face 'projectile-selected-face)
-                       "]"))))
-(eval-after-load "projectile" '(diminish 'projectile-mode))
-
-;; TODO can improve on that, maybe incorporate `projectile' current project
-;; Helper function
-;; (defun shorten-directory (dir max-length)
-;;   "Show up to `max-length' characters of a directory name `dir'."
-;;   (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
-;;         (output ""))
-;;     (when (and path (equal "" (car path)))
-;;       (setq path (cdr path)))
-;;     (while (and path (< (length output) (- max-length 4)))
-;;       (setq output (concat (car path) "/" output))
-;;       (setq path (cdr path)))
-;;     (when path
-;;       (setq output
-;;             (propertize (concat ".." output)
-;;                         'face 'mode-line-folder-face)))
-;;     output))
-
 ;; Mode line setup
 (setq-default
  mode-line-format
@@ -280,13 +181,11 @@
            (propertize " ** " 'face 'mode-line-modified-face))
           (t (propertize " -- " 'face 'mode-line-unmodified-face))))
    ;; projectile-mode-line
-   ;; (:eval (shorten-directory default-directory 15))
-   ;; default-directory
    mode-line-buffer-identification
    " %n "
    mode-line-modes
    mode-line-misc-info
-   (vc-mode vc-mode)
+   ;; (vc-mode vc-mode)
    mode-line-end-spaces))
 
 (use-package rainbow-delimiters
@@ -298,9 +197,6 @@
   (dolist (hook '(prog-mode-hook))
     (add-hook hook 'rainbow-delimiters-mode-enable)))
 
-;; TODO: should porbably move into a defun
-;; (load-theme 'sanityinc-tomorrow-night t)
 (toggle-frame-fullscreen)
 (setq cursor-type 'box)
-;; (set-cursor-color "SkyBlue2")
 (provide 'appearance)
