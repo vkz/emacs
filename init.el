@@ -486,6 +486,13 @@
                       (if persp
                           (not (persp-contain-buffer-p b persp))
                         nil))))))
+
+  (setq persp-lighter '(:eval
+                        (list " ["
+                              (format
+                               (propertize "%.10s" 'face 'persp-selected-face)
+                               (safe-persp-name (get-current-persp)))
+                              "]")))
   ;; TODO ibuffer setup with persp
   ;; https://gist.github.com/Bad-ptr/1aca1ec54c3bdb2ee80996eb2b68ad2d#file-persp-mode-ibuffer-groups-el
   )
