@@ -143,11 +143,14 @@
   :keymap (make-sparse-keymap "ze"))
 
 (bind-keys :prefix-map ze-prefix
-           :prefix "<f3>"
+           :prefix "M-t"
            :prefix-docstring
            "Prefix for counsel / buffers / filesystem / windows-layout commands")
-(bind-keys :prefix-map ze-nav-prefix
-           :prefix "M-t")
+(bind-keys :prefix-map ze-goto-prefix
+           :prefix "M-g")
+;; TODO M-t performed in the other buffer
+(bind-keys :prefix-map ze-other-prefix
+           :prefix "C-o")
 
 ;; dired
 (use-package dired
@@ -332,7 +335,7 @@
   :init (ivy-mode 1)
   :bind (
          :map ze-prefix
-         ("r" . ivy-resume)
+         ("R" . ivy-resume)
          ("b" . ivy-switch-buffer)
          ("B" . ivy-switch-buffer-other-window)
          :map ivy-minibuffer-map
@@ -346,8 +349,7 @@
   :after ivy)
 
 (use-package swiper
-  :ensure t
-  :bind ())
+  :ensure t)
 
 (use-package counsel
   :ensure t
@@ -364,19 +366,18 @@
          :map ze-prefix
          ("f" . counsel-git)
          ("F" . counsel-find-file)
-         ("R" . counsel-recentf)
+         ("r" . counsel-recentf)
          ("g" . counsel-git-grep)
          ("G" . counsel-ag)
          ("D" . counsel-dired-jump)
-         ("L" . counsel-load-library)
-         ("u" . counsel-unicode-char)
-         ("m" . counsel-imenu)
+         ("L" . counsel-find-library)
+         ;; ("u" . counsel-unicode-char)
          ("l" . counsel-locate)
-         ("h" . counsel-outline)
          :map read-expression-map
          ("C-r" . counsel-expression-history)
-         :map ze-nav-prefix
-         ("h" . counsel-outline)))
+         :map ze-goto-prefix
+         ("i" . counsel-imenu)
+         ("o" . counsel-outline)))
 
 (use-package "isearch"
   ;; Defer because `isearch' is not a feature and we don't want to `require' it
@@ -421,18 +422,20 @@
   :load-path "site-lisp/persp-mode/"
   :commands persp-mode
   ;; :ensure t
-  :bind (("<f3> SPC" . persp-key-map)
-         ("<f3> <f3>" . persp-key-map))
+  :bind (("<f3>" . persp-key-map))
   :init (persp-mode t)
   :config
-  ;; (setq persp-common-buffer-filter-functions nil)
+  (add-hook 'persp-common-buffer-filter-functions
+            #'(lambda (b) (string-prefix-p "*" (buffer-name b))))
   ;; Since *dired* buffers and the like aren't created with find-file we can't
   ;; rely on the find-file-hook firing, leaving this the only way to reliably
   ;; add non-file buffers to current perspective. See
   ;; https://github.com/Bad-ptr/persp-mode.el/issues/67
   (setq persp-add-buffer-on-after-change-major-mode t)
   ;; Leave C-c p to projectile, use <f4> instead
-  (set-default 'persp-keymap-prefix (kbd "<f3> SPC"))
+
+  (set-default 'persp-keymap-prefix (kbd "<f3>"))
+  
   ;; (substitute-key-definition 'persp-key-map nil persp-mode-map)
 
   ;; (add-hook 'persp-switch-hook
@@ -751,15 +754,15 @@ Reveal outlines."
 
 (use-package avy-jump
   :ensure avy
-  :bind (("M-t c" . avy-goto-char-timer)
-         ("M-t M-c" . avy-goto-char-timer)
-         ("M-t w" . avy-goto-word-1)
-         ("M-t SPC" . avy-goto-word-1)
-         ("M-t t" . avy-goto-word-1)
-         ;; ("M-t j" . avy-pop-mark)
-         ("M-t j" . pop-to-mark-command)
-         ("M-t a" . beginning-of-buffer)
-         ("M-t e" . end-of-buffer))
+  :bind (
+         :map ze-goto-prefix
+         ("c"   . avy-goto-word-1)
+         ("M-c" . avy-goto-word-1)
+         ("t"   . avy-goto-char-timer)
+         ("M-t"   . avy-goto-char-timer)
+         ("j"   . pop-to-mark-command)
+         ("g"   . beginning-of-buffer)
+         ("G"   . end-of-buffer))
   :config
   (setq avy-timeout-seconds 0.3))
 
@@ -800,6 +803,8 @@ Reveal outlines."
   (setq mac-option-modifier nil))
 
 (bind-keys
+ ;; TODO create repeat-backwards command
+ ("M-r" . repeat)
  ("C-<" . scroll-down-command)
  ("C->" . scroll-up-command)
  ("<escape>" . bury-buffer)
@@ -849,13 +854,16 @@ Reveal outlines."
     (cider-mode (call-interactively #'cider-pop-back))
     (t (call-interactively #'pop-tag-mark))))
 
-(bind-keys ("M-t ." . ze-navigate-to-definition)
-           ("M-t ," . ze-pop-back))
+(bind-keys
+ :map ze-goto-prefix
+ ("." . ze-navigate-to-definition)
+ ("," . ze-pop-back))
 
 ;; Translate backward-delete onto C-h
 (define-key key-translation-map [?\C-h] [?\C-?])
 ;; Translate keyboard-quit
-(define-key key-translation-map [?\M-g] [?\C-g])
+;; (define-key key-translation-map [?\M-g] [?\C-g])
+(define-key key-translation-map [?\C-q] [?\C-g])
 ;; Translate kill-region
 (define-key key-translation-map [?\M-w] [?\C-w])
 
