@@ -363,7 +363,10 @@
   :after ivy)
 
 (use-package swiper
-  :ensure t)
+  :ensure t
+  :bind (
+         :map isearch-mode-map
+         ("M-s" . swiper-from-isearch)))
 
 (use-package counsel
   :ensure t
@@ -781,11 +784,13 @@ Reveal outlines."
 (use-package avy-jump
   :ensure avy
   :bind (
+         :map isearch-mode-map
+         ("C-j" . avy-isearch)
          :map ze-goto-prefix
          ("c"   . avy-goto-word-1)
          ("M-c" . avy-goto-word-1)
          ("t"   . avy-goto-char-timer)
-         ("M-t"   . avy-goto-char-timer)
+         ("M-t" . avy-goto-char-timer)
          ("j"   . pop-to-mark-command)
          ("g"   . beginning-of-buffer)
          ("G"   . end-of-buffer))
