@@ -396,6 +396,11 @@
 (use-package "isearch"
   ;; Defer because `isearch' is not a feature and we don't want to `require' it
   :defer t
+  :bind (("C-." . isearch-forward)
+         ("C-," . isearch-backward)
+         :map isearch-mode-map
+         ("." . isearch-repeat-forward)
+         ("," . isearch-repeat-backward))
   :init
   (diminish 'isearch-mode)
   (setq isearch-allow-scroll t))
