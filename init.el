@@ -1,3 +1,8 @@
+;;* Env and packages
+
+(setq max-lisp-eval-depth 40000)
+(setq max-specpdl-size 100000)
+
 (defun ze/this-file ()
   "Return path to this file."
   (cond
@@ -96,45 +101,119 @@
 (use-package s
   :ensure t)
 
-(use-package undo-tree
-  :ensure t
-  :init (global-undo-tree-mode)
-  :diminish undo-tree-mode
-  :bind (("C-u" . undo-tree-undo)
-         ("C-S-u" . undo-tree-redo)
-         ("M-u" . undo-tree-visualize))
-  :config (bind-keys :map undo-tree-map
-                     ("C-/" . nil)
-                     ("C-?" . nil)
-                     ("C-_" . nil)))
-
-(require 'appearance)
-
 ;; Write backup files to own directory
 (setq backup-directory-alist `((".*" . ,(locate-user-emacs-file ".backup")))
       auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
       ;; Make backups of files, even when they're in version control
       vc-make-backup-files t)
 
-;; Save point position between sessions
-(use-package saveplace
-  :init
-  (setq save-place-file (expand-file-name ".places" user-emacs-directory))
-  (setq-default save-place t))
-
 (setq view-read-only t)
 
 ;; Are we on a mac?
 (setq is-mac (equal system-type 'darwin))
 
+(use-package saveplace
+  :init
+  (setq save-place-file (expand-file-name ".places" user-emacs-directory))
+  (setq-default save-place t))
+
 (require 'sane-defaults)
 
-;; Setup environment variables from the user's shell.
 (use-package exec-path-from-shell
   :ensure t
   :if (and (eq system-type 'darwin) (display-graphic-p))
   :config
   (exec-path-from-shell-initialize))
+
+;; Functions (load all files in defuns-dir)
+(setq defuns-dir (expand-file-name "defuns" user-emacs-directory))
+(dolist (file (directory-files defuns-dir t "\\w+"))
+  (when (file-regular-p file)
+    (load file)))
+
+(use-package highlight-escape-sequences
+  :ensure t
+  :init (hes-mode))
+
+(require 'appearance)
+
+(use-package golden-ratio
+  :ensure t
+  :init
+  (defun ze-toggle-golden-ratio ()
+    (interactive)
+    (if (bound-and-true-p golden-ratio-mode)
+        (progn
+          (golden-ratio-mode -1)
+          (balance-windows))
+      (golden-ratio-mode)
+      (golden-ratio)))
+  :diminish golden-ratio-mode
+  :config
+  (progn
+    (setq golden-ratio-exclude-modes '("bs-mode"
+                                       "calc-mode"
+                                       "ediff-mode"
+                                       "gud-mode"
+                                       "gdb-locals-mode"
+                                       "gdb-registers-mode"
+                                       "gdb-breakpoints-mode"
+                                       "gdb-threads-mode"
+                                       "gdb-frames-mode"
+                                       "gdb-inferior-io-mode"
+                                       "gud-mode"
+                                       "gdb-inferior-io-mode"
+                                       "gdb-disassembly-mode"
+                                       "gdb-memory-mode"
+                                       "restclient-mode"
+                                       "speedbar-mode"))
+
+    (add-to-list 'golden-ratio-exclude-buffer-regexp "^\\*[hH]elm.*")
+
+    (setq golden-ratio-extra-commands
+          (append golden-ratio-extra-commands
+                  '(ace-window
+                    ace-delete-window
+                    ace-select-window
+                    ace-swap-window
+                    ace-maximize-window
+                    avy-pop-mark
+                    windmove-left
+                    windmove-right
+                    windmove-up
+                    windmove-down
+                    select-window-0
+                    select-window-1
+                    select-window-2
+                    select-window-3
+                    select-window-4
+                    select-window-5
+                    select-window-6
+                    select-window-7
+                    select-window-8
+                    select-window-9
+                    buf-move-left
+                    buf-move-right
+                    buf-move-up
+                    buf-move-down
+                    ess-eval-buffer-and-go
+                    ess-eval-function-and-go
+                    ess-eval-line-and-go
+                    other-window
+                    ze-other-window
+                    quit-window)))))
+
+;; Turn page breaks into lines
+(use-package page-break-lines
+  :ensure t
+  :init (global-page-break-lines-mode)
+  :diminish page-break-lines-mode)
+
+(require 'server)
+(unless (server-running-p)
+  (server-start))
+
+;;* Ze
 
 (define-minor-mode ze-mode
   "Ze mode to override other bindings."
@@ -146,15 +225,19 @@
            :prefix "M-t"
            :prefix-docstring
            "Prefix for counsel / buffers / filesystem / windows-layout commands")
+
 (bind-keys :prefix-map ze-goto-prefix
            :prefix "M-g")
 ;; TODO M-t performed in the other buffer
 (bind-keys :prefix-map ze-other-prefix
            :prefix "C-o")
 
-;; dired
+;;* Filesystem
+
 (use-package dired
   ;; TODO: learn fucking dired
+  :bind (:map dired-mode-map
+              ("C-j" . dired-find-alternate-file))
   :config
   ;; brew install coreutils
   (when (and is-mac (executable-find "gls"))
@@ -197,7 +280,9 @@
   (bind-keys :map dired-mode-map
              ("C-a" . dired-back-to-start-of-files)
              ([remap beginning-of-buffer] . dired-back-to-top)
-             ([remap end-of-buffer] . dired-jump-to-bottom)))
+             ([remap end-of-buffer] . dired-jump-to-bottom))
+
+  (put 'dired-find-alternate-file 'disabled nil))
 
 (use-package dired-x
   :defer nil
@@ -264,6 +349,33 @@
 
 (setq delete-by-moving-to-trash t)
 
+(use-package launch
+  :ensure t
+  :init
+  (global-launch-mode +1))
+
+(use-package reveal-in-osx-finder
+  ;; TODO binding
+  :ensure t
+  :bind (("C-c f" . reveal-in-osx-finder)))
+
+(use-package recentf
+  :init (recentf-mode)
+  :config
+  (setq recentf-max-saved-items 200
+        recentf-max-menu-items 15
+        ;; Cleanup recent files only when Emacs is idle, but not when the mode
+        ;; is enabled, because that unnecessarily slows down Emacs. My Emacs
+        ;; idles often enough to have the recent files list clean up regularly
+        recentf-auto-cleanup 300
+        recentf-exclude (list "/\\.git/.*\\'"
+                              "/elpa/.*\\'"
+                              "/\\.node_modules/.*\\'"
+                              ;; #'ignoramus-boring-p
+                              )))
+
+;;* VCS
+
 (use-package magit
   :ensure t
   :init (bind-keys :prefix-map ze-vc-prefix
@@ -287,6 +399,8 @@
   :bind (("<f2> g" . gist-region-or-buffer-private)
          ("<f2> G" . gist-region-or-buffer)))
 
+;;* Shell
+
 ;; (eval-after-load 'shell '(require 'setup-shell))
 
 ;; TODO with oh-my-zsh setup this doesn't filter out all of terminal garbage
@@ -295,6 +409,8 @@
 (setq explicit-zsh-args '())
 (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+
+;;* Completion and Search
 
 (require 'setup-hippie)
 
@@ -339,10 +455,17 @@
 (use-package datomic-snippets
   :ensure t)
 
-;; (semantic-mode 1)
-
-(setq max-lisp-eval-depth 40000)
-(setq max-specpdl-size 100000)
+(use-package "isearch"
+  ;; Defer because `isearch' is not a feature and we don't want to `require' it
+  :defer t
+  :bind (("C-." . isearch-forward)
+         ("C-," . isearch-backward)
+         :map isearch-mode-map
+         ("." . isearch-repeat-forward)
+         ("," . isearch-repeat-backward))
+  :init
+  (diminish 'isearch-mode)
+  (setq isearch-allow-scroll t))
 
 (use-package ivy
   :ensure t
@@ -396,17 +519,15 @@
          ("i" . counsel-imenu)
          ("o" . counsel-outline)))
 
-(use-package "isearch"
-  ;; Defer because `isearch' is not a feature and we don't want to `require' it
-  :defer t
-  :bind (("C-." . isearch-forward)
-         ("C-," . isearch-backward)
-         :map isearch-mode-map
-         ("." . isearch-repeat-forward)
-         ("," . isearch-repeat-backward))
-  :init
-  (diminish 'isearch-mode)
-  (setq isearch-allow-scroll t))
+(use-package grep
+  :ensure t
+  :config
+  ;; TODO: set these `grep-find-ignored-files' `grep-find-ignored-directories'
+  ;; `projectile-globally-ignored-files' `projectile-globally-ignored-directories'
+  (add-to-list 'grep-find-ignored-directories "elpa")
+  (add-to-list 'grep-find-ignored-directories "node_modules"))
+
+;;* Project and Window Management
 
 (use-package projectile
   :ensure t
@@ -435,7 +556,9 @@
   :load-path "site-lisp/persp-mode/"
   :commands persp-mode
   ;; :ensure t
-  :bind (("<f3>" . persp-key-map))
+  :bind (("<f3>" . persp-key-map)
+         :map ze-prefix
+         ("p" . persp-switch))
   :init (persp-mode t)
   :config
   (add-hook 'persp-common-buffer-filter-functions
@@ -505,32 +628,18 @@
   ;; https://gist.github.com/Bad-ptr/1aca1ec54c3bdb2ee80996eb2b68ad2d#file-persp-mode-ibuffer-groups-el
   )
 
-;; TODO: set these `grep-find-ignored-files' `grep-find-ignored-directories'
-;; `projectile-globally-ignored-files' `projectile-globally-ignored-directories'
-(add-to-list 'grep-find-ignored-directories "elpa")
-(add-to-list 'grep-find-ignored-directories "node_modules")
-
-(eval-after-load 'js2-mode '(require 'setup-js2-mode))
-(add-hook 'js-mode-hook (lambda () (custom-set-default 'js-indent-level 2)))
-(setq programming-modes
-      '(clojure-mode js2-mode js-mode c-mode c++-mode emacs-lisp-mode racket-mode))
-
-;; map files to modes
-(require 'mode-mappings)
-
-;; highlight escape sequences, works only in javascript
-(use-package highlight-escape-sequences
+;;* Editing
+(use-package undo-tree
   :ensure t
-  :init (hes-mode))
-
-;; Functions (load all files in defuns-dir)
-(setq defuns-dir (expand-file-name "defuns" user-emacs-directory))
-(dolist (file (directory-files defuns-dir t "\\w+"))
-  (when (file-regular-p file)
-    (load file)))
-
-;; Enable comment annotation keywords in programming modes
-(comment-annotations-in-modes programming-modes)
+  :init (global-undo-tree-mode)
+  :diminish undo-tree-mode
+  :bind (("C-u" . undo-tree-undo)
+         ("C-S-u" . undo-tree-redo)
+         ("M-u" . undo-tree-visualize))
+  :config (bind-keys :map undo-tree-map
+                     ("C-/" . nil)
+                     ("C-?" . nil)
+                     ("C-_" . nil)))
 
 (use-package expand-region
   :bind (("C-r" . er/expand-region))
@@ -539,44 +648,10 @@
   (setq expand-region-contract-fast-key "-"
         expand-region-reset-fast-key "="))
 
-;; Elisp go-to-definition with M-. and back again with M-,
-(autoload 'elisp-slime-nav-mode "elisp-slime-nav")
-(add-hook 'emacs-lisp-mode-hook
-          (lambda ()
-            (elisp-slime-nav-mode t)
-            (eldoc-mode 1)
-            (rainbow-mode +1)))
-
 (require 'whitespace)
 (setq whitespace-line-column 80) ;; limit line length
 (setq whitespace-style '(face tabs empty trailing lines-tail))
 
-(require 'smartparens-config)
-(add-hook 'js-mode-hook 'turn-on-smartparens-mode)
-(add-hook 'js-mode-hook 'show-smartparens-mode)
-(show-smartparens-global-mode)
-
-;; Emacs server
-(require 'server)
-(unless (server-running-p)
-  (server-start))
-
-(use-package recentf
-  :init (recentf-mode)
-  :config
-  (setq recentf-max-saved-items 200
-        recentf-max-menu-items 15
-        ;; Cleanup recent files only when Emacs is idle, but not when the mode
-        ;; is enabled, because that unnecessarily slows down Emacs. My Emacs
-        ;; idles often enough to have the recent files list clean up regularly
-        recentf-auto-cleanup 300
-        recentf-exclude (list "/\\.git/.*\\'"
-                              "/elpa/.*\\'"
-                              "/\\.node_modules/.*\\'"
-                              ;; #'ignoramus-boring-p
-                              )))
-
-;; revert buffers automatically when underlying files are changed externally
 (use-package autorevert
   :init (global-auto-revert-mode t)
   :config
@@ -595,21 +670,6 @@
 (put 'narrow-to-page 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 
-;; Elisp
-(use-package elisp-mode
-  :interpreter ("emacs" . emacs-lisp-mode)
-  :bind (:map emacs-lisp-mode-map
-              ("C-c C-c" . eval-defun)
-              ("C-c C-e" . eval-last-sexp)
-              ("C-c C-k" . eval-buffer)))
-
-(use-package macrostep
-  :ensure t
-  :after elisp-mode
-  :bind (:map emacs-lisp-mode-map ("C-c m" . macrostep-expand)
-         :map lisp-interaction-mode-map ("C-c m" . macrostep-expand)))
-
-;; lispy.el
 (use-package lispy
   :ensure t
   :defer t
@@ -648,138 +708,8 @@ Reveal outlines."
                ("C-w" . lispy-kill-at-point)
                ("M-h" . sexy-kill-region-or-backward-word))))
 
-(use-package golden-ratio
-  :ensure t
-  :init
-  (defun ze-toggle-golden-ratio ()
-    (interactive)
-    (if (bound-and-true-p golden-ratio-mode)
-        (progn
-          (golden-ratio-mode -1)
-          (balance-windows))
-      (golden-ratio-mode)
-      (golden-ratio)))
-  :diminish golden-ratio-mode
-  :config
-  (progn
-    (setq golden-ratio-exclude-modes '("bs-mode"
-                                       "calc-mode"
-                                       "ediff-mode"
-                                       "gud-mode"
-                                       "gdb-locals-mode"
-                                       "gdb-registers-mode"
-                                       "gdb-breakpoints-mode"
-                                       "gdb-threads-mode"
-                                       "gdb-frames-mode"
-                                       "gdb-inferior-io-mode"
-                                       "gud-mode"
-                                       "gdb-inferior-io-mode"
-                                       "gdb-disassembly-mode"
-                                       "gdb-memory-mode"
-                                       "restclient-mode"
-                                       "speedbar-mode"
-                                       ))
-
-    (add-to-list 'golden-ratio-exclude-buffer-regexp "^\\*[hH]elm.*")
-
-    (setq golden-ratio-extra-commands
-          (append golden-ratio-extra-commands
-                  '(ace-window
-                    ace-delete-window
-                    ace-select-window
-                    ace-swap-window
-                    ace-maximize-window
-                    avy-pop-mark
-                    windmove-left
-                    windmove-right
-                    windmove-up
-                    windmove-down
-                    select-window-0
-                    select-window-1
-                    select-window-2
-                    select-window-3
-                    select-window-4
-                    select-window-5
-                    select-window-6
-                    select-window-7
-                    select-window-8
-                    select-window-9
-                    buf-move-left
-                    buf-move-right
-                    buf-move-up
-                    buf-move-down
-                    ess-eval-buffer-and-go
-                    ess-eval-function-and-go
-                    ess-eval-line-and-go
-                    other-window
-                    ze-other-window
-                    quit-window)))))
-
-;; clojure
-(require 'setup-clj)
-
-(use-package racket-mode
-  ;; :ensure t
-  :load-path "site-lisp/racket-mode/"
-  :mode (("\\.rkt\\'" . racket-mode))
-  :config
-  (add-hook 'racket-mode-hook (lambda () (lispy-mode 1)))
-  ;; :config (progn
-  ;;           (add-hook 'racket-mode-hook      #'racket-unicode-input-method-enable)
-  ;;           (add-hook 'racket-repl-mode-hook #'racket-unicode-input-method-enable))
-
-  ;; (lookup-key racket-mode-map (kbd "C-c C-e"))
-  (bind-keys :map racket-mode-map
-             ;; ("C-c m" . racket-macro-expand-map)
-             ("C-c C-c" . racket-send-definition)
-             ("C-c C-e" . racket-send-last-sexp)))
-
-(use-package geiser
-  :ensure t
-  :init
-  (setq geiser-active-implementations '(chez))
-  ;; :config
-  ;; (add-hook 'scheme-mode-hook 'geiser-mode)
-  :config
-  (setq geiser-chez-binary "chez"))
-
-;; (use-package pdf-mode
-;;   :load-path "site-lisp/pdf-mode.el/"
-;;   :mode (("\\.rkt\\'" . pdf-mode)))
-
-(use-package lua-mode
-  :ensure t
-  :mode (("\\.lua\\'" . lua-mode)
-         ("\\.t\\'" . lua-mode))
-  ;; TODO replace or rather add terra repl. lua-mode hardcodes most of the stuff
-  ;; including interpreter and mode alists which is annoying, but I think I
-  ;; should be able to extend functionality to terra pretty easily. E.g.
-  ;; (lua-start-process "terra" "terra") will happily start terra repl, of
-  ;; course sending stuff their doesn't seem to work out of the box.
-  :interpreter ("lua-5.1" . lua-mode)
-  :config
-  ;; TODO wait, I'm not running company-mode? How do i get my completions then?
-  ;; TODO there's some work for eldoc support in lua. I'd like to have that as
-  ;; well as terra. (add-hook 'lua-mode-hook 'company-mode)
-  (progn
-    (setq lua-indent-level 2
-          lua-indent-string-contents t)
-    ;; ('lua-search-documentation)
-    ;; ( 'lua-send-buffer)
-    ;; ( 'lua-send-defun)
-    ;; ( 'lua-send-current-line)
-    ;; ( 'lua-send-region)
-    ))
-
-(use-package launch
-  :ensure t
-  :init
-  (global-launch-mode +1))
-
-(use-package reveal-in-osx-finder
-  ;; TODO binding
-  :ensure t
-  :bind (("C-c f" . reveal-in-osx-finder)))
+(require 'smartparens-config)
+(show-smartparens-global-mode)
 
 (use-package avy-jump
   :ensure avy
@@ -823,87 +753,6 @@ Reveal outlines."
         '(:propertize (:eval (concat " " (number-to-string (mc/num-cursors))))
                       face font-lock-warning-face)))
 
-;; (define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
-;; (define-key input-decode-map [?\C-i] (kbd "<C-i>"))
-
-(when is-mac
-  (setq mac-command-modifier 'meta)
-  (setq mac-right-command-modifier 'super)
-  (setq mac-right-control-modifier 'hyper)
-  ;; (setq mac-option-modifier 'super)
-  (setq mac-option-modifier nil))
-
-(bind-keys
- ;; TODO create repeat-backwards command
- ("M-r" . repeat)
- ("C-<" . scroll-down-command)
- ("C->" . scroll-up-command)
- ("<escape>" . bury-buffer)
- ("C-x r q" . save-buffers-kill-terminal)
- ("C-x C-c" . delete-frame)
- ("C-t" . hippie-expand-no-case-fold)
- ;; Use default C-M-i till I find better key
- ;; ("M-t" . completion-at-point)
- ("<f1>" . help-command)
- ("M-h" . kill-region-or-backward-word)
- ("<C-tab>" . ze-other-window)
- ("<H-tab>" . other-frame)
- ("C-x <C-tab>" . i-meant-other-window)
- ("C-x 3" . split-window-right-and-move-there-dammit)
- ("C-c C-e" . eval-and-replace)
- ("C-c c" . comment-or-uncomment-region-or-line)
- ("C-c d" . prelude-duplicate-current-line-or-region)
- ("H-j" . pop-to-mark-command)
- ("H-u" . universal-argument)
- ("H-S-u" . negative-argument)
- ("C-c M-d" . prelude-duplicate-and-comment-current-line-or-region)
- ("C-c j" . start-or-switch-to-shell)
- ("C-c s" . create-scratch-buffer)
- ("M-c" . easy-kill)
- ("C-a" . prelude-move-beginning-of-line)
- ("C-x k" . kill-this-buffer)
- ("C-x (" . kmacro-start-macro-or-insert-counter)
- ("C-x )" . kmacro-end-or-call-macro)
- ("C-'" . quoted-insert))
-
-;; NOTE recover navigate to definition for major programming modes
-(defun ze-navigate-to-definition ()
-  (interactive)
-  (case major-mode
-    (emacs-lisp-mode (call-interactively #'elisp-slime-nav-find-elisp-thing-at-point))
-    (racket-mode (call-interactively #'racket-visit-definition))
-    (clojure-mode (call-interactively #'cider-find-var))
-    (cider-mode (call-interactively #'cider-find-var))
-    ;; add cases for missing programming modes here
-    ;; TODO clojure-mode
-    (t (message (format "Navigate to definition missing for %s" major-mode)))))
-
-(defun ze-pop-back ()
-  (interactive)
-  (case major-mode
-    (clojure-mode (call-interactively #'cider-pop-back))
-    (cider-mode (call-interactively #'cider-pop-back))
-    (t (call-interactively #'pop-tag-mark))))
-
-(bind-keys
- :map ze-goto-prefix
- ("." . ze-navigate-to-definition)
- ("," . ze-pop-back))
-
-;; Translate backward-delete onto C-h
-(define-key key-translation-map [?\C-h] [?\C-?])
-;; Translate keyboard-quit
-;; (define-key key-translation-map [?\M-g] [?\C-g])
-(define-key key-translation-map [?\C-q] [?\C-g])
-;; Translate kill-region
-(define-key key-translation-map [?\M-w] [?\C-w])
-
-;; Turn page breaks into lines
-(use-package page-break-lines
-  :ensure t
-  :init (global-page-break-lines-mode)
-  :diminish page-break-lines-mode)
-
 (use-package zop-to-char
   :ensure t
   :bind (("M-z" . zop-to-char)
@@ -912,6 +761,95 @@ Reveal outlines."
   (setq zop-to-char-copy-keys '(?\M-c nil)
         zop-to-char-next-keys '(?\C-n nil)
         zop-to-char-prec-keys '(?\C-p nil)))
+
+;;* Programming modes
+
+(require 'mode-mappings)
+
+(setq programming-modes
+      '(clojure-mode js2-mode js-mode c-mode c++-mode emacs-lisp-mode racket-mode))
+(eval-after-load 'js2-mode '(require 'setup-js2-mode))
+(add-hook 'js-mode-hook (lambda () (custom-set-default 'js-indent-level 2)))
+(add-hook 'js-mode-hook 'turn-on-smartparens-mode)
+(add-hook 'js-mode-hook 'show-smartparens-mode)
+
+;; Enable comment annotation keywords in programming modes
+(comment-annotations-in-modes programming-modes)
+
+(use-package elisp-mode
+  :interpreter ("emacs" . emacs-lisp-mode)
+  :bind (:map emacs-lisp-mode-map
+              ("C-c C-c" . eval-defun)
+              ("C-c C-e" . eval-last-sexp)
+              ("C-c C-k" . eval-buffer)))
+
+;; Elisp go-to-definition with M-. and back again with M-,
+(autoload 'elisp-slime-nav-mode "elisp-slime-nav")
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (elisp-slime-nav-mode t)
+            (eldoc-mode 1)
+            (rainbow-mode +1)))
+
+(use-package macrostep
+  :ensure t
+  :after elisp-mode
+  :bind (:map emacs-lisp-mode-map ("C-c m" . macrostep-expand)
+         :map lisp-interaction-mode-map ("C-c m" . macrostep-expand)))
+
+;; clojure
+(require 'setup-clj)
+
+(use-package racket-mode
+  ;; :ensure t
+  :load-path "site-lisp/racket-mode/"
+  :mode (("\\.rkt\\'" . racket-mode))
+  :config
+  (add-hook 'racket-mode-hook (lambda () (lispy-mode 1)))
+  ;; :config (progn
+  ;;           (add-hook 'racket-mode-hook      #'racket-unicode-input-method-enable)
+  ;;           (add-hook 'racket-repl-mode-hook #'racket-unicode-input-method-enable))
+
+  ;; (lookup-key racket-mode-map (kbd "C-c C-e"))
+  (bind-keys :map racket-mode-map
+             ;; ("C-c m" . racket-macro-expand-map)
+             ("C-c C-c" . racket-send-definition)
+             ("C-c C-e" . racket-send-last-sexp)))
+
+(use-package geiser
+  :ensure t
+  :init
+  (setq geiser-active-implementations '(chez))
+  ;; :config
+  ;; (add-hook 'scheme-mode-hook 'geiser-mode)
+  :config
+  (with-eval-after-load "scheme"
+    (add-hook 'scheme-mode-hook (lambda () (lispy-mode 1))))
+  (setq geiser-chez-binary "chez"))
+
+(use-package lua-mode
+  :ensure t
+  :mode (("\\.lua\\'" . lua-mode)
+         ("\\.t\\'" . lua-mode))
+  ;; TODO replace or rather add terra repl. lua-mode hardcodes most of the stuff
+  ;; including interpreter and mode alists which is annoying, but I think I
+  ;; should be able to extend functionality to terra pretty easily. E.g.
+  ;; (lua-start-process "terra" "terra") will happily start terra repl, of
+  ;; course sending stuff their doesn't seem to work out of the box.
+  :interpreter ("lua-5.1" . lua-mode)
+  :config
+  ;; TODO wait, I'm not running company-mode? How do i get my completions then?
+  ;; TODO there's some work for eldoc support in lua. I'd like to have that as
+  ;; well as terra. (add-hook 'lua-mode-hook 'company-mode)
+  (progn
+    (setq lua-indent-level 2
+          lua-indent-string-contents t)
+    ;; ('lua-search-documentation)
+    ;; ( 'lua-send-buffer)
+    ;; ( 'lua-send-defun)
+    ;; ( 'lua-send-current-line)
+    ;; ( 'lua-send-region)
+    ))
 
 (use-package markdown-mode
   :ensure t
@@ -936,7 +874,22 @@ Reveal outlines."
   ;; do not fill in gfm-mode
   (bind-key "M-q" #'ignore gfm-mode-map))
 
-;;* org
+(use-package ggtags
+  ;; > brew install homebrew/emacs/ggtags
+  ;; cd some-project/dir; gtags
+  :ensure t
+  :diminish ggtags-mode
+  :init (progn
+          (add-hook 'c-mode-common-hook
+                    (lambda ()
+                      (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
+                        (ggtags-mode 1)))))
+  :config
+  (bind-keys :map ggtags-mode-map
+             ("M-s" . nil)))
+
+;;* ORG
+
 (use-package org
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
@@ -1002,21 +955,79 @@ EOF
   ;; end
   )
 
-(use-package ggtags
-  ;; > brew install homebrew/emacs/ggtags
-  ;; cd some-project/dir; gtags
-  :ensure t
-  :diminish ggtags-mode
-  :init (progn
-          (add-hook 'c-mode-common-hook
-                    (lambda ()
-                      (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
-                        (ggtags-mode 1)))))
-  :config
-  (bind-keys :map ggtags-mode-map
-             ("M-s" . nil)))
+;;* Keybindings
 
-(add-hook 'scheme-mode-hook (lambda () (lispy-mode 1)))
+(when is-mac
+  (setq mac-command-modifier 'meta)
+  (setq mac-right-command-modifier 'super)
+  (setq mac-right-control-modifier 'hyper)
+  ;; (setq mac-option-modifier 'super)
+  (setq mac-option-modifier nil))
+
+;; Translate backward-delete onto C-h
+(define-key key-translation-map [?\C-h] [?\C-?])
+;; Translate keyboard-quit
+(define-key key-translation-map [?\C-q] [?\C-g])
+;; Translate kill-region
+(define-key key-translation-map [?\M-w] [?\C-w])
+
+(bind-keys
+ ;; TODO create repeat-backwards command
+ ("M-r" . repeat)
+ ("C-<" . scroll-down-command)
+ ("C->" . scroll-up-command)
+ ("<escape>" . bury-buffer)
+ ("C-x r q" . save-buffers-kill-terminal)
+ ("C-x C-c" . delete-frame)
+ ("C-t" . hippie-expand-no-case-fold)
+ ;; Use default C-M-i till I find better key
+ ;; ("M-t" . completion-at-point)
+ ("<f1>" . help-command)
+ ("M-h" . kill-region-or-backward-word)
+ ("<C-tab>" . ze-other-window)
+ ("<H-tab>" . other-frame)
+ ("C-x <C-tab>" . i-meant-other-window)
+ ("C-x 3" . split-window-right-and-move-there-dammit)
+ ("C-c C-e" . eval-and-replace)
+ ("C-c c" . comment-or-uncomment-region-or-line)
+ ("C-c d" . prelude-duplicate-current-line-or-region)
+ ("H-j" . pop-to-mark-command)
+ ("H-u" . universal-argument)
+ ("H-S-u" . negative-argument)
+ ("C-c M-d" . prelude-duplicate-and-comment-current-line-or-region)
+ ("C-c j" . start-or-switch-to-shell)
+ ("C-c s" . create-scratch-buffer)
+ ("M-c" . easy-kill)
+ ("C-a" . prelude-move-beginning-of-line)
+ ("C-x k" . kill-this-buffer)
+ ("C-x (" . kmacro-start-macro-or-insert-counter)
+ ("C-x )" . kmacro-end-or-call-macro)
+ ("C-'" . quoted-insert))
+
+(defun ze-navigate-to-definition ()
+  (interactive)
+  (case major-mode
+    (emacs-lisp-mode (call-interactively #'elisp-slime-nav-find-elisp-thing-at-point))
+    (racket-mode (call-interactively #'racket-visit-definition))
+    (clojure-mode (call-interactively #'cider-find-var))
+    (cider-mode (call-interactively #'cider-find-var))
+    ;; add cases for missing programming modes here
+    ;; TODO clojure-mode
+    (t (message (format "Navigate to definition missing for %s" major-mode)))))
+
+(defun ze-pop-back ()
+  (interactive)
+  (case major-mode
+    (clojure-mode (call-interactively #'cider-pop-back))
+    (cider-mode (call-interactively #'cider-pop-back))
+    (t (call-interactively #'pop-tag-mark))))
+
+(bind-keys
+ :map ze-goto-prefix
+ ("." . ze-navigate-to-definition)
+ ("," . ze-pop-back))
+
+;;* End
 
 (split-window-right)
-;; (ze-toggle-golden-ratio)
+
