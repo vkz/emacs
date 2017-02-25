@@ -209,9 +209,20 @@
   :init (global-page-break-lines-mode)
   :diminish page-break-lines-mode)
 
+;;* Server and emacsclient
+
 (require 'server)
 (unless (server-running-p)
   (server-start))
+
+(defun emacsclient-visit (buffer)
+  "emacsclient should should first switch to \"none\" persp, then
+  visit a file so as not to polute perspectives."
+  (interactive)
+  (when (and (fboundp 'persp-mode) (symbol-value 'persp-mode))
+    (persp-switch "none"))
+  (pop-to-buffer buffer))
+(setq server-window #'emacsclient-visit)
 
 ;;* Ze
 
