@@ -907,6 +907,7 @@ Reveal outlines."
          ("C-c b" . org-iswitchb)
          ("C-c c" . org-capture)
          :map org-mode-map
+         ("C-," . nil)
          ("<C-tab>" . nil)
          ("M-h" . nil)
          ("M-m" . org-mark-element))
@@ -984,6 +985,8 @@ EOF
 
 (bind-keys
  ;; TODO create repeat-backwards command
+ ("M-n" . forward-paragraph)
+ ("M-p" . backward-paragraph)
  ("M-r" . repeat)
  ("C-<" . scroll-down-command)
  ("C->" . scroll-up-command)
