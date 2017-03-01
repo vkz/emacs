@@ -906,7 +906,14 @@ Reveal outlines."
   ;; To connect:
   ;; - M-x sql-connect
   ;; - C-c C-z
+  :bind (
+         ;; \ is impossible to type
+         :map sql-interactive-mode-map
+         ("-" . (lambda () (interactive) (insert "\\"))))
   :config
+  ;; do not read ~/.psqlrc on startup cause PROMPT setup while useful in
+  ;; terminal messes commint mode
+  (add-to-list 'sql-postgres-options "-X")
   (setq-default seql-product 'postgres)
   (setq sql-connection-alist
         '((zedroit (sql-product 'postgres)
