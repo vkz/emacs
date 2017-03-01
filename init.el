@@ -899,6 +899,36 @@ Reveal outlines."
   (bind-keys :map ggtags-mode-map
              ("M-s" . nil)))
 
+;;* Databases
+
+(use-package sql
+  ;; TODO sql-mode doesn't have a good auto-completion story
+  ;; To connect:
+  ;; - M-x sql-connect
+  ;; - C-c C-z
+  :config
+  (setq-default seql-product 'postgres)
+  (setq sql-connection-alist
+        '((zedroit (sql-product 'postgres)
+                   (sql-server "localhost")
+                   (sql-user "ze")
+                   (sql-database "zedroit"))))
+
+  (add-hook 'sql-interactive-mode-hook
+            (lambda ()
+              (toggle-truncate-lines t)
+              (setq-local show-trailing-whitespace nil)))
+
+  (add-hook 'sql-mode-hook
+            (lambda ()
+              (setq-local ac-ignore-case t))))
+
+(use-package sqlup-mode
+  :ensure t
+  :config
+  (add-hook 'sql-mode-hook 'sqlup-mode)
+  (add-hook 'sql-interactive-mode-hook 'sqlup-mode))
+
 ;;* ORG
 
 (use-package org
