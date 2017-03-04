@@ -840,27 +840,44 @@ Reveal outlines."
 
 (use-package lua-mode
   :ensure t
-  :mode (("\\.lua\\'" . lua-mode)
-         ("\\.t\\'" . lua-mode))
-  ;; TODO replace or rather add terra repl. lua-mode hardcodes most of the stuff
-  ;; including interpreter and mode alists which is annoying, but I think I
-  ;; should be able to extend functionality to terra pretty easily. E.g.
-  ;; (lua-start-process "terra" "terra") will happily start terra repl, of
-  ;; course sending stuff their doesn't seem to work out of the box.
-  :interpreter ("lua-5.1" . lua-mode)
+  :mode ("\\.lua$" . lua-mode)
+  :interpreter ("lua5.3" . lua-mode)
+  :bind (
+         :map lua-prefix-mode-map
+         ("C-e" . lua-send-current-line)
+         ("C-k" . pnh-lua-send-file)
+         ("C-c" . lua-send-defun)
+         ("C-r" . lua-send-region)
+         ("R"   . lua-restart-with-whole-file)
+         ("C-d" . lua-search-documentation)
+         ("C-z" . pnh-lua-repl)
+         ("TAB" . ze-lua-toggle-repl))
   :config
-  ;; TODO wait, I'm not running company-mode? How do i get my completions then?
-  ;; TODO there's some work for eldoc support in lua. I'd like to have that as
-  ;; well as terra. (add-hook 'lua-mode-hook 'company-mode)
-  (progn
-    (setq lua-indent-level 2
-          lua-indent-string-contents t)
-    ;; ('lua-search-documentation)
-    ;; ( 'lua-send-buffer)
-    ;; ( 'lua-send-defun)
-    ;; ( 'lua-send-current-line)
-    ;; ( 'lua-send-region)
-    ))
+  (setenv "LUA_REPL_RLWRAP" "sure")     ; suppress rlwrap, which will fail
+
+  (setq lua-default-application "lua5.3"
+        lua-indent-level 2)
+
+  (defun pnh-lua-send-file ()
+    (interactive)
+    (lua-send-string (format "_ = dofile('%s') print('ok')" buffer-file-name)))
+
+  (defvar ze-last-lua-buffer nil)
+  (defun ze-lua-toggle-repl ()
+    (interactive)
+    (if (eq (current-buffer) lua-process-buffer)
+        (pop-to-buffer ze-last-lua-buffer)
+      (progn
+        (setq ze-last-lua-buffer (current-buffer))
+        (pop-to-buffer (and (lua-get-create-process)
+                            lua-process-buffer)))))
+
+  ;; TODO completion-at-point is only available in technomancy fork
+  ;; https://github.com/technomancy/lua-mode/commits/completion
+  ;;
+  ;; Also see his lua setup
+  ;; https://github.com/technomancy/dotfiles/blob/master/.emacs.d/phil/programming.el#L320
+  )
 
 (use-package markdown-mode
   :ensure t
@@ -1085,4 +1102,3 @@ EOF
 ;;* End
 
 (split-window-right)
-
