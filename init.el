@@ -906,10 +906,13 @@ Reveal outlines."
   ;; To connect:
   ;; - M-x sql-connect
   ;; - C-c C-z
+  :init
+  (defun ze-dash-inserts-backslash ()
+    (interactive)
+    (insert "\\"))
   :bind (
-         ;; \ is impossible to type
          :map sql-interactive-mode-map
-         ("-" . (lambda () (interactive) (insert "\\"))))
+         ("-" . ze-dash-inserts-backslash))
   :config
   ;; do not read ~/.psqlrc on startup cause PROMPT setup while useful in
   ;; terminal messes commint mode
@@ -932,6 +935,7 @@ Reveal outlines."
 
 (use-package sqlup-mode
   :ensure t
+  :diminish sqlup-mode
   :config
   (add-hook 'sql-mode-hook 'sqlup-mode)
   (add-hook 'sql-interactive-mode-hook 'sqlup-mode))
