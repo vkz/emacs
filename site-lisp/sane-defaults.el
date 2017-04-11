@@ -62,6 +62,8 @@
 
 ;; Undo/redo window configuration with C-c <left>/<right>
 (winner-mode 1)
+(bind-keys ("C-c <tab>" . winner-undo)
+           ("C-c <S-tab>" . winner-redo))
 
 ;; Never insert tabs
 (set-default 'indent-tabs-mode nil)

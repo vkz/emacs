@@ -6,6 +6,12 @@
 (when window-system
   (tooltip-mode -1))
 
+(defun ze-big-screen-p ()
+  (let ((h (frame-pixel-height))
+        (w (frame-pixel-width)))
+    (and (> h 2000)
+         (> w 3000))))
+
 ;; Extra mode line faces
 (make-face 'mode-line-read-only-face)
 (make-face 'mode-line-modified-face)
@@ -62,10 +68,11 @@
   :ensure darktooth-theme
   :init
   (defun ze-load-dark-theme ()
+    (interactive)
     (mapcar #'disable-theme custom-enabled-themes)
     (set-face-attribute 'default nil
                         :family "Source Code Pro"
-                        :height 130
+                        :height (if (ze-big-screen-p) 180 130)
                         :weight 'light
                         :foreground "#D7b78f"
                         :background "#161616")
@@ -76,8 +83,12 @@
   :ensure leuven-theme
   :init
   (defun ze-load-light-theme ()
+    (interactive)
     (mapcar #'disable-theme custom-enabled-themes)
-    (set-face-attribute 'default nil :family "Source Code Pro" :weight 'normal :height 130)
+    (set-face-attribute 'default nil
+                        :family "Source Code Pro"
+                        :weight 'normal
+                        :height (if (ze-big-screen-p) 180 130))
     (load-theme 'leuven 'no-confirm)))
 
 (defun ze-toggle-theme ()
