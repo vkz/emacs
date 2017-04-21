@@ -1,0 +1,3 @@
+[submodule "site-lisp/persp-mode"]
+	path = site-lisp/persp-mode
+	url = git@github.com:Bad-ptr/persp-mode.el.git
