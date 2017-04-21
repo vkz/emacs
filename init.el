@@ -487,6 +487,7 @@
          ("b" . ivy-switch-buffer)
          ("B" . ivy-switch-buffer-other-window)
          :map ivy-minibuffer-map
+         ("C-S-j" . ivy-immediate-done)
          ("M-c" . ivy-kill-ring-save))
   :config
   (setq ivy-use-virtual-buffers t)
@@ -785,6 +786,7 @@ Reveal outlines."
 (add-hook 'js-mode-hook 'show-smartparens-mode)
 
 ;; Enable comment annotation keywords in programming modes
+;; TODO doesn't work in clojure-mode
 (comment-annotations-in-modes programming-modes)
 
 (use-package elisp-mode
@@ -856,7 +858,9 @@ Reveal outlines."
   (setenv "LUA_REPL_RLWRAP" "sure")     ; suppress rlwrap, which will fail
 
   (setq lua-default-application "lua5.3"
-        lua-indent-level 2)
+        lua-indent-level 2
+        lua-indent-string-contents t
+        lua-documentation-url "http://www.lua.org/manual/5.3/manual.html")
 
   (defun pnh-lua-send-file ()
     (interactive)
@@ -965,6 +969,10 @@ Reveal outlines."
          ("C-c b" . org-iswitchb)
          ("C-c c" . org-capture)
          :map org-mode-map
+         ("<S-up>" . org-shiftup)
+         ("<S-down>" . org-shiftdown)
+         ("M-n" . org-forward-heading-same-level)
+         ("M-p" . org-backward-heading-same-level)
          ("C-," . nil)
          ("<C-tab>" . nil)
          ("M-h" . nil)
@@ -973,6 +981,7 @@ Reveal outlines."
   (setq org-directory "~/Dropbox/org"
         org-default-notes-file (concat org-directory "/notes.org")
         org-agenda-files (list org-directory)
+        ;; (directory-files-recursively org-directory (rx (seq (1+ anything) ".org" eol)))
         org-archive-location (concat org-directory "/archive.org::* From %s"))
   (setq org-log-done t
         ;; display UTF-8 chars instead of escaped entities
@@ -1038,10 +1047,13 @@ EOF
 (define-key key-translation-map [?\C-h] [?\C-?])
 ;; Translate keyboard-quit
 (define-key key-translation-map [?\C-q] [?\C-g])
+
 ;; Translate kill-region
 (define-key key-translation-map [?\M-w] [?\C-w])
 
 (bind-keys
+ ("C-x <" . shrink-window-horizontally)
+ ("C-x >" . enlarge-window-horizontally)
  ;; TODO create repeat-backwards command
  ("M-n" . forward-paragraph)
  ("M-p" . backward-paragraph)
@@ -1056,7 +1068,6 @@ EOF
  ;; ("M-t" . completion-at-point)
  ("<f1>" . help-command)
  ("M-h" . kill-region-or-backward-word)
- ("<C-tab>" . ze-other-window)
  ("<H-tab>" . other-frame)
  ("C-x <C-tab>" . i-meant-other-window)
  ("C-x 3" . split-window-right-and-move-there-dammit)
@@ -1098,6 +1109,92 @@ EOF
  :map ze-goto-prefix
  ("." . ze-navigate-to-definition)
  ("," . ze-pop-back))
+
+;;* Window management
+(setq ze-old-window '())
+
+(defun ze-push-old-window ()
+  (unless (string-prefix-p " *NeoTree" (buffer-name))
+    (setq ze-old-window (cons (selected-window) ze-old-window))
+    ;; When limit of 50 buffers reached, drop oldest 25.
+    (when (> (length ze-old-window) 50)
+      (setq ze-old-window (nbutlast ze-old-window 20)))))
+
+(defun ze-pop-old-window ()
+  (interactive)
+  (unless (window-minibuffer-p)
+    (if-let ((window (car ze-old-window)))
+        (progn
+          (select-window window)
+          (setq ze-old-window (cdr ze-old-window)))
+      (message "Already in the oldest window!"))))
+
+(use-package winner
+  :ensure t
+  :bind (:map ze-prefix
+              ("w" . winner-undo)
+              ("W" . winner-redo)))
+
+(use-package ace-window
+  :ensure t
+  :bind (:map ze-goto-prefix ("w" . ace-window)))
+
+(use-package windmove
+  :ensure t
+  :commands (split-window-right-and-move-there-dammit
+             split-window-below-and-move-there-dammit
+             ze-other-window)
+  :bind (("<C-tab>" . ze-other-window)
+         ("<C-S-tab>" . ze-pop-old-window)
+         :map ze-prefix
+         ("|" . split-window-right-and-move-there-dammit)
+         ("-" . split-window-below-and-move-there-dammit))
+  :config
+  (defun split-window-right-and-move-there-dammit ()
+    (interactive)
+    (split-window-right)
+    (windmove-right))
+
+  (defun split-window-below-and-move-there-dammit ()
+    (interactive)
+    (split-window-below)
+    (windmove-down))
+
+  (defun ze-other-window ()
+    (interactive)
+    (unless (window-minibuffer-p)
+      (ze-push-old-window)
+      (if (= (length (window-list)) 1)
+          (split-window-right-and-move-there-dammit)
+        (progn (other-window 1)
+               (when (string-prefix-p " *NeoTree" (buffer-name))
+                 (other-window 1))))))
+
+  (defun prelude-swap-windows ()
+    "If you have 2 windows, it swaps them."
+    (interactive)
+    (if (/= (count-windows) 2)
+        (message "You need exactly 2 windows to do this.")
+      (let* ((w1 (car (window-list)))
+             (w2 (cadr (window-list)))
+             (b1 (window-buffer w1))
+             (b2 (window-buffer w2))
+             (s1 (window-start w1))
+             (s2 (window-start w2)))
+        (set-window-buffer w1 b2)
+        (set-window-buffer w2 b1)
+        (set-window-start w1 s2)
+        (set-window-start w2 s1)))
+    (let ((leftmost (or (windmove-find-other-window 'left) (selected-window))))
+      (select-window leftmost)))
+
+  (defun at-indentation-p ()
+    "Point if at the beginning of indentation."
+    (and (equal (save-excursion
+                  (back-to-indentation)
+                  (point))
+                (point))
+         (point))))
 
 ;;* End
 

@@ -210,4 +210,7 @@
 
 (toggle-frame-fullscreen)
 (setq cursor-type 'box)
+;; Prevent emacs from splitting windows as its see fit on larger displays
+(setq split-width-threshold 5000
+      split-height-threshold 5000)
 (provide 'appearance)

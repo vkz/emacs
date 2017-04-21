@@ -90,33 +90,6 @@ there's a region, all lines that region covers will be duplicated."
         (setq end (point))))
     (goto-char (+ origin (* (length region) arg) arg))))
 
-(require 'windmove)
-(defun prelude-swap-windows ()
-  "If you have 2 windows, it swaps them."
-  (interactive)
-  (if (/= (count-windows) 2)
-      (message "You need exactly 2 windows to do this.")
-    (let* ((w1 (car (window-list)))
-           (w2 (cadr (window-list)))
-           (b1 (window-buffer w1))
-           (b2 (window-buffer w2))
-           (s1 (window-start w1))
-           (s2 (window-start w2)))
-      (set-window-buffer w1 b2)
-      (set-window-buffer w2 b1)
-      (set-window-start w1 s2)
-      (set-window-start w2 s1)))
-  (let ((leftmost (or (windmove-find-other-window 'left) (selected-window))))
-    (select-window leftmost)))
-
-(defun at-indentation-p ()
-  "Point if at the beginning of indentation."
-  (and (equal (save-excursion
-                (back-to-indentation)
-                (point))
-              (point))
-       (point)))
-
 (defun prelude-move-beginning-of-line (arg)
   "Move point back to indentation of beginning of line.
 
@@ -165,19 +138,6 @@ Passes ARG to command `kill-whole-line' when provided."
   (interactive)
   (kill-region (save-excursion (beginning-of-line) (point))
                (point)))
-
-(defun split-window-right-and-move-there-dammit ()
-  (interactive)
-  (split-window-right)
-  (windmove-right))
-
-(defun ze-other-window ()
-  (interactive)
-  (if (= (length (window-list)) 1)
-      (split-window-right-and-move-there-dammit)
-    (progn (other-window 1)
-           (when (string-prefix-p " *NeoTree" (buffer-name))
-             (other-window 1)))))
 
 (defun eval-and-replace ()
   "Replace the preceding sexp with its value."
@@ -277,3 +237,4 @@ mark wasn't set by `expand-region'."
           (goto-char end)
           (end-of-line)
           (forward-char 1))))))
+

@@ -12,7 +12,8 @@
   :diminish cider-mode
   :init
   (progn
-    (setq cider-stacktrace-default-filters '(tooling dup)
+    (setq cider-repl-display-in-current-window t
+          cider-stacktrace-default-filters '(tooling dup)
           cider-repl-pop-to-buffer-on-connect nil
           cider-repl-use-pretty-printing t
           cider-prompt-save-file-on-load nil
