@@ -748,7 +748,8 @@ Reveal outlines."
          ("M-," . jump-char-backward))
   :config
   (setq-default jump-char-forward-key "."
-                jump-char-backward-key ","))
+                jump-char-backward-key ","
+                jump-char-use-initial-char nil))
 
 ;; TODO bindings
 (use-package multiple-cursors
