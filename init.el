@@ -975,13 +975,20 @@ Reveal outlines."
          ("M-n" . org-forward-heading-same-level)
          ("M-p" . org-backward-heading-same-level)
          ("C-," . nil)
+         ;; keep list of agendas explicit in
+         ;; ~/Dropbox/org/agendas
+         ("C-[" . nil)
+         ("C-]" . nil)
+         ;; no need for comments in org
+         ("C-;" . nil)
          ("<C-tab>" . nil)
          ("M-h" . nil)
          ("M-m" . org-mark-element))
   :config
   (setq org-directory "~/Dropbox/org"
         org-default-notes-file (concat org-directory "/notes.org")
-        org-agenda-files (list org-directory)
+        ;; org-agenda-files (list org-directory)
+        org-agenda-files "~/Dropbox/org/agendas"
         ;; (directory-files-recursively org-directory (rx (seq (1+ anything) ".org" eol)))
         org-archive-location (concat org-directory "/archive.org::* From %s"))
   (setq org-log-done t
